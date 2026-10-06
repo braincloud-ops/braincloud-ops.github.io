@@ -1,3 +1,63 @@
+/* latin */
+@font-face {
+  font-family: "Montserrat";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(./montserrat-700.woff2) format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+/* latin */
+@font-face {
+  font-family: "Montserrat";
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(./montserrat-800.woff2) format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+/* latin */
+@font-face {
+  font-family: "Nunito";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(./nunito-400.woff2) format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+/* latin */
+@font-face {
+  font-family: "Nunito";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(./nunito-600.woff2) format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+/* latin */
+@font-face {
+  font-family: "Nunito";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(./nunito-700.woff2) format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
 /* Braincloud Operations. Palette adapted from the score report; see docs/DESIGN_SYSTEM.md. */
 :root {
   color-scheme: light;
@@ -1512,5 +1572,446 @@ footer strong {
   }
   details {
     break-inside: avoid;
+  }
+}
+/* Reference-report typography, served locally: no third-party font request. */
+
+:root {
+  --paper: #fff;
+  --lime-ink: #1b2608;
+  --control-line: #819598;
+  --radius: 14px;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+body {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+main,
+section,
+form,
+fieldset,
+label,
+.row,
+.row > *,
+.inline-form > *,
+.form-layout > * {
+  min-width: 0;
+  min-inline-size: 0;
+}
+.page-heading {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--teal);
+  padding: 29px 32px;
+  border-radius: 16px;
+  margin: 0 0 25px;
+}
+.page-heading::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  right: -40px;
+  top: -82px;
+  width: 260px;
+  height: 170px;
+  border-radius: 58% 42% 63% 37% / 48% 60% 40% 52%;
+  background: var(--lime);
+  transform: rotate(-8deg);
+}
+.page-heading::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  right: 110px;
+  bottom: -145px;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  border: 1px solid #ffffff70;
+}
+.page-heading .eyebrow {
+  display: inline-block;
+  background: var(--lime);
+  color: var(--lime-ink);
+  border-radius: 20px;
+  padding: 6px 11px;
+  font: 700 10px/1.3 var(--font-display);
+  letter-spacing: 0.8px;
+}
+.page-heading h1 {
+  color: #fff;
+  font-weight: 800;
+  font-size: clamp(25px, 2.5vw, 34px);
+  letter-spacing: -0.6px;
+  max-width: 85%;
+  margin: 9px 0 10px;
+}
+.page-heading .lead {
+  font-size: 14px;
+  color: #08242a;
+  font-weight: 650;
+  max-width: 760px;
+  margin-bottom: 0;
+}
+.form-layout {
+  grid-template-columns: minmax(0, 720px) minmax(210px, 260px);
+  gap: 24px;
+}
+.form-section {
+  padding: 21px 24px 5px;
+}
+.form-section legend {
+  color: var(--teal-strong);
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+}
+.step-number {
+  background: var(--lime);
+  color: var(--lime-ink);
+  border-radius: 50%;
+}
+.field-note {
+  margin-bottom: 14px;
+}
+.form-layout form {
+  box-shadow: none;
+  border-color: #d8e4e5;
+}
+.form-guide {
+  background: var(--lime-tint);
+  padding: 24px;
+  border-radius: 14px;
+}
+.form-guide .guide-icon {
+  background: #fff;
+}
+.form-guide h2 {
+  font-size: 1.1rem;
+}
+.form-guide .next-steps span,
+.form-guide .guide-note p {
+  color: var(--ink-2);
+}
+input,
+select,
+textarea {
+  box-sizing: border-box;
+  width: 100%;
+  inline-size: 100%;
+  max-width: 100%;
+  max-inline-size: 100%;
+  min-width: 0;
+  min-inline-size: 0;
+  font-size: 16px;
+}
+/* iOS native date/time widgets have intrinsic sizing different from text inputs.
+   Reset native appearance and size the inner edit field, not the whole viewport. */
+input[type="date"],
+input[type="time"] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  height: 46px;
+  min-height: 46px;
+  padding: 10px 11px;
+  overflow: hidden;
+  text-align: left;
+  line-height: 24px;
+}
+input::-webkit-date-and-time-value {
+  min-height: 24px;
+  min-width: 0;
+  text-align: left;
+}
+input::-webkit-datetime-edit {
+  display: inline-flex;
+  padding: 0;
+  min-width: 0;
+  max-width: 100%;
+}
+input::-webkit-datetime-edit-fields-wrapper {
+  padding: 0;
+}
+select {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-right: 24px;
+}
+label {
+  overflow-wrap: anywhere;
+}
+button {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  border-radius: 24px;
+}
+button[type="submit"],
+.inline-form > button,
+#login-form > button {
+  background: var(--lime);
+  color: var(--lime-ink);
+  border-color: var(--lime);
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 750;
+}
+button[type="submit"]:hover:not(:disabled),
+.inline-form > button:hover:not(:disabled),
+#login-form > button:hover:not(:disabled) {
+  background: #c9e14d;
+}
+button[type="submit"]:disabled,
+.inline-form > button:disabled {
+  background: #e7eded;
+  border-color: #c8d3d4;
+  color: #607276;
+}
+.form-actions {
+  background: #f7faed;
+  padding: 19px 24px;
+}
+.form-actions button {
+  min-width: 155px;
+}
+.form-actions p {
+  color: var(--ink-2);
+}
+.lookup-search {
+  margin: 4px 0 10px;
+}
+.lookup-search input {
+  background: #f5fafb;
+  border-color: #b7cacc;
+  border-radius: 24px;
+  padding-inline: 15px;
+}
+.search-result-note {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--ink-2);
+}
+.search-result-note:empty {
+  display: none;
+}
+.line-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--lime-tint);
+  border: 1px solid #d9e5a5;
+  border-radius: 12px;
+  margin-bottom: 18px;
+}
+.identity-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 38px;
+  height: 38px;
+  background: var(--lime);
+  color: var(--lime-ink);
+  font-weight: 800;
+  border-radius: 50%;
+}
+.line-identity > div {
+  min-width: 0;
+}
+.line-identity strong {
+  display: block;
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+.line-identity div > span {
+  display: block;
+  color: #415410;
+  font-size: 11px;
+}
+.submission-receipt {
+  padding: 22px;
+  margin: 18px;
+  background: var(--lime-tint);
+  border: 1px solid #c8dd84;
+  border-radius: 12px;
+}
+.submission-receipt h3 {
+  color: #39530d;
+  margin-top: 0;
+}
+.submission-receipt p {
+  margin: 6px 0 0;
+  font-size: 14px;
+}
+th {
+  background: var(--lime-tint);
+}
+.report-totals > div {
+  border-radius: 10px;
+}
+.home-hero {
+  border-radius: 16px;
+}
+.home-hero h1 {
+  font-weight: 800;
+  font-size: clamp(28px, 2.9vw, 41px);
+}
+.brand {
+  letter-spacing: -1px;
+  font-size: 21px;
+}
+.liff-app .app-header {
+  height: 60px;
+}
+@media (min-width: 901px) and (max-width: 1190px) {
+  .form-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 900px) {
+  .form-layout {
+    grid-template-columns: minmax(0, 1fr) 210px;
+  }
+}
+@media (max-width: 680px) {
+  main {
+    padding: 14px 12px 28px;
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+  }
+  .app-header {
+    padding-inline: 14px;
+    height: 57px;
+  }
+  .header-location {
+    font-size: 11px;
+    gap: 7px;
+  }
+  .header-product {
+    font-size: 11px;
+  }
+  #menu-toggle {
+    font-size: 11px;
+    padding: 8px 11px;
+    min-height: 38px;
+  }
+  .page-heading {
+    padding: 22px 20px;
+    margin-bottom: 18px;
+    border-radius: 13px;
+  }
+  .page-heading::after {
+    width: 140px;
+    height: 100px;
+    right: -70px;
+    top: -50px;
+  }
+  .page-heading::before {
+    right: -95px;
+    bottom: -170px;
+  }
+  .page-heading h1 {
+    max-width: 100%;
+    font-size: 26px;
+    line-height: 1.22;
+  }
+  .page-heading .lead {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .page-heading .eyebrow {
+    font-size: 9px;
+  }
+  .form-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  .form-section {
+    padding: 19px 16px 3px;
+  }
+  .form-section legend {
+    font-size: 13px;
+    gap: 9px;
+  }
+  .field-note {
+    font-size: 12px;
+  }
+  label {
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+  .form-actions {
+    padding: 18px 16px;
+  }
+  .form-actions button {
+    min-height: 48px;
+    width: 100%;
+  }
+  .form-guide {
+    margin-top: 0;
+    padding: 21px;
+  }
+  .form-guide .next-steps {
+    display: block;
+  }
+  .form-guide h2 {
+    max-width: 240px;
+  }
+  .form-guide .guide-icon {
+    float: right;
+  }
+  .inline-form {
+    padding: 18px 16px;
+  }
+  .inline-form label {
+    width: 100%;
+    min-width: 0;
+  }
+  .empty-panel {
+    padding: 30px 19px;
+  }
+  .empty-panel h2 {
+    font-size: 16px;
+  }
+  .empty-panel p {
+    font-size: 13px;
+  }
+  .liff-app main {
+    padding-top: 10px;
+  }
+  .liff-app .app-header {
+    height: 52px;
+  }
+  .liff-app .form-guide .next-steps {
+    display: none;
+  }
+  .liff-app .form-guide h2,
+  .liff-app .form-guide .guide-icon,
+  .liff-app .form-guide > .eyebrow {
+    display: none;
+  }
+  .liff-app .form-guide .guide-note {
+    border: 0;
+    padding-top: 0;
+  }
+  footer {
+    font-size: 10px;
   }
 }

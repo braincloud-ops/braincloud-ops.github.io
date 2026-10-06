@@ -1,7 +1,13 @@
-import { API_URL } from "./config.js";
-import { initializeDailyWorkspace, requestDays } from "./operations.mjs";
-import { initializeLearning } from "./learning.mjs";
-import { closeNavigation } from "./interface.mjs";
+import { API_URL } from "./config.js?v=c6b654bacca3";
+import { initializeDailyWorkspace, requestDays } from "./operations.mjs?v=c6b654bacca3";
+import { initializeLearning } from "./learning.mjs?v=c6b654bacca3";
+import { closeNavigation } from "./interface.mjs?v=c6b654bacca3";
+import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=c6b654bacca3";
+import {
+  installSearch,
+  improveFormDates,
+  showSubmissionReceipt,
+} from "./form-experience.mjs?v=c6b654bacca3";
 const $ = (id) => document.getElementById(id),
   state = {
     schools: [],
@@ -13,6 +19,7 @@ const $ = (id) => document.getElementById(id),
   };
 const demo = ["localhost", "127.0.0.1"].includes(location.hostname),
   base = API_URL || (demo ? "/api" : "");
+showLineIdentity();
 if (demo) {
   $("environment").hidden = false;
   $("environment").textContent =
@@ -184,6 +191,7 @@ const today = new Intl.DateTimeFormat("en-CA", {
 }).format(new Date());
 for (const input of document.querySelectorAll("input[type=date]"))
   input.value = today;
+improveFormDates();
 async function initialize() {
   if (!base) return;
   try {
@@ -204,6 +212,16 @@ async function initialize() {
     );
     options("teacher-select", state.teachers, "user_id", (t) =>
       teacherName(t.user_id),
+    );
+    installSearch(
+      "school-select",
+      "Search schools",
+      "Find a school by name or code",
+    );
+    installSearch(
+      "teacher-select",
+      "Search teachers",
+      "Find a teacher by name",
     );
     const reportSchools = state.schools.filter(
       (s) => s.school_group !== "Trial School",
@@ -302,9 +320,10 @@ for (const [id, category] of [
       const result = await api("/requests", {
         method: "POST",
         data,
-        headers: { "Idempotency-Key": pending.key },
+        headers: { "Idempotency-Key": pending.key, ...lineRequestHeaders() },
       });
       message(`Request #${result.id} received. Status: Pending.`);
+      showSubmissionReceipt(form, result);
       // Keep the key while the payload is unchanged, including after a successful response.
     });
   });
