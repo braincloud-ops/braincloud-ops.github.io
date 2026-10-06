@@ -1,6 +1,7 @@
 import { API_URL } from "./config.js";
 import { initializeDailyWorkspace, requestDays } from "./operations.mjs";
 import { initializeLearning } from "./learning.mjs";
+import { closeNavigation } from "./interface.mjs";
 const $ = (id) => document.getElementById(id),
   state = {
     schools: [],
@@ -52,6 +53,7 @@ async function api(
 }
 async function busy(button, action) {
   button.disabled = true;
+  button.setAttribute("aria-busy", "true");
   message("Working…");
   try {
     await action();
@@ -59,6 +61,7 @@ async function busy(button, action) {
     message(e.message, true);
   } finally {
     button.disabled = false;
+    button.removeAttribute("aria-busy");
   }
 }
 async function query(table, filters = [], admin = false, order = []) {
@@ -96,8 +99,26 @@ function table(target, columns, rows, action) {
   const body = t.createTBody();
   for (const item of rows) {
     const row = body.insertRow();
-    for (const [key] of columns)
-      row.insertCell().textContent = String(item[key] ?? "");
+    for (const [key] of columns) {
+      const cell = row.insertCell();
+      const value = String(item[key] ?? "");
+      if (
+        key === "status" &&
+        [
+          "Pending",
+          "Approved",
+          "Rejected",
+          "Cancelled",
+          "Acknowledged",
+        ].includes(value)
+      ) {
+        const badge = document.createElement("span");
+        badge.className = "request-status";
+        badge.dataset.status = value;
+        badge.textContent = value;
+        cell.append(badge);
+      } else cell.textContent = value;
+    }
     if (action) {
       const b = document.createElement("button");
       b.textContent = "Edit";
@@ -129,17 +150,31 @@ function options(id, rows, value, label) {
     $(id).append(option);
   }
 }
-function route() {
-  const id = location.hash.slice(1) || "home";
+function route(moveFocus = false) {
+  const requested = location.hash.slice(1) || "home";
+  const sections = [...document.querySelectorAll("main>section")];
+  const id = sections.some((section) => section.id === requested)
+    ? requested
+    : "home";
   for (const section of document.querySelectorAll("main>section"))
     section.hidden = section.id !== id;
   for (const a of document.querySelectorAll("nav a")) {
     if (a.hash === "#" + id) a.setAttribute("aria-current", "page");
     else a.removeAttribute("aria-current");
   }
+  const heading = $(id).querySelector("h1");
+  const activeLink = document.querySelector('nav a[aria-current="page"]');
+  $("page-name").textContent = activeLink?.textContent.trim() || "Overview";
+  document.title = `${$("page-name").textContent} | Braincloud Operations`;
+  heading.tabIndex = -1;
+  closeNavigation();
+  if (moveFocus) {
+    heading.focus({ preventScroll: true });
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }
   message("");
 }
-addEventListener("hashchange", route);
+addEventListener("hashchange", () => route(true));
 route();
 const today = new Intl.DateTimeFormat("en-CA", {
   timeZone: "Asia/Bangkok",
