@@ -9,10 +9,10 @@
     <meta name="referrer" content="no-referrer" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://*.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob: https://profile.line-scdn.net; connect-src 'self' https://*.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'"
     />
     <title>Braincloud Operations</title>
-    <link rel="stylesheet" href="styles.css?v=c6b654bacca3" />
+    <link rel="stylesheet" href="styles.css?v=544a78f34826" />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -60,6 +60,10 @@
           >Teacher leave</a
         >
         <p class="nav-label">Insights &amp; planning</p>
+        <a href="#dashboard"
+          ><span class="nav-icon" data-icon="calendar" aria-hidden="true"></span
+          >Daily dashboard</a
+        >
         <a href="#reports"
           ><span class="nav-icon" data-icon="calendar" aria-hidden="true"></span
           >Schedules &amp; reports</a
@@ -455,6 +459,58 @@
           </aside>
         </div>
       </section>
+      <section id="dashboard" hidden class="workspace-page">
+        <div class="page-heading">
+          <p class="eyebrow">THE SCHOOL DAY</p>
+          <h1>Daily dashboard</h1>
+          <p class="lead">
+            Classes, cover and changes. Today's picture, in one place.
+          </p>
+        </div>
+        <form class="inline-form dashboard-date">
+          <label>Date<input type="date" name="date" required /></label
+          ><button>Refresh day</button
+          ><button type="button" id="dashboard-today" class="secondary">
+            Today</button
+          ><label class="check-label"
+            ><input type="checkbox" id="dashboard-auto" checked /> Auto refresh
+            · 1 min</label
+          >
+        </form>
+        <p id="dashboard-note" role="status"></p>
+        <div
+          id="dashboard-metrics"
+          class="dashboard-metrics"
+          aria-label="Filter by class status"
+        ></div>
+        <div class="dashboard-filters">
+          <label
+            >View<select id="dashboard-view">
+              <option value="schedule">Class schedule</option>
+              <option value="groups">School groups</option>
+              <option value="cancellations">Cancellations</option>
+              <option value="absence">Teacher unavailability</option>
+            </select></label
+          >
+          <label
+            >Filter by<select id="dashboard-filter-mode">
+              <option value="teacher">Teacher</option>
+              <option value="school">School</option>
+              <option value="group">School group</option>
+              <option value="coordinator">Coordinator</option>
+            </select></label
+          >
+          <label
+            >Selection<select id="dashboard-filter">
+              <option value="">All</option>
+            </select></label
+          >
+        </div>
+        <button id="dashboard-timeline" type="button" class="secondary">
+          Open this day in Timeline
+        </button>
+        <div id="dashboard-results" class="dashboard-results"></div>
+      </section>
       <section id="reports" hidden="" class="workspace-page">
         <div class="page-heading">
           <p class="eyebrow">OPERATIONS REPORT</p>
@@ -756,6 +812,58 @@
             <p id="session-expiry"></p>
             <button id="logout" class="secondary">Sign out</button>
           </div>
+          <section id="attendance-report" class="attendance-workspace">
+            <p class="eyebrow">PRIVATE REPORT · PREVIEW</p>
+            <h2>Teaching &amp; classroom connections</h2>
+            <p>
+              Compare scheduled times with recorded joins and departures across
+              all available schools.
+            </p>
+            <form id="attendance-form" class="inline-form">
+              <label
+                >Start date<input type="date" name="start" required
+              /></label>
+              <label>End date<input type="date" name="end" required /></label>
+              <label
+                >School<select name="school">
+                  <option value="">All schools</option>
+                </select></label
+              >
+              <label
+                >Teacher<select name="teacher">
+                  <option value="">All teachers</option>
+                </select></label
+              >
+              <button>Load connection report</button>
+            </form>
+            <div class="toolbar">
+              <button
+                type="button"
+                class="secondary"
+                data-attendance-export="xlsx"
+                disabled
+              >
+                Export Excel</button
+              ><button
+                type="button"
+                class="secondary"
+                data-attendance-export="csv"
+                disabled
+              >
+                Export CSV
+              </button>
+            </div>
+            <p class="input-hint">
+              Asia/Bangkok · Classroom times describe the attendant account, not
+              individual student attendance. Missing events mean “not recorded”.
+              Summaries use the scheduled period plus 30 minutes on either side;
+              details retain all events.
+            </p>
+            <p id="attendance-note" role="status">
+              Load a date range to see collection coverage and session details.
+            </p>
+            <div id="attendance-output"></div>
+          </section>
           <h2>Requests</h2>
           <form id="request-calendar-form" class="inline-form">
             <label
@@ -877,6 +985,6 @@
       <span>braincloud <strong>operations</strong></span
       ><span>For the people behind every school day.</span>
     </footer>
-    <script type="module" src="app.mjs?v=c6b654bacca3"></script>
+    <script type="module" src="app.mjs?v=544a78f34826"></script>
   </body>
 </html>

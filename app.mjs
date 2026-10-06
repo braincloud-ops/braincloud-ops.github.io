@@ -1,13 +1,20 @@
-import { API_URL } from "./config.js?v=c6b654bacca3";
-import { initializeDailyWorkspace, requestDays } from "./operations.mjs?v=c6b654bacca3";
-import { initializeLearning } from "./learning.mjs?v=c6b654bacca3";
-import { closeNavigation } from "./interface.mjs?v=c6b654bacca3";
-import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=c6b654bacca3";
+import { initializeDashboard } from "./dashboard.mjs?v=544a78f34826";
+import { initializeAttendance } from "./attendance.mjs?v=544a78f34826";
+import {
+  initializeRequestWorkflows,
+  confirmSubmission,
+} from "./request-workflows.mjs?v=544a78f34826";
+import { API_URL } from "./config.js?v=544a78f34826";
+import { requestDays } from "./operations.mjs?v=544a78f34826";
+import { initializeTimeline } from "./timeline.mjs?v=544a78f34826";
+import { initializeLearning } from "./learning.mjs?v=544a78f34826";
+import { closeNavigation } from "./interface.mjs?v=544a78f34826";
+import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=544a78f34826";
 import {
   installSearch,
   improveFormDates,
   showSubmissionReceipt,
-} from "./form-experience.mjs?v=c6b654bacca3";
+} from "./form-experience.mjs?v=544a78f34826";
 const $ = (id) => document.getElementById(id),
   state = {
     schools: [],
@@ -30,9 +37,13 @@ if (!base) {
   $("environment").textContent =
     "Production API is not connected. This is a preview prepared for migration.";
 }
+let messageTimer;
 function message(text, error = false) {
+  clearTimeout(messageTimer);
   $("message").textContent = text;
   $("message").classList.toggle("error", error);
+  if (text && !error && text !== "Working…")
+    messageTimer = setTimeout(() => ($("message").textContent = ""), 6000);
 }
 async function api(
   path,
@@ -206,12 +217,17 @@ async function initialize() {
     ]);
     options(
       "school-select",
-      state.schools,
+      state.schools.filter((s) => String(s.status).toLowerCase() === "active"),
       "school_code",
-      (s) => `${s.school_code} — ${s.school_name_th || s.school_name_en}`,
+      (s) =>
+        `${s.school_code} — ${s.school_name_th || s.school_name_en} · ${s.school_group || "Other"}`,
     );
-    options("teacher-select", state.teachers, "user_id", (t) =>
-      teacherName(t.user_id),
+    options(
+      "teacher-select",
+      state.teachers,
+      "user_id",
+      (t) =>
+        `${teacherName(t.user_id)} · ${String(t.user_type) === "210" ? "FT" : "PT"}`,
     );
     installSearch(
       "school-select",
@@ -252,46 +268,13 @@ async function initialize() {
   }
 }
 initialize();
-$("school-form").elements.type.addEventListener("change", (e) => {
-  $("session-selector").hidden = e.target.value !== "Partial";
+initializeRequestWorkflows({
+  query,
+  api,
+  getSchools: () => state.schools,
+  teacherName,
 });
-for (const field of ["school_code", "start_date", "end_date"])
-  $("school-form").elements[field].addEventListener("change", () => {
-    for (const child of [...$("session-options").children])
-      if (child.tagName !== "LEGEND") child.remove();
-  });
-$("load-sessions").addEventListener("click", () =>
-  busy($("load-sessions"), async () => {
-    const f = $("school-form").elements,
-      s = state.schools.find((s) => s.school_code === f.school_code.value);
-    if (!s) throw new Error("Please select a school.");
-    const rows = await query(
-      "fact_daily_session",
-      [
-        ...filters(f.start_date.value, f.end_date.value),
-        { column: "school_id", op: "eq", value: s.school_id },
-      ],
-      false,
-      [{ column: "date" }, { column: "session_id" }],
-    );
-    const root = $("session-options");
-    for (const child of [...root.children])
-      if (child.tagName !== "LEGEND") child.remove();
-    for (const r of rows) {
-      const label = document.createElement("label"),
-        input = document.createElement("input");
-      input.type = "checkbox";
-      input.name = "sessions";
-      input.value = r.session_id;
-      label.append(
-        input,
-        document.createTextNode(`${r.date} ${r.start_time} ${r.class_name}`),
-      );
-      root.append(label);
-    }
-    message(`Found ${rows.length} sessions.`);
-  }),
-);
+initializeDashboard({ query });
 for (const [id, category] of [
   ["school-form", "School"],
   ["teacher-form", "Teacher"],
@@ -317,6 +300,10 @@ for (const [id, category] of [
       const serialized = JSON.stringify(data);
       if (!pending || pending.serialized !== serialized)
         pending = { serialized, key: crypto.randomUUID() };
+      if (!(await confirmSubmission(form, data, teacherName))) {
+        message("You can edit your request before sending.");
+        return;
+      }
       const result = await api("/requests", {
         method: "POST",
         data,
@@ -675,6 +662,7 @@ $("copy-executive").addEventListener("click", () =>
 );
 
 function signOut() {
+  dispatchEvent(new Event("admin-signed-out"));
   state.session = null;
   state.edit = null;
   state.alarm = null;
@@ -690,6 +678,7 @@ function signOut() {
   $("alarm-output").replaceChildren();
   $("edit-form").hidden = true;
 }
+initializeAttendance({ api });
 $("login-form").addEventListener("submit", (e) => {
   e.preventDefault();
   busy(e.submitter, async () => {
@@ -915,7 +904,8 @@ for (const id of ["edit-check-sessions", "edit-check-teaching"])
       );
     }),
   );
-initializeDailyWorkspace({
+initializeTimeline({
+  api,
   query,
   busy,
   message,

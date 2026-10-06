@@ -82,6 +82,16 @@ export function showSubmissionReceipt(form, result) {
   note.textContent =
     "Your request is saved. There is no need to submit it again.";
   receipt.append(heading, detail, note);
+  if (
+    document.body.classList.contains("liff-app") &&
+    window.liff?.isInClient?.()
+  ) {
+    const done = document.createElement("button");
+    done.type = "button";
+    done.textContent = "Done";
+    done.addEventListener("click", () => window.liff.closeWindow());
+    receipt.append(done);
+  }
   receipt.focus({ preventScroll: true });
   receipt.scrollIntoView({ block: "nearest", behavior: "instant" });
 }

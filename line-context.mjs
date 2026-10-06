@@ -1,8 +1,9 @@
 // Ephemeral page memory only. Never persist a LINE token in a URL or browser storage.
 let identity = null;
-export function connectLine(token, displayName) {
-  identity = { token, displayName };
+export function connectLine(token, displayName, pictureURL = null) {
+  identity = { token, displayName, pictureURL };
 }
+export const hasLineIdentity = () => Boolean(identity);
 export function lineRequestHeaders() {
   return identity ? { "X-Line-Access-Token": identity.token } : {};
 }
@@ -19,6 +20,20 @@ export function showLineIdentity() {
     avatar.className = "identity-avatar";
     avatar.setAttribute("aria-hidden", "true");
     avatar.textContent = [...identity.displayName][0]?.toUpperCase() || "L";
+    if (identity.pictureURL) {
+      try {
+        const url = new URL(identity.pictureURL);
+        if (url.protocol === "https:" && url.hostname === "profile.line-scdn.net" && !url.username && !url.password && !url.port) {
+          const img = document.createElement("img");
+          img.alt = "";
+          img.referrerPolicy = "no-referrer";
+          img.width = img.height = 44;
+          img.addEventListener("error", () => img.remove(), { once: true });
+          img.src = url.href;
+          avatar.append(img);
+        }
+      } catch {}
+    }
     const copy = document.createElement("div");
     const name = document.createElement("strong");
     name.textContent = identity.displayName;

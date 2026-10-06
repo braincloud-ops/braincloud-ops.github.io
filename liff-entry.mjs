@@ -1,9 +1,9 @@
-import { API_URL } from "./config.js?v=c6b654bacca3";
-import { connectLine } from "./line-context.mjs?v=c6b654bacca3";
+import { API_URL } from "./config.js?v=544a78f34826";
+import { connectLine } from "./line-context.mjs?v=544a78f34826";
 const entries = {
   school: { id: "2008775079-PKwtDJOx", route: "school" },
   teacher: { id: "2008775079-dguzgLe4", route: "teacher" },
-  dashboard: { id: "2008775079-7d0dO0Y0", route: "reports" },
+  dashboard: { id: "2008775079-7d0dO0Y0", route: "dashboard" },
 };
 const entry = entries[document.body.dataset.entry];
 const status = document.getElementById("liff-status");
@@ -12,7 +12,7 @@ const base =
   (["localhost", "127.0.0.1"].includes(location.hostname) ? "/api" : "");
 
 async function mountApplication() {
-  const response = await fetch("./index.html?v=c6b654bacca3");
+  const response = await fetch("./index.html?v=544a78f34826");
   if (!response.ok) throw new Error("Application unavailable");
   const documentTemplate = new DOMParser().parseFromString(
     await response.text(),
@@ -27,11 +27,12 @@ async function mountApplication() {
   document.body.className = "liff-app";
   // Initialization has completed: now remove credential parameters and select the form.
   history.replaceState(null, "", `${location.pathname}#${entry.route}`);
-  await import("./app.mjs?v=c6b654bacca3");
+  await import("./app.mjs?v=544a78f34826");
 }
 
 async function openEntry() {
   if (!entry || !globalThis.liff) {
+    if (entry?.route === "dashboard") { await mountApplication(); return; }
     status.textContent =
       "LINE could not load. Use the button below to continue without LINE.";
     return;
@@ -45,7 +46,7 @@ async function openEntry() {
       liffId: entry.id,
       withLoginOnExternalBrowser: false,
     });
-    if (globalThis.liff.isLoggedIn()) {
+    if (globalThis.liff.isLoggedIn() && entry.route !== "dashboard") {
       status.textContent = "Connecting your LINE account…";
       const token = globalThis.liff.getAccessToken();
       if (!token || !base) throw new Error("No LINE connection");
@@ -65,12 +66,13 @@ async function openEntry() {
         !profile.display_name.trim()
       )
         throw new Error("Invalid profile");
-      connectLine(token, profile.display_name);
-    } else if (globalThis.liff.isInClient()) {
+      connectLine(token, profile.display_name, profile.picture_url);
+    } else if (globalThis.liff.isInClient() && entry.route !== "dashboard") {
       throw new Error("LINE account unavailable");
     }
     await mountApplication();
   } catch {
+    if (entry?.route === "dashboard") { await mountApplication(); return; }
     // Never log SDK errors or URL/token/profile information.
     status.textContent =
       "Your LINE connection could not be confirmed. Reopen this page from LINE, or use the button below to continue without LINE.";
