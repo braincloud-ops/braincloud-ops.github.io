@@ -1,23 +1,508 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="robots" content="noindex, nofollow">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://*.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'"
+    />
     <title>Braincloud Operations</title>
-    <style>
-      *{box-sizing:border-box}body{margin:0;background:#f3f6f3;color:#183f43;font:17px/1.65 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;display:grid;place-items:center;padding:24px}main{width:min(760px,100%);background:white;border:1px solid #dce5de;border-radius:24px;padding:clamp(28px,7vw,68px);box-shadow:0 16px 60px #143b4010}.brand{display:flex;gap:14px;align-items:center;font-weight:700;font-size:16px;letter-spacing:.02em}.mark{background:#183f43;color:white;border-radius:12px;padding:9px 11px;font-size:15px}.eyebrow{color:#63786e;text-transform:uppercase;letter-spacing:.15em;font-size:12px;font-weight:700;margin-top:56px}h1{font-size:clamp(32px,6vw,48px);line-height:1.15;letter-spacing:-.035em;margin:12px 0 24px;max-width:560px}.lead{color:#466268;max-width:550px}.notice{margin-top:32px;background:#f4f7ef;border-left:4px solid #92a567;padding:18px 22px;border-radius:0 10px 10px 0}.notice p{margin:0}footer{margin-top:42px;border-top:1px solid #e6ece6;padding-top:18px;color:#6b7e78;font-size:13px}
-    </style>
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <header>
+      <a class="brand" href="#home">Braincloud <span>Operations</span></a>
+      <p>Schedules · Requests · Payment review</p>
+    </header>
+    <nav aria-label="Main navigation">
+      <a href="#home">Overview</a><a href="#school">School cancellation</a
+      ><a href="#teacher">Teacher leave</a
+      ><a href="#reports">Schedules & reports</a
+      ><a href="#executive">Executive summary</a
+      ><a href="#operations">Daily workspace</a
+      ><a href="#learning">Learning activity</a><a href="#admin">Admin</a>
+    </nav>
     <main>
-      <div class="brand"><span class="mark" aria-hidden="true">BC</span>Braincloud Operations</div>
-      <p class="eyebrow">School operations</p>
-      <h1>A new home for everyday school operations.</h1>
-      <p class="lead">We are preparing this portal for school requests, teacher leave and operational reports.</p>
-      <div class="notice"><p><strong>Please continue using your current request links.</strong><br>This page is not accepting submissions yet.</p></div>
-      <footer>Braincloud Operations · Company portal</footer>
+      <p id="environment" class="notice" hidden></p>
+      <p id="message" role="status" aria-live="polite"></p>
+      <section id="home">
+        <p class="eyebrow">WORKSPACE</p>
+        <h1>Daily operations in one place</h1>
+        <p class="lead">
+          Submit requests and view schedules in your browser. Approvals and
+          payment exports require administrator access.
+        </p>
+        <div class="cards">
+          <a href="#school"
+            ><h2>School</h2>
+            <p>Cancel a whole day or selected sessions.</p></a
+          ><a href="#teacher"
+            ><h2>Teacher</h2>
+            <p>
+              Request leave and specify the dates and times you are unavailable.
+            </p></a
+          ><a href="#reports"
+            ><h2>Schedules & reports</h2>
+            <p>View schedules, request status and school summaries.</p></a
+          >
+        </div>
+        <aside>
+          Email notifications are paused in the new system. Submitted requests
+          appear in the administrator workspace.
+        </aside>
+      </section>
+      <section id="school" hidden>
+        <p class="eyebrow">SCHOOL REQUEST</p>
+        <h1>School cancellation</h1>
+        <form id="school-form">
+          <label
+            >Submitted by<input
+              name="user_name"
+              required
+              maxlength="120"
+              autocomplete="name" /></label
+          ><label
+            >School<select name="school_code" id="school-select" required>
+              <option value="">Select a school</option>
+            </select></label
+          >
+          <div class="row">
+            <label
+              >Start date<input type="date" name="start_date" required /></label
+            ><label
+              >End date<input type="date" name="end_date" required
+            /></label>
+          </div>
+          <label
+            >Type<select name="type">
+              <option value="Whole Day">Whole day</option>
+              <option value="Partial">Selected sessions</option>
+            </select></label
+          >
+          <div id="session-selector" hidden>
+            <button type="button" id="load-sessions" class="secondary">
+              Load sessions for these dates
+            </button>
+            <fieldset id="session-options">
+              <legend>Affected sessions</legend>
+            </fieldset>
+          </div>
+          <label
+            >Reason (visible to administrators only)<textarea
+              name="reason"
+              maxlength="2000"
+              rows="4"
+            ></textarea></label
+          ><button type="submit">Submit request</button>
+        </form>
+      </section>
+      <section id="teacher" hidden>
+        <p class="eyebrow">TEACHER REQUEST</p>
+        <h1>Teacher leave</h1>
+        <form id="teacher-form">
+          <label
+            >Submitted by<input
+              name="user_name"
+              required
+              maxlength="120"
+              autocomplete="name" /></label
+          ><label
+            >Teacher<select name="teacher_id" id="teacher-select" required>
+              <option value="">Select a teacher</option>
+            </select></label
+          >
+          <div class="row">
+            <label
+              >Start date<input type="date" name="start_date" required /></label
+            ><label
+              >End date<input type="date" name="end_date" required
+            /></label>
+          </div>
+          <div class="row">
+            <label
+              >Start time<input
+                type="time"
+                name="startTime"
+                value="08:00"
+                required /></label
+            ><label
+              >End time<input type="time" name="endTime" value="16:00" required
+            /></label>
+          </div>
+          <label
+            >Leave type<select name="type">
+              <option value="Sick">Sick leave</option>
+              <option value="Annual">Annual leave</option>
+              <option value="Other">Other</option>
+            </select></label
+          ><label
+            >Reason (visible to administrators only)<textarea
+              name="reason"
+              maxlength="2000"
+              rows="4"
+            ></textarea></label
+          ><button type="submit">Submit request</button>
+        </form>
+      </section>
+      <section id="reports" hidden>
+        <p class="eyebrow">OPERATIONS REPORT</p>
+        <h1>Schedules & reports</h1>
+        <form id="report-form" class="inline-form">
+          <label>Start date<input type="date" name="start" required /></label
+          ><label>End date<input type="date" name="end" required /></label
+          ><label
+            >Report<select name="report">
+              <option value="schedule">Teaching schedule</option>
+              <option value="summary">School summary</option>
+              <option value="requests">Request status</option>
+              <option value="availability">Teacher unavailability</option>
+            </select></label
+          ><button>View report</button>
+        </form>
+        <p id="report-note"></p>
+        <div id="report-output" class="table-wrap"></div>
+      </section>
+      <section id="executive" hidden>
+        <p class="eyebrow">OPERATIONS REPORT</p>
+        <h1>Executive summary</h1>
+        <p>
+          Recorded class volume, teaching coverage and school workload. Trial
+          schools are excluded. Counts include cancelled sessions unless
+          labelled as taught.
+        </p>
+        <form id="executive-form">
+          <div class="row">
+            <label>Start date<input type="date" name="start" required /></label>
+            <label>End date<input type="date" name="end" required /></label>
+          </div>
+          <p>
+            Leave a filter unselected to include all. Multiple selections are
+            supported.
+          </p>
+          <div class="report-filters">
+            <label
+              >School groups<select
+                id="executive-groups"
+                name="groups"
+                multiple
+                size="4"
+              ></select
+            ></label>
+            <label
+              >Schools<select
+                id="executive-schools"
+                name="schoolIds"
+                multiple
+                size="4"
+              ></select
+            ></label>
+            <label
+              >Teachers (original or actual)<select
+                id="executive-teachers"
+                name="teacherIds"
+                multiple
+                size="4"
+              ></select
+            ></label>
+          </div>
+          <button>Load executive summary</button>
+        </form>
+        <p id="executive-note" role="status"></p>
+        <div id="executive-output" hidden>
+          <button id="copy-executive" class="secondary" type="button">
+            Copy report
+          </button>
+          <div id="executive-totals" class="report-totals"></div>
+          <h2>Class status</h2>
+          <div id="executive-status" class="report-bars"></div>
+          <h2>School groups</h2>
+          <div id="executive-group-table" class="table-wrap"></div>
+          <h2>School workload</h2>
+          <p>
+            An active week has at least 5 recorded sessions and at least 20% of
+            that school's busiest week in this selection. Weeks start on Monday
+            in Asia/Bangkok. The 40-week projection is an estimate, not an
+            annual actual or payment total.
+          </p>
+          <div id="executive-school-table" class="table-wrap"></div>
+          <h2>School details</h2>
+          <div id="executive-school-details"></div>
+          <h2>Student counts by school and year</h2>
+          <p>
+            School totals from the student-count reference. Missing or
+            conflicting counts are not shown as zero.
+          </p>
+          <div id="executive-students" class="table-wrap"></div>
+          <h2>Teacher responsibility</h2>
+          <p>
+            Assigned sessions are split into normal, covered by another teacher,
+            and cancelled. Covering is additional work; taught excludes
+            cancellations. Historic teachers remain in the totals.
+          </p>
+          <div id="executive-teacher-table" class="table-wrap"></div>
+          <details>
+            <summary>Recorded volume by day and year</summary>
+            <h3>Yearly totals within the selected dates</h3>
+            <div id="executive-year-table" class="table-wrap"></div>
+            <h3>Daily recorded volume</h3>
+            <p>
+              Dates without records are omitted. Missing records do not
+              establish a confirmed zero.
+            </p>
+            <div id="executive-day-table" class="table-wrap"></div>
+          </details>
+        </div>
+      </section>
+      <section id="operations" hidden>
+        <p class="eyebrow">DAILY WORKSPACE</p>
+        <h1>Timeline & cover planning</h1>
+        <form id="daily-form" class="inline-form">
+          <label>Date<input type="date" name="date" required /></label>
+          <button>Load day</button>
+        </form>
+        <p id="daily-note" role="status"></p>
+        <div id="daily-output" hidden>
+          <button id="copy-daily" class="secondary">Copy daily update</button>
+          <h2>Teaching timeline</h2>
+          <p>
+            Times are in Asia/Bangkok. Leave reasons are private. A gap does not
+            confirm that a teacher is available.
+          </p>
+          <div id="daily-timeline" class="table-wrap"></div>
+          <div id="daily-sessions" class="table-wrap"></div>
+          <h2>Recorded unavailability</h2>
+          <div id="daily-leave" class="table-wrap"></div>
+          <h2>Request status</h2>
+          <div id="daily-requests" class="table-wrap"></div>
+          <h2>Cover simulator</h2>
+          <p>
+            Try cover assignments or cancellations locally. Nothing is saved to
+            the schedule. Confirm qualifications, travel time and availability
+            with the team before making an actual change.
+          </p>
+          <form id="cover-form">
+            <label
+              >Session<select
+                id="cover-session"
+                name="session"
+                required
+              ></select
+            ></label>
+            <label
+              >Proposed teacher<select
+                id="cover-teacher"
+                name="teacher"
+                required
+              ></select
+            ></label>
+            <button>Try assignment</button>
+            <button type="button" id="cancel-simulated" class="secondary">
+              Try cancellation
+            </button>
+          </form>
+          <div id="cover-output" class="table-wrap"></div>
+          <button id="copy-cover" class="secondary">
+            Copy proposed changes
+          </button>
+          <button id="clear-cover" class="secondary">
+            Clear proposed changes
+          </button>
+        </div>
+      </section>
+      <section id="learning" hidden>
+        <p class="eyebrow">LEARNING REPORT</p>
+        <h1>Listening activity</h1>
+        <p>
+          Recorded listening activity by school, class and grade. These totals
+          describe activity in TMS; they do not measure student attainment or
+          teacher performance.
+        </p>
+        <button id="learning-options" class="secondary">
+          Load available years and schools
+        </button>
+        <form id="learning-form">
+          <div class="row">
+            <label
+              >Academic year<select
+                name="year"
+                id="learning-year"
+                required
+              ></select
+            ></label>
+            <label
+              >Term<select name="term">
+                <option value="all">All recorded terms</option>
+                <option value="term1">
+                  Term 1 (May–October; topics outside 15–24)
+                </option>
+                <option value="term2">
+                  Term 2 (November–April; topics 15–24)
+                </option>
+              </select></label
+            >
+          </div>
+          <label
+            >Schools (leave unselected for all)<select
+              name="schools"
+              id="learning-schools"
+              multiple
+              size="4"
+            ></select
+          ></label>
+          <label
+            ><input type="checkbox" name="review_only" /> Show only classes with
+            zero or unknown activity</label
+          >
+          <button>Load learning report</button>
+        </form>
+        <p id="learning-note" role="status"></p>
+        <div id="learning-output" hidden>
+          <p>
+            Active means at least one recorded participant. Unknown or
+            conflicting values are excluded from the percentage denominator. A
+            grade is active if any class has recorded activity in that week or
+            topic.
+          </p>
+          <div id="learning-summary" class="table-wrap"></div>
+          <div id="learning-details"></div>
+        </div>
+      </section>
+      <section id="admin" hidden>
+        <p class="eyebrow">ADMINISTRATION</p>
+        <h1>Administrator workspace</h1>
+        <form id="login-form">
+          <label
+            >Administrator password<input
+              type="password"
+              name="password"
+              required
+              minlength="14"
+              maxlength="256"
+              autocomplete="current-password" /></label
+          ><button>Sign in</button>
+        </form>
+        <div id="admin-workspace" hidden>
+          <div class="toolbar">
+            <p id="session-expiry"></p>
+            <button id="logout" class="secondary">Sign out</button>
+          </div>
+          <h2>Requests</h2>
+          <form id="request-calendar-form" class="inline-form">
+            <label>Start date<input type="date" name="start" required /></label>
+            <label>End date<input type="date" name="end" required /></label>
+            <button>Load request calendar</button>
+          </form>
+          <div id="request-calendar" class="request-calendar"></div>
+          <button id="load-requests" class="secondary">
+            Load recent requests
+          </button>
+          <div id="admin-requests" class="table-wrap"></div>
+          <form id="edit-form" hidden>
+            <h3 id="edit-heading">Edit request</h3>
+            <p id="edit-details"></p>
+            <label
+              >Status<select name="status">
+                <option>Pending</option>
+                <option>Approved</option>
+                <option>Rejected</option>
+                <option>Cancelled</option>
+                <option>Acknowledged</option>
+              </select></label
+            >
+            <div class="row">
+              <label
+                >Start date<input
+                  type="date"
+                  name="start_date"
+                  required /></label
+              ><label
+                >End date<input type="date" name="end_date" required
+              /></label>
+            </div>
+            <label
+              >Request type<select name="type" id="edit-type"></select
+            ></label>
+            <div id="edit-school-fields">
+              <label
+                >School<select name="school_code" id="edit-school"></select
+              ></label>
+              <label
+                >Selected session IDs (one per line; only for selected
+                sessions)<textarea name="session_ids" rows="3"></textarea>
+              </label>
+              <button type="button" id="edit-check-sessions" class="secondary">
+                Check affected sessions
+              </button>
+            </div>
+            <div id="edit-teacher-fields">
+              <label
+                >Teacher<select name="teacher_id" id="edit-teacher"></select
+              ></label>
+              <div class="row">
+                <label>Start time<input type="time" name="startTime" /></label>
+                <label>End time<input type="time" name="endTime" /></label>
+              </div>
+              <button type="button" id="edit-check-teaching" class="secondary">
+                Check teaching coverage
+              </button>
+            </div>
+            <div id="edit-coverage" class="table-wrap"></div>
+            <label
+              >Reason<textarea
+                name="reason"
+                maxlength="2000"
+                rows="4"
+              ></textarea></label
+            ><button type="submit">Save changes</button>
+          </form>
+          <h2>Pending request reminders</h2>
+          <p>
+            Reminder times use Asia/Bangkok. Delivery runs on the server and
+            requires notification activation. A missed or unconfirmed delivery
+            is not replayed automatically.
+          </p>
+          <button id="load-alarms" class="secondary">Load reminders</button>
+          <div id="alarm-output" class="table-wrap"></div>
+          <form id="alarm-form">
+            <h3 id="alarm-heading">New reminder</h3>
+            <label>Time<input type="time" name="time" required /></label>
+            <label>Label<input name="label" maxlength="120" required /></label>
+            <label
+              ><input type="checkbox" name="is_active" checked /> Enabled</label
+            >
+            <button type="submit">Save reminder</button>
+            <button type="button" id="new-alarm" class="secondary">
+              Start a new reminder
+            </button>
+          </form>
+          <h2>Data sync</h2>
+          <button id="load-jobs" class="secondary">Check job status</button>
+          <div id="job-output" class="table-wrap"></div>
+          <h2>Export a draft for payment review</h2>
+          <p>
+            Each export creates a new file. The spreadsheet reviewed and
+            adjusted by the team is the final payment record. Exported units
+            represent sessions, not currency.
+          </p>
+          <form id="export-form" class="inline-form">
+            <label>Start date<input type="date" name="start" required /></label
+            ><label>End date<input type="date" name="end" required /></label
+            ><label
+              >Format<select name="format">
+                <option value="xlsx">Excel (.xlsx)</option>
+                <option value="csv">Details (.csv)</option>
+              </select></label
+            ><button>Download a new file</button>
+          </form>
+        </div>
+      </section>
     </main>
+    <footer>
+      Braincloud Operations · Asia/Bangkok
+      <a href="architecture.html">System map</a>
+    </footer>
+    <script type="module" src="app.mjs"></script>
   </body>
 </html>
