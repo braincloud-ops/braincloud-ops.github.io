@@ -43,6 +43,29 @@ export function punch(node) {
   node.classList.add("punch");
 }
 
+// Headline numbers "decode": digits cycle briefly, then settle on the value.
+// Only 0-9 change, and figures are tabular, so the layout never shifts.
+export function decode(node, text) {
+  node.textContent = text;
+  if (calm() || !/\d/.test(text)) return;
+  const started = performance.now();
+  const step = (now) => {
+    if (node.textContent === text && now - started > 0 && !node.isConnected)
+      return;
+    if (now - started >= 400) {
+      node.textContent = text;
+      return;
+    }
+    node.textContent = text.replace(/\d/g, () =>
+      String(Math.floor(Math.random() * 10)),
+    );
+    requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+  // requestAnimationFrame pauses in a background tab; the value still lands.
+  setTimeout(() => (node.textContent = text), 450);
+}
+
 // Stagger children in as they appear (capped so long lists stay quick).
 export function rise(nodes) {
   if (calm()) return;

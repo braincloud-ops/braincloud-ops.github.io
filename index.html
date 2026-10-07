@@ -12,7 +12,7 @@
       content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob: https://profile.line-scdn.net; connect-src 'self' https://*.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'"
     />
     <title>Braincloud Operations</title>
-    <link rel="stylesheet" href="styles.css?v=2355712a139c" />
+    <link rel="stylesheet" href="styles.css?v=b30c130f594d" />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -571,97 +571,181 @@
       </section>
       <section id="executive" hidden="" class="workspace-page">
         <div class="page-heading">
-          <p class="eyebrow">OPERATIONS REPORT</p>
+          <p class="eyebrow">OPERATIONS BRIEF</p>
           <h1>Executive summary</h1>
           <p class="lead">
-            Recorded class volume, teaching coverage and school workload. Trial
-            schools are excluded. Counts include cancelled sessions unless
-            labelled as taught.
+            How many classes ran, why the others did not, and where. From the
+            TMS schedule; trial schools are excluded.
           </p>
         </div>
 
-        <form id="executive-form">
+        <form id="executive-form" class="brief-form">
+          <div class="brief-presets" role="group" aria-label="Period">
+            <button type="button" class="chip" data-preset="month">
+              This month
+            </button>
+            <button type="button" class="chip" data-preset="last-month">
+              Last month
+            </button>
+            <button type="button" class="chip" data-preset="quarter">
+              Last 3 months
+            </button>
+            <button type="button" class="chip" data-preset="year">
+              Last 12 months
+            </button>
+          </div>
           <div class="row">
             <label
               >Start date<input type="date" name="start" required=""
             /></label>
             <label>End date<input type="date" name="end" required="" /></label>
           </div>
-          <p>
-            Leave a filter unselected to include all. Multiple selections are
-            supported.
-          </p>
-          <div class="report-filters">
-            <label
-              >School groups<select
-                id="executive-groups"
-                name="groups"
-                multiple=""
-                size="4"
-              ></select
-            ></label>
-            <label
-              >Schools<select
-                id="executive-schools"
-                name="schoolIds"
-                multiple=""
-                size="4"
-              ></select
-            ></label>
-            <label
-              >Teachers (original or actual)<select
-                id="executive-teachers"
-                name="teacherIds"
-                multiple=""
-                size="4"
-              ></select
-            ></label>
-          </div>
+          <details class="brief-filters">
+            <summary>Filters (optional)</summary>
+            <p>
+              Leave a filter unselected to include all. Multiple selections are
+              supported.
+            </p>
+            <div class="report-filters">
+              <label
+                >School groups<select
+                  id="executive-groups"
+                  name="groups"
+                  multiple=""
+                  size="4"
+                ></select
+              ></label>
+              <label
+                >Schools<select
+                  id="executive-schools"
+                  name="schoolIds"
+                  multiple=""
+                  size="4"
+                ></select
+              ></label>
+              <label id="executive-teacher-filter" hidden=""
+                >Teachers (original or actual)<select
+                  id="executive-teachers"
+                  name="teacherIds"
+                  multiple=""
+                  size="4"
+                ></select
+              ></label>
+            </div>
+          </details>
           <button>Load executive summary</button>
         </form>
         <p id="executive-note" role="status"></p>
         <div id="executive-output" hidden="">
-          <button id="copy-executive" class="secondary" type="button">
-            Copy report
-          </button>
-          <div id="executive-totals" class="report-totals"></div>
-          <h2>Class status</h2>
-          <div id="executive-status" class="report-bars"></div>
-          <h2>School groups</h2>
-          <div id="executive-group-table" class="table-wrap"></div>
-          <h2>School workload</h2>
-          <p>
-            An active week has at least 5 recorded sessions and at least 20% of
-            that school's busiest week in this selection. Weeks start on Monday
-            in Asia/Bangkok. The 40-week projection is an estimate, not an
-            annual actual or payment total.
-          </p>
-          <div id="executive-school-table" class="table-wrap"></div>
-          <h2>School details</h2>
-          <div id="executive-school-details"></div>
-          <h2>Student counts by school and year</h2>
-          <p>
-            School totals from the student-count reference. Missing or
-            conflicting counts are not shown as zero.
-          </p>
-          <div id="executive-students" class="table-wrap"></div>
-          <h2>Teacher responsibility</h2>
-          <p>
-            Assigned sessions are split into normal, covered by another teacher,
-            and cancelled. Covering is additional work; taught excludes
-            cancellations. Historic teachers remain in the totals.
-          </p>
-          <div id="executive-teacher-table" class="table-wrap"></div>
-          <details>
-            <summary>Recorded volume by day and year</summary>
-            <h3>Yearly totals within the selected dates</h3>
+          <div class="brief-head">
+            <p id="brief-period" class="brief-period"></p>
+            <button id="copy-executive" class="secondary" type="button">
+              Copy brief
+            </button>
+          </div>
+          <div id="brief-kpis" class="brief-kpis"></div>
+          <ul id="brief-checks" class="brief-checks"></ul>
+          <section class="brief-panel" aria-labelledby="brief-trend-title">
+            <h2 id="brief-trend-title">Trend</h2>
+            <ul class="brief-legend" aria-hidden="true">
+              <li data-key="NORMAL">Delivered</li>
+              <li data-key="COVERED">Delivered by a cover teacher</li>
+              <li data-key="CANCEL_SCHOOL">Cancelled by school</li>
+              <li data-key="CANCEL_BC">Cancelled by Braincloud</li>
+            </ul>
+            <div id="brief-trend" class="brief-trend"></div>
+            <details>
+              <summary>Trend as a table</summary>
+              <div id="brief-trend-table" class="table-wrap"></div>
+            </details>
+          </section>
+          <div class="brief-grid">
+            <section class="brief-panel" aria-labelledby="brief-groups-title">
+              <h2 id="brief-groups-title">By school group</h2>
+              <div id="brief-groups" class="brief-groups"></div>
+            </section>
+            <section class="brief-panel" aria-labelledby="brief-top-title">
+              <h2 id="brief-top-title">Most cancellations by schools</h2>
+              <ol id="brief-top-schools" class="brief-top"></ol>
+            </section>
+          </div>
+          <section class="brief-panel" aria-labelledby="brief-workload-title">
+            <h2 id="brief-workload-title">Teaching workload</h2>
+            <div id="brief-workload" class="brief-workload"></div>
+          </section>
+          <details class="brief-details">
+            <summary>Detailed tables</summary>
+            <div id="executive-totals" class="report-totals"></div>
+            <h2>Class status</h2>
+            <div id="executive-status" class="report-bars"></div>
+            <h2>School groups</h2>
+            <div id="executive-group-table" class="table-wrap"></div>
+            <h2>School workload</h2>
+            <p>
+              An active week has at least 5 recorded sessions and at least 20%
+              of that school's busiest week in this selection. Weeks start on
+              Monday in Asia/Bangkok. The 40-week projection is an estimate, not
+              an annual actual or payment total.
+            </p>
+            <div id="executive-school-table" class="table-wrap"></div>
+            <h2>School details</h2>
+            <div id="executive-school-details"></div>
+            <h2>Student counts by school and year</h2>
+            <p>
+              School totals from the student-count reference. Missing or
+              conflicting counts are not shown as zero.
+            </p>
+            <div id="executive-students" class="table-wrap"></div>
+            <div id="executive-teacher-section">
+              <h2>Teacher responsibility</h2>
+              <p>
+                Assigned sessions are split into normal, covered by another
+                teacher, and cancelled. Covering is additional work; taught
+                excludes cancellations. Historic teachers remain in the totals.
+              </p>
+              <div id="executive-teacher-table" class="table-wrap"></div>
+            </div>
+            <h2>Recorded volume by year</h2>
             <div id="executive-year-table" class="table-wrap"></div>
-            <h3>Daily recorded volume</h3>
+            <h2>Recorded volume by day</h2>
             <p>
               Dates without records are omitted. Missing records do not
               establish a confirmed zero.
             </p>
             <div id="executive-day-table" class="table-wrap"></div>
+            <h2>Definitions</h2>
+            <ul class="brief-definitions">
+              <li>
+                <strong>Scheduled</strong>: classes in the TMS schedule,
+                including cancelled ones. Classes removed from TMS after they
+                were first scheduled are not counted.
+              </li>
+              <li>
+                <strong>Delivered</strong>: not cancelled, taught by the planned
+                teacher or a cover teacher, as recorded in TMS. This is not an
+                attendance check.
+              </li>
+              <li>
+                <strong>Saved by cover</strong>: covered classes ÷ (covered +
+                cancelled by Braincloud), the share of classes the planned
+                teacher could not teach that another teacher took.
+              </li>
+              <li>
+                <strong>Teacher leave days</strong>: Monday–Friday days in leave
+                requests, one per teacher per day; rejected or withdrawn
+                requests are left out. Not shown for a school or group filter.
+              </li>
+              <li>
+                <strong>Busiest moment</strong>: the most delivered classes
+                running at the same time. A typical school day is the median of
+                each Monday–Friday's busiest moment.
+              </li>
+              <li>
+                <strong>Compared with</strong>: a range starting on the 1st is
+                compared with the same days of the months before; any other
+                range with the same number of days just before it.
+              </li>
+            </ul>
           </details>
         </div>
         <div class="empty-panel report-placeholder">
@@ -1106,6 +1190,6 @@
       <span>braincloud <strong>operations</strong></span
       ><span>For the people behind every school day.</span>
     </footer>
-    <script type="module" src="app.mjs?v=2355712a139c"></script>
+    <script type="module" src="app.mjs?v=b30c130f594d"></script>
   </body>
 </html>

@@ -1,33 +1,33 @@
-import { initializeDashboard } from "./dashboard.mjs?v=2355712a139c";
-import { initializeAttendance } from "./attendance.mjs?v=2355712a139c";
+import { initializeDashboard } from "./dashboard.mjs?v=b30c130f594d";
+import { initializeAttendance } from "./attendance.mjs?v=b30c130f594d";
 import {
   initializeRequestWorkflows,
   confirmSubmission,
-} from "./request-workflows.mjs?v=2355712a139c";
-import { API_URL } from "./config.js?v=2355712a139c";
-import { initializeAdminCalendar } from "./admin-calendar.mjs?v=2355712a139c";
-import { initializeDirectory } from "./directory.mjs?v=2355712a139c";
-import { initializeTimeline } from "./timeline.mjs?v=2355712a139c";
-import { initializeLearning } from "./learning.mjs?v=2355712a139c";
-import { closeNavigation } from "./interface.mjs?v=2355712a139c";
-import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=2355712a139c";
-import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=2355712a139c";
-import { combobox } from "./combobox.mjs?v=2355712a139c";
-import { enterSection } from "./motion.mjs?v=2355712a139c";
-import { character } from "./characters.mjs?v=2355712a139c";
+} from "./request-workflows.mjs?v=b30c130f594d";
+import { API_URL } from "./config.js?v=b30c130f594d";
+import { initializeAdminCalendar } from "./admin-calendar.mjs?v=b30c130f594d";
+import { initializeDirectory } from "./directory.mjs?v=b30c130f594d";
+import { initializeTimeline } from "./timeline.mjs?v=b30c130f594d";
+import { initializeLearning } from "./learning.mjs?v=b30c130f594d";
+import { initializeExecutive } from "./executive.mjs?v=b30c130f594d";
+import { closeNavigation } from "./interface.mjs?v=b30c130f594d";
+import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=b30c130f594d";
+import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=b30c130f594d";
+import { combobox } from "./combobox.mjs?v=b30c130f594d";
+import { enterSection } from "./motion.mjs?v=b30c130f594d";
+import { character } from "./characters.mjs?v=b30c130f594d";
 import {
   confirmedSessions,
   groupTone,
   teacherActive,
   teacherType,
-} from "./schedule-model.mjs?v=2355712a139c";
+} from "./schedule-model.mjs?v=b30c130f594d";
 const $ = (id) => document.getElementById(id),
   state = {
     schools: [],
     teachers: [],
     session: null,
     edit: null,
-    executive: null,
     alarm: null,
   };
 const demo = ["localhost", "127.0.0.1"].includes(location.hostname),
@@ -333,6 +333,17 @@ initializeRequestWorkflows({
   teacherName,
 });
 initializeDashboard({ query });
+initializeExecutive({
+  api,
+  busy,
+  message,
+  query,
+  table,
+  teacherName,
+  filters,
+  isAdmin: () =>
+    !!state.session && Date.parse(state.session.expires_at) > Date.now(),
+});
 for (const [id, category] of [
   ["school-form", "School"],
   ["teacher-form", "Teacher"],
@@ -485,250 +496,6 @@ $("report-form").addEventListener("submit", (e) => {
     message("Report loaded.");
   });
 });
-$("executive-form").addEventListener("submit", (e) => {
-  e.preventDefault();
-  busy(e.submitter, async () => {
-    $("executive-output").hidden = true;
-    state.executive = null;
-    $("executive-note").textContent = "Loading the selected period…";
-    const f = new FormData(e.target);
-    const params = {
-      start: f.get("start"),
-      end: f.get("end"),
-      groups: f.getAll("groups"),
-      schoolIds: f.getAll("schoolIds"),
-      teacherIds: f.getAll("teacherIds"),
-    };
-    let report;
-    try {
-      report = (
-        await api("/reports/executive", { method: "POST", data: params })
-      ).data;
-    } catch (error) {
-      $("executive-note").textContent =
-        "This report could not be loaded. No replacement totals were calculated.";
-      throw error;
-    }
-    $("executive-note").textContent =
-      `${report.start} to ${report.end} • Asia/Bangkok • Latest source update: ${report.last_updated || "Not available"}`;
-    if (!report.total) {
-      $("executive-note").textContent +=
-        " • No recorded sessions match this selection. This does not confirm zero activity.";
-      message("Report loaded.");
-      return;
-    }
-    const root = $("executive-totals");
-    root.replaceChildren();
-    for (const [label, value] of [
-      ["Recorded sessions", report.total],
-      ["Active teachers", report.active_teachers],
-      ["Schools with records", report.schools.length],
-      ["Affiliated staff", report.affiliated_staff_count],
-    ]) {
-      const card = document.createElement("div"),
-        heading = document.createElement("strong"),
-        caption = document.createElement("span");
-      heading.textContent = value.toLocaleString("en-GB");
-      caption.textContent = label;
-      card.append(heading, caption);
-      root.append(card);
-    }
-    const bars = $("executive-status");
-    bars.replaceChildren();
-    for (const [key, label] of [
-      ["NORMAL", "Normal"],
-      ["COVERED", "Covered"],
-      ["CANCEL_SCHOOL", "Cancelled by school"],
-      ["CANCEL_BC", "Cancelled by Braincloud / unspecified"],
-    ]) {
-      const row = document.createElement("label"),
-        bar = document.createElement("meter");
-      bar.max = report.total;
-      bar.value = report.counts[key];
-      bar.setAttribute("aria-label", label);
-      row.append(
-        document.createTextNode(
-          `${label}: ${report.counts[key].toLocaleString("en-GB")}`,
-        ),
-        bar,
-      );
-      bars.append(row);
-    }
-    const statusColumns = [
-      ["total", "Recorded"],
-      ["NORMAL", "Normal"],
-      ["COVERED", "Covered"],
-      ["CANCEL_SCHOOL", "School cancelled"],
-      ["CANCEL_BC", "BC / unspecified cancelled"],
-    ];
-    table(
-      "executive-group-table",
-      [["group", "School group"], ...statusColumns],
-      report.groups,
-    );
-    const estimate = (value) =>
-      value === null
-        ? "Insufficient active weeks"
-        : Number(value).toLocaleString("en-GB", { maximumFractionDigits: 1 });
-    table(
-      "executive-school-table",
-      [
-        ["school", "School"],
-        ...statusColumns,
-        ["active_teachers", "Distinct active teachers"],
-        ["active_weeks", "Active weeks"],
-        ["average", "Sessions / active week"],
-        ["average_teachers", "Teachers / active week"],
-        ["projection", "40-week estimate"],
-      ],
-      report.schools.map((s) => ({
-        ...s,
-        average: estimate(s.avg_classes_per_active_week),
-        average_teachers: estimate(s.avg_teachers_per_active_week),
-        projection: estimate(s.projection_40_weeks),
-      })),
-    );
-    table(
-      "executive-teacher-table",
-      [
-        ["name", "Teacher"],
-        ["type", "Type"],
-        ["assigned", "Assigned"],
-        ["normal", "Normal"],
-        ["covered", "Covered by others"],
-        ["covering", "Covering"],
-        ["cancel_school", "School cancelled"],
-        ["cancel_bc", "BC / unspecified cancelled"],
-        ["taught", "Taught"],
-      ],
-      report.teachers,
-    );
-    table(
-      "executive-students",
-      [
-        ["school", "School"],
-        ["year", "Year"],
-        ["count", "Students"],
-        ["status", "Source status"],
-      ],
-      report.student_counts.map((row) => ({
-        ...row,
-        count: row.no_students ?? "Not available",
-      })),
-    );
-    const details = $("executive-school-details");
-    details.replaceChildren();
-    for (const school of report.schools) {
-      const item = document.createElement("details"),
-        title = document.createElement("summary");
-      title.textContent = `${school.school} — ${school.name}`;
-      item.append(title);
-      for (const [label, people] of [
-        ["Responsible teachers", school.responsible_teachers],
-        ["Currently affiliated staff", school.affiliated_staff],
-      ]) {
-        const heading = document.createElement("h3"),
-          list = document.createElement("ul");
-        heading.textContent = label;
-        for (const person of people) {
-          const li = document.createElement("li");
-          li.textContent =
-            person.name +
-            (person.taught === undefined
-              ? ""
-              : `: ${person.taught} taught sessions`);
-          list.append(li);
-        }
-        if (!people.length) list.textContent = "No matching staff recorded.";
-        item.append(heading, list);
-      }
-      const button = document.createElement("button"),
-        rows = document.createElement("div");
-      button.type = "button";
-      button.className = "secondary";
-      button.textContent = "View sessions";
-      rows.id = `school-detail-${details.childElementCount}`;
-      rows.className = "table-wrap";
-      button.addEventListener("click", () =>
-        busy(button, async () => {
-          rows.replaceChildren();
-          const sessions = await query(
-            "fact_daily_session",
-            [
-              ...filters(report.start, report.end),
-              { column: "school_id", op: "eq", value: school.school_id },
-            ],
-            false,
-            [{ column: "date" }, { column: "session_id" }],
-          );
-          const selected = params.teacherIds.length
-            ? sessions.filter(
-                (s) =>
-                  params.teacherIds.includes(s.original_teacher_id) ||
-                  params.teacherIds.includes(s.actual_teacher_id),
-              )
-            : sessions;
-          table(
-            rows.id,
-            [
-              ["date", "Date"],
-              ["start_time", "Start"],
-              ["class_name", "Class"],
-              ["teacher", "Assigned teacher"],
-              ["status", "Status"],
-            ],
-            selected.map((s) => ({
-              ...s,
-              teacher: teacherName(s.actual_teacher_id),
-            })),
-          );
-          message("School sessions loaded.");
-        }),
-      );
-      item.append(button, rows);
-      details.append(item);
-    }
-    table(
-      "executive-year-table",
-      [
-        ["year", "Year"],
-        ["total", "Recorded sessions"],
-      ],
-      report.yearly,
-    );
-    table(
-      "executive-day-table",
-      [
-        ["date", "Date"],
-        ["total", "Recorded sessions"],
-      ],
-      report.daily,
-    );
-    $("executive-output").hidden = false;
-    state.executive = report;
-    message("Executive summary loaded.");
-  });
-});
-
-$("copy-executive").addEventListener("click", () =>
-  busy($("copy-executive"), async () => {
-    const r = state.executive;
-    if (!r) throw new Error("Load a report first.");
-    const text = [
-      `Braincloud executive summary: ${r.start} to ${r.end} (Asia/Bangkok)`,
-      `Recorded sessions: ${r.total}; active teachers: ${r.active_teachers}; affiliated staff: ${r.affiliated_staff_count}`,
-      `Latest source update: ${r.last_updated || "Not available"}`,
-      ...r.schools.map(
-        (s) =>
-          `${s.school}: ${s.total} recorded, ${s.NORMAL} normal, ${s.COVERED} covered, ${s.CANCEL_SCHOOL + s.CANCEL_BC} cancelled`,
-      ),
-      "Recorded sessions include cancellations; this is not a payment report.",
-    ].join("\n");
-    await navigator.clipboard.writeText(text);
-    message("Report copied.");
-  }),
-);
-
 function signOut() {
   dispatchEvent(new Event("admin-signed-out"));
   state.session = null;
@@ -778,6 +545,7 @@ $("login-form").addEventListener("submit", (e) => {
         timeZone: "Asia/Bangkok",
       });
     message("Signed in.");
+    dispatchEvent(new Event("admin-signed-in"));
     showAdminTab("calendar");
   });
 });

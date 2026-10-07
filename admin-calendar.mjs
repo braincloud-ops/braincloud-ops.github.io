@@ -2,16 +2,16 @@
 // are closed, with the server's check of whether each affected class is
 // already cancelled or covered. One request per month; the day panel works
 // from the same data.
-import { el, button, modal } from "./dom.mjs?v=2355712a139c";
-import { character, emptyState } from "./characters.mjs?v=2355712a139c";
-import { rise, punch } from "./motion.mjs?v=2355712a139c";
+import { el, button, modal } from "./dom.mjs?v=b30c130f594d";
+import { character, emptyState } from "./characters.mjs?v=b30c130f594d";
+import { rise, punch } from "./motion.mjs?v=b30c130f594d";
 import {
   bangkokDay,
   cancelled,
   category,
   confirmedSessions,
   time,
-} from "./schedule-model.mjs?v=2355712a139c";
+} from "./schedule-model.mjs?v=b30c130f594d";
 
 const TONES = [
   ["thesaban", "Thesaban"],
@@ -72,10 +72,14 @@ const statePill = (state) => {
   return pill;
 };
 const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
-const transition = (update) =>
-  document.startViewTransition && !reduced()
-    ? document.startViewTransition(update)
-    : update();
+const transition = (update) => {
+  if (!document.startViewTransition || reduced()) return update();
+  const view = document.startViewTransition(update);
+  // A skipped transition (the window resized or rotated mid-way) still runs
+  // the update; only the animation is lost, so the rejection is expected.
+  view.ready.catch(() => {});
+  view.finished.catch(() => {});
+};
 
 export function initializeAdminCalendar({ api, query, message }) {
   const root = document.getElementById("calendar-root");
