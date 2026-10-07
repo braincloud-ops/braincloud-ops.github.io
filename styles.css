@@ -4334,3 +4334,197 @@ button.small {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Executive: where our schools are (province map). */
+.map-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 14px;
+  margin-bottom: 10px;
+}
+.map-head h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+.map-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 340px) minmax(0, 1fr);
+  gap: 18px 28px;
+  align-items: start;
+}
+.map-figure {
+  margin: 0;
+  min-width: 0;
+}
+.map-figure figcaption {
+  margin-top: 6px;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+.brief-map svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 560px;
+}
+.province {
+  fill: #edf1f2;
+  stroke: #fff;
+  stroke-width: 0.7;
+  stroke-linejoin: round;
+  transition: fill var(--t-ui) var(--e-ui);
+}
+.province[data-step="1"],
+.map-legend [data-step="1"]::before {
+  fill: #cdeaf0;
+  background: #cdeaf0;
+}
+.province[data-step="2"],
+.map-legend [data-step="2"]::before {
+  fill: #9fd5e0;
+  background: #9fd5e0;
+}
+.province[data-step="3"],
+.map-legend [data-step="3"]::before {
+  fill: #5fb9cb;
+  background: #5fb9cb;
+}
+.province[data-step="4"],
+.map-legend [data-step="4"]::before {
+  fill: #1f97ad;
+  background: #1f97ad;
+}
+.province[data-step="5"],
+.map-legend [data-step="5"]::before {
+  fill: #075160;
+  background: #075160;
+}
+.province[tabindex] {
+  cursor: pointer;
+}
+.province[tabindex]:focus {
+  outline: none;
+}
+.province[tabindex]:focus-visible,
+.province.is-selected {
+  stroke: #16282c;
+  stroke-width: 1.8;
+}
+@media (hover: hover) and (pointer: fine) {
+  .province[tabindex]:hover {
+    stroke: #16282c;
+    stroke-width: 1.2;
+  }
+}
+.map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.74rem;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.map-legend li::before {
+  content: "";
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 5px;
+  border-radius: 3px;
+  vertical-align: -2px;
+}
+.map-legend .map-legend-unit::before {
+  display: none;
+}
+.map-side {
+  min-width: 0;
+}
+.map-side h3 {
+  margin: 16px 0 6px;
+  font-size: 0.86rem;
+}
+.map-detail h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+.map-detail-summary {
+  margin: 2px 0 8px;
+  font-size: 0.84rem;
+  color: var(--ink-2);
+}
+.map-schools,
+.map-list {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.map-schools {
+  max-height: 260px;
+  overflow-y: auto;
+}
+.map-schools li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+}
+.map-school-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.map-list {
+  max-height: 300px;
+  overflow-y: auto;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+}
+.map-list-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 34px;
+  padding: 5px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  font-weight: 500;
+  font-size: 0.82rem;
+  text-align: left;
+}
+.map-list-item:hover:not(:disabled) {
+  background: var(--teal-tint);
+  color: var(--ink);
+}
+.map-list-item[aria-pressed="true"] {
+  border-color: var(--teal-strong);
+  box-shadow: inset 0 0 0 1px var(--teal-strong);
+}
+.map-list-value {
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 700px) {
+  .map-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .map-figure {
+    max-width: 300px;
+    justify-self: center;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .province {
+    transition: none;
+  }
+}

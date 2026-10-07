@@ -12,7 +12,7 @@
       content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob: https://profile.line-scdn.net; connect-src 'self' https://*.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'"
     />
     <title>Braincloud Operations</title>
-    <link rel="stylesheet" href="styles.css?v=fcb540a8dcd9" />
+    <link rel="stylesheet" href="styles.css?v=a7073daf9c9b" />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -71,10 +71,6 @@
         <a href="#executive"
           ><span class="nav-icon" data-icon="chart" aria-hidden="true"></span
           >Executive summary</a
-        >
-        <a href="#learning"
-          ><span class="nav-icon" data-icon="learning" aria-hidden="true"></span
-          >Learning activity</a
         >
         <p class="nav-label">Manage</p>
         <a href="#admin"
@@ -178,12 +174,12 @@
           <div class="insights-panel">
             <p class="eyebrow">THE BIGGER PICTURE</p>
             <h2>Make room for better decisions.</h2>
-            <p>Explore teaching coverage and recorded learning activity.</p>
+            <p>
+              Classes delivered, cancellations, cover and where our schools are.
+            </p>
             <div class="text-links">
               <a href="#executive"
                 >Executive summary <span aria-hidden="true">↗</span></a
-              ><a href="#learning"
-                >Learning activity <span aria-hidden="true">↗</span></a
               >
             </div>
           </div>
@@ -686,6 +682,49 @@
               <ol id="brief-top-schools" class="brief-top"></ol>
             </section>
           </div>
+          <section class="brief-panel" aria-labelledby="brief-map-title">
+            <div class="map-head">
+              <h2 id="brief-map-title">Where our schools are</h2>
+              <div class="segmented" role="group" aria-label="The map shows">
+                <button
+                  type="button"
+                  data-map-mode="schools"
+                  aria-pressed="true"
+                >
+                  Schools served
+                </button>
+                <button
+                  type="button"
+                  data-map-mode="classes"
+                  aria-pressed="false"
+                >
+                  Classes delivered
+                </button>
+              </div>
+            </div>
+            <div class="map-layout">
+              <figure class="map-figure">
+                <div id="brief-map" class="brief-map"></div>
+                <ul id="brief-map-legend" class="map-legend"></ul>
+                <figcaption>
+                  Province boundaries: Natural Earth (public domain).
+                </figcaption>
+              </figure>
+              <div class="map-side">
+                <div
+                  id="brief-map-detail"
+                  class="map-detail"
+                  aria-live="polite"
+                >
+                  <p class="brief-empty">
+                    Choose a province on the map or in the list.
+                  </p>
+                </div>
+                <h3>Provinces</h3>
+                <ol id="brief-map-list" class="map-list"></ol>
+              </div>
+            </div>
+          </section>
           <section class="brief-panel" aria-labelledby="brief-workload-title">
             <h2 id="brief-workload-title">Teaching workload</h2>
             <div id="brief-workload" class="brief-workload"></div>
@@ -841,72 +880,6 @@
           <p>
             Choose a date to see teaching sessions and recorded unavailability.
           </p>
-        </div>
-      </section>
-      <section id="learning" hidden="" class="workspace-page">
-        <div class="page-heading">
-          <p class="eyebrow">LEARNING REPORT</p>
-          <h1>Listening activity</h1>
-          <p class="lead">
-            Recorded listening activity by school, class and grade. These totals
-            describe activity in TMS; they do not measure student attainment or
-            teacher performance.
-          </p>
-        </div>
-
-        <button id="learning-options" class="secondary">
-          Load available years and schools
-        </button>
-        <form id="learning-form">
-          <div class="row">
-            <label
-              >Academic year<select
-                name="year"
-                id="learning-year"
-                required=""
-              ></select
-            ></label>
-            <label
-              >Term<select name="term">
-                <option value="all">All recorded terms</option>
-                <option value="term1">
-                  Term 1 (May–October; topics outside 15–24)
-                </option>
-                <option value="term2">
-                  Term 2 (November–April; topics 15–24)
-                </option>
-              </select></label
-            >
-          </div>
-          <label
-            >Schools (leave unselected for all)<select
-              name="schools"
-              id="learning-schools"
-              multiple=""
-              size="4"
-            ></select
-          ></label>
-          <label
-            ><input type="checkbox" name="review_only" /> Show only classes with
-            zero or unknown activity</label
-          >
-          <button>Load learning report</button>
-        </form>
-        <p id="learning-note" role="status"></p>
-        <div id="learning-output" hidden="">
-          <p>
-            Active means at least one recorded participant. Unknown or
-            conflicting values are excluded from the percentage denominator. A
-            grade is active if any class has recorded activity in that week or
-            topic.
-          </p>
-          <div id="learning-summary" class="table-wrap"></div>
-          <div id="learning-details"></div>
-        </div>
-        <div class="empty-panel report-placeholder">
-          <span data-icon="learning" aria-hidden="true"></span>
-          <h2>Explore recorded learning activity.</h2>
-          <p>Load the available years and schools, then choose a report.</p>
         </div>
       </section>
       <section id="admin" hidden="" class="workspace-page">
@@ -1210,6 +1183,6 @@
       <span>braincloud <strong>operations</strong></span
       ><span>For the people behind every school day.</span>
     </footer>
-    <script type="module" src="app.mjs?v=fcb540a8dcd9"></script>
+    <script type="module" src="app.mjs?v=a7073daf9c9b"></script>
   </body>
 </html>

@@ -3,9 +3,10 @@
 // teaching workload. Every figure comes from the API; the browser never
 // downloads the schedule to calculate it. The detailed tables of the earlier
 // report are kept below the brief.
-import { decode, rise } from "./motion.mjs?v=fcb540a8dcd9";
-import { combobox } from "./combobox.mjs?v=fcb540a8dcd9";
-import { confirmedSessions, groupTone } from "./schedule-model.mjs?v=fcb540a8dcd9";
+import { decode, rise } from "./motion.mjs?v=a7073daf9c9b";
+import { combobox } from "./combobox.mjs?v=a7073daf9c9b";
+import { createSchoolMap } from "./school-map.mjs?v=a7073daf9c9b";
+import { confirmedSessions, groupTone } from "./schedule-model.mjs?v=a7073daf9c9b";
 
 const $ = (id) => document.getElementById(id);
 const KEYS = ["NORMAL", "COVERED", "CANCEL_SCHOOL", "CANCEL_BC"];
@@ -492,7 +493,7 @@ function renderWorkload(report) {
   }
 }
 
-export function briefText(r) {
+export function briefText(r, mapSummary = "") {
   const f = r.figures,
     p = r.previous;
   const vs = (cur, prev) => {
@@ -532,8 +533,9 @@ export function briefText(r) {
           .map((s) => `${s.school} ${fmt(s.cancel_school)} (${pct(s.rate)})`)
           .join(", "),
     );
+  if (mapSummary) lines.push(mapSummary);
   lines.push(
-    "Source: TMS schedule (Asia/Bangkok); trial schools excluded" +
+    "Source: TMS schedule (Asia/Bangkok); trial schools and internal training excluded" +
       (r.checks.removed_upstream
         ? `; ${fmt(r.checks.removed_upstream)} classes removed from TMS ignored`
         : "") +
@@ -553,6 +555,7 @@ export function initializeExecutive({
   isAdmin,
 }) {
   const form = $("executive-form");
+  const schoolMap = createSchoolMap();
   const loadButton = form.querySelector(":scope > button");
   let current = null,
     generation = 0,
@@ -771,6 +774,7 @@ export function initializeExecutive({
       renderGroups(report);
       renderTopSchools(report);
       renderWorkload(report);
+      schoolMap.render(report, schools);
       renderDetails(report, params);
       current = report;
       output.hidden = false;
@@ -842,11 +846,14 @@ export function initializeExecutive({
       changed();
     });
     renderFilters();
+    if (current) schoolMap.render(current, schools);
   }
   $("copy-executive").addEventListener("click", () =>
     busy($("copy-executive"), async () => {
       if (!current) throw new Error("Load a report first.");
-      await navigator.clipboard.writeText(briefText(current));
+      await navigator.clipboard.writeText(
+        briefText(current, schoolMap.summary()),
+      );
       message("Brief copied.");
     }),
   );

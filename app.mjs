@@ -1,27 +1,26 @@
-import { initializeDashboard } from "./dashboard.mjs?v=fcb540a8dcd9";
-import { initializeAttendance } from "./attendance.mjs?v=fcb540a8dcd9";
+import { initializeDashboard } from "./dashboard.mjs?v=a7073daf9c9b";
+import { initializeAttendance } from "./attendance.mjs?v=a7073daf9c9b";
 import {
   initializeRequestWorkflows,
   confirmSubmission,
-} from "./request-workflows.mjs?v=fcb540a8dcd9";
-import { API_URL } from "./config.js?v=fcb540a8dcd9";
-import { initializeAdminCalendar } from "./admin-calendar.mjs?v=fcb540a8dcd9";
-import { initializeDirectory } from "./directory.mjs?v=fcb540a8dcd9";
-import { initializeTimeline } from "./timeline.mjs?v=fcb540a8dcd9";
-import { initializeLearning } from "./learning.mjs?v=fcb540a8dcd9";
-import { initializeExecutive } from "./executive.mjs?v=fcb540a8dcd9";
-import { closeNavigation } from "./interface.mjs?v=fcb540a8dcd9";
-import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=fcb540a8dcd9";
-import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=fcb540a8dcd9";
-import { combobox } from "./combobox.mjs?v=fcb540a8dcd9";
-import { enterSection } from "./motion.mjs?v=fcb540a8dcd9";
-import { character } from "./characters.mjs?v=fcb540a8dcd9";
+} from "./request-workflows.mjs?v=a7073daf9c9b";
+import { API_URL } from "./config.js?v=a7073daf9c9b";
+import { initializeAdminCalendar } from "./admin-calendar.mjs?v=a7073daf9c9b";
+import { initializeDirectory } from "./directory.mjs?v=a7073daf9c9b";
+import { initializeTimeline } from "./timeline.mjs?v=a7073daf9c9b";
+import { initializeExecutive } from "./executive.mjs?v=a7073daf9c9b";
+import { closeNavigation } from "./interface.mjs?v=a7073daf9c9b";
+import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=a7073daf9c9b";
+import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=a7073daf9c9b";
+import { combobox } from "./combobox.mjs?v=a7073daf9c9b";
+import { enterSection } from "./motion.mjs?v=a7073daf9c9b";
+import { character } from "./characters.mjs?v=a7073daf9c9b";
 import {
   confirmedSessions,
   groupTone,
   teacherActive,
   teacherType,
-} from "./schedule-model.mjs?v=fcb540a8dcd9";
+} from "./schedule-model.mjs?v=a7073daf9c9b";
 const $ = (id) => document.getElementById(id),
   state = {
     schools: [],
@@ -735,7 +734,6 @@ initializeTimeline({
   schoolName,
   getTeachers: () => state.teachers,
 });
-initializeLearning({ api, busy, message, table });
 const bangkokTime = (value) =>
   new Date(value).toLocaleString("en-GB", { timeZone: "Asia/Bangkok" });
 $("email-status").addEventListener("click", () =>
