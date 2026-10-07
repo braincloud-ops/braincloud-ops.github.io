@@ -12,7 +12,7 @@
       content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob: https://profile.line-scdn.net; connect-src 'self' https://*.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'"
     />
     <title>Braincloud Operations</title>
-    <link rel="stylesheet" href="styles.css?v=f20d62e5c1e4" />
+    <link rel="stylesheet" href="styles.css?v=e453dd168869" />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -938,7 +938,8 @@
           <h2>Email notifications</h2>
           <p>
             New teacher leave requests are emailed from the company Google
-            Workspace account. Recipients are set in its Apps Script project.
+            Workspace account. Its Apps Script mailer checks for new mail every
+            minute; recipients are set in that project.
           </p>
           <div class="toolbar">
             <button id="email-status" class="secondary">
@@ -997,6 +998,6 @@
       <span>braincloud <strong>operations</strong></span
       ><span>For the people behind every school day.</span>
     </footer>
-    <script type="module" src="app.mjs?v=f20d62e5c1e4"></script>
+    <script type="module" src="app.mjs?v=e453dd168869"></script>
   </body>
 </html>

@@ -1,20 +1,20 @@
-import { initializeDashboard } from "./dashboard.mjs?v=f20d62e5c1e4";
-import { initializeAttendance } from "./attendance.mjs?v=f20d62e5c1e4";
+import { initializeDashboard } from "./dashboard.mjs?v=e453dd168869";
+import { initializeAttendance } from "./attendance.mjs?v=e453dd168869";
 import {
   initializeRequestWorkflows,
   confirmSubmission,
-} from "./request-workflows.mjs?v=f20d62e5c1e4";
-import { API_URL } from "./config.js?v=f20d62e5c1e4";
-import { requestDays } from "./operations.mjs?v=f20d62e5c1e4";
-import { initializeTimeline } from "./timeline.mjs?v=f20d62e5c1e4";
-import { initializeLearning } from "./learning.mjs?v=f20d62e5c1e4";
-import { closeNavigation } from "./interface.mjs?v=f20d62e5c1e4";
-import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=f20d62e5c1e4";
+} from "./request-workflows.mjs?v=e453dd168869";
+import { API_URL } from "./config.js?v=e453dd168869";
+import { requestDays } from "./operations.mjs?v=e453dd168869";
+import { initializeTimeline } from "./timeline.mjs?v=e453dd168869";
+import { initializeLearning } from "./learning.mjs?v=e453dd168869";
+import { closeNavigation } from "./interface.mjs?v=e453dd168869";
+import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=e453dd168869";
 import {
   installSearch,
   improveFormDates,
   showSubmissionReceipt,
-} from "./form-experience.mjs?v=f20d62e5c1e4";
+} from "./form-experience.mjs?v=e453dd168869";
 const $ = (id) => document.getElementById(id),
   state = {
     schools: [],
@@ -943,29 +943,36 @@ initializeTimeline({
   getTeachers: () => state.teachers,
 });
 initializeLearning({ api, busy, message, table });
+const bangkokTime = (value) =>
+  new Date(value).toLocaleString("en-GB", { timeZone: "Asia/Bangkok" });
 $("email-status").addEventListener("click", () =>
   busy($("email-status"), async () => {
     const { data } = await api("/admin/notifications/status");
-    const last = data.last_delivered_at
-      ? new Date(data.last_delivered_at).toLocaleString("en-GB", {
-          timeZone: "Asia/Bangkok",
-        })
-      : "none yet";
-    $("email-note").textContent = !data.configured
-      ? "Email is not configured yet."
-      : `Teacher leave emails are ${data.enabled ? "on" : "off"}. Last sent: ${last}. Waiting: ${data.waiting}. Failed: ${data.failed}.`;
+    const seen = data.relay_last_seen
+      ? Date.now() - Date.parse(data.relay_last_seen) < 5 * 60000
+        ? `checked in ${bangkokTime(data.relay_last_seen)}`
+        : `last checked in ${bangkokTime(data.relay_last_seen)} — not running`
+      : "has not checked in yet";
+    const test = data.last_test
+      ? data.last_test.delivered_at
+        ? `Last test sent ${bangkokTime(data.last_test.delivered_at)}.`
+        : data.last_test.last_error
+          ? `Last test failed (${data.last_test.last_error}).`
+          : "Last test is waiting for the mailer."
+      : "";
+    $("email-note").textContent =
+      `Company mailer ${seen}. Teacher leave emails are ${data.enabled ? "on" : "off"}. ` +
+      `Last leave email: ${data.last_delivered_at ? bangkokTime(data.last_delivered_at) : "none yet"}. ` +
+      `Waiting: ${data.waiting}. Failed: ${data.failed}. ${test}`;
     message("Email status loaded.");
   }),
 );
 $("email-test").addEventListener("click", () =>
   busy($("email-test"), async () => {
-    const { data } = await api("/admin/notifications/test-email", {
-      method: "POST",
-      data: {},
-    });
+    await api("/admin/notifications/test-email", { method: "POST", data: {} });
     $("email-note").textContent =
-      `Test email sent${data.to ? " to " + data.to : ""}. Check the inbox in a minute.`;
-    message("Test email sent.");
+      "Test email queued. The company mailer sends it within about a minute; use Check email status to confirm.";
+    message("Test email queued.");
   }),
 );
 $("load-alarms").addEventListener("click", () =>
