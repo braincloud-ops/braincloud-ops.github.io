@@ -4638,3 +4638,52 @@ button.small {
   gap: 8px;
   margin: 8px 0;
 }
+
+/* Directory: school codes new in the timetable. */
+.new-codes {
+  margin: 10px 0;
+  padding: 12px 14px;
+  border: 1px solid #edcd52;
+  border-radius: 14px;
+  background: #fff8e1;
+}
+.new-codes h3 {
+  margin: 0 0 4px;
+  font-size: 0.92rem;
+}
+.new-code-list {
+  display: grid;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.new-code-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  font-size: 0.84rem;
+}
+
+/* School dots on the province map. */
+.school-dot {
+  fill: var(--tone-dot, var(--teal-strong));
+  stroke: #fff;
+  stroke-width: 2;
+  cursor: pointer;
+  transition: r var(--t-quick) var(--e-ui);
+}
+.school-dot:focus {
+  outline: none;
+}
+.school-dot:focus-visible {
+  stroke: #16282c;
+  stroke-width: 2;
+}
+@media (hover: hover) and (pointer: fine) {
+  .school-dot:hover {
+    stroke: #16282c;
+  }
+}

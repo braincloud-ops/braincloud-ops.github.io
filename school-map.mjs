@@ -2,8 +2,8 @@
 // are a small static file built from Natural Earth (scripts/build-thailand-map.mjs);
 // each school's province comes from the public school directory and the
 // figures from the loaded report, so the map follows the period and filters.
-import { groupTone } from "./schedule-model.mjs?v=0b12f9ffc42b";
-import { rise } from "./motion.mjs?v=0b12f9ffc42b";
+import { groupTone } from "./schedule-model.mjs?v=181573e23c9d";
+import { rise } from "./motion.mjs?v=181573e23c9d";
 
 const SVG = "http://www.w3.org/2000/svg";
 const $ = (id) => document.getElementById(id);
@@ -20,11 +20,15 @@ export const provinceKey = (name) => ALIAS[norm(name)] || norm(name);
 let shapes = null;
 const loadShapes = () =>
   (shapes ??= fetch(
-    new URL("./maps/thailand-provinces.json?v=0b12f9ffc42b", import.meta.url),
+    new URL("./maps/thailand-provinces.json?v=181573e23c9d", import.meta.url),
   ).then((r) => {
     if (!r.ok) throw new Error("MAP_UNAVAILABLE");
     return r.json();
   }));
+
+// The 77 province names of the map (English), for pickers.
+export const loadProvinceNames = () =>
+  loadShapes().then((map) => map.provinces.map((p) => p.name));
 
 // Per province: schools with at least one delivered class, and the classes
 // delivered, within the report's selection.
@@ -94,6 +98,11 @@ export function createSchoolMap({ onSchool } = {}) {
     detail = $("brief-map-detail");
   let mode = "schools",
     figures = { provinces: new Map(), unplaced: 0 },
+    // School points: schools of the selection that have a map location.
+    points = [],
+    unlocated = 0,
+    projection = null,
+    dots = null,
     selected = null,
     paths = new Map(),
     built = false;
@@ -134,6 +143,10 @@ export function createSchoolMap({ onSchool } = {}) {
       paths.set(key, { path, title, name: shape.name });
       svg.append(path);
     }
+    projection = map.projection;
+    dots = document.createElementNS(SVG, "g");
+    dots.setAttribute("class", "school-dots");
+    svg.append(dots);
     root.replaceChildren(svg);
     built = true;
   }
@@ -201,6 +214,7 @@ export function createSchoolMap({ onSchool } = {}) {
       list.append(li);
     }
     rise(list.children);
+    drawDots();
     showDetail();
   }
 
@@ -214,6 +228,12 @@ export function createSchoolMap({ onSchool } = {}) {
         `${fmt(figures.provinces.size)} ${figures.provinces.size === 1 ? "province" : "provinces"}. Choose one on the map or in the list.` +
         (figures.unplaced
           ? ` ${fmt(figures.unplaced)} ${figures.unplaced === 1 ? "school has" : "schools have"} no province recorded.`
+          : "") +
+        (points.length
+          ? ` Dots: ${fmt(points.length)} ${points.length === 1 ? "school" : "schools"} (colour = group).`
+          : "") +
+        (unlocated
+          ? ` ${fmt(unlocated)} ${unlocated === 1 ? "school has" : "schools have"} no map location yet (Admin → People & schools).`
           : "");
       detail.append(hint);
       return;
@@ -252,6 +272,39 @@ export function createSchoolMap({ onSchool } = {}) {
     detail.append(heading, summary, schools);
   }
 
+  // One dot per school with a map location, coloured by its school group.
+  function drawDots() {
+    if (!dots || !projection) return;
+    dots.replaceChildren();
+    const { k, cos, ox, oy } = projection;
+    for (const p of points) {
+      const dot = document.createElementNS(SVG, "circle");
+      dot.setAttribute("class", "school-dot");
+      dot.setAttribute("cx", String(p.longitude * cos * k - ox));
+      dot.setAttribute("cy", String(-p.latitude * k - oy));
+      dot.setAttribute("r", "6");
+      dot.dataset.tone = groupTone(p.group);
+      const label = `${p.code} ${p.name || ""}: ${fmt(p.classes)} ${p.classes === 1 ? "class" : "classes"} delivered`;
+      const title = document.createElementNS(SVG, "title");
+      title.textContent = label;
+      dot.append(title);
+      if (onSchool) {
+        dot.setAttribute("tabindex", "0");
+        dot.setAttribute("role", "button");
+        dot.setAttribute("aria-label", label);
+        const open = () => onSchool(p.school_id, `${p.code} — ${p.name || ""}`);
+        dot.addEventListener("click", open);
+        dot.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            open();
+          }
+        });
+      }
+      dots.append(dot);
+    }
+  }
+
   function select(key) {
     selected = selected === key ? null : key;
     draw();
@@ -260,6 +313,25 @@ export function createSchoolMap({ onSchool } = {}) {
   return {
     async render(report, directory) {
       figures = provinceFigures(report.schools, directory);
+      const byId = new Map(directory.map((s) => [String(s.school_id), s]));
+      points = [];
+      unlocated = 0;
+      for (const s of report.schools) {
+        const classes = (s.NORMAL || 0) + (s.COVERED || 0);
+        if (!classes) continue;
+        const d = byId.get(String(s.school_id));
+        if (d?.latitude == null || d?.longitude == null) unlocated++;
+        else
+          points.push({
+            school_id: s.school_id,
+            code: s.school,
+            name: s.name,
+            group: s.group,
+            classes,
+            latitude: Number(d.latitude),
+            longitude: Number(d.longitude),
+          });
+      }
       if (selected && !figures.provinces.has(selected)) selected = null;
       try {
         await build();
