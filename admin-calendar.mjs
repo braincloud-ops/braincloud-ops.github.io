@@ -2,10 +2,16 @@
 // are closed, with the server's check of whether each affected class is
 // already cancelled or covered. One request per month; the day panel works
 // from the same data.
-import { el, button, modal } from "./dom.mjs?v=a2d3aa58e2e0";
-import { character, emptyState } from "./characters.mjs?v=a2d3aa58e2e0";
-import { rise, punch } from "./motion.mjs?v=a2d3aa58e2e0";
-import { bangkokDay, cancelled, category, time } from "./schedule-model.mjs?v=a2d3aa58e2e0";
+import { el, button, modal } from "./dom.mjs?v=2355712a139c";
+import { character, emptyState } from "./characters.mjs?v=2355712a139c";
+import { rise, punch } from "./motion.mjs?v=2355712a139c";
+import {
+  bangkokDay,
+  cancelled,
+  category,
+  confirmedSessions,
+  time,
+} from "./schedule-model.mjs?v=2355712a139c";
 
 const TONES = [
   ["thesaban", "Thesaban"],
@@ -691,12 +697,14 @@ export function initializeAdminCalendar({ api, query, message }) {
   // Same text the team used to paste into the daily email.
   async function copyDailyUpdate(date) {
     try {
-      const [sessions, schools] = await Promise.all([
+      const [rawSessions, schools] = await Promise.all([
         query("fact_daily_session", [
           { column: "date", op: "eq", value: date },
         ]),
         query("dim_school"),
       ]);
+      // Ignore classes removed from TMS after they were first seen.
+      const sessions = confirmedSessions(rawSessions);
       st.users ||= await query("dim_user");
       const codeOf = new Map(
         schools.map((s) => [String(s.school_id), s.school_code]),

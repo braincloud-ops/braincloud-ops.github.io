@@ -1,6 +1,6 @@
-import { el, button } from "./dom.mjs?v=a2d3aa58e2e0";
-import { emptyState } from "./characters.mjs?v=a2d3aa58e2e0";
-import { rise } from "./motion.mjs?v=a2d3aa58e2e0";
+import { el, button } from "./dom.mjs?v=2355712a139c";
+import { emptyState } from "./characters.mjs?v=2355712a139c";
+import { rise } from "./motion.mjs?v=2355712a139c";
 import {
   bangkokDay,
   time,
@@ -9,11 +9,12 @@ import {
   inProgress,
   leaveOverlaps,
   decorateSessions,
+  confirmedSessions,
   displayName,
   teacherType,
   statusLabel,
   groupTone,
-} from "./schedule-model.mjs?v=a2d3aa58e2e0";
+} from "./schedule-model.mjs?v=2355712a139c";
 
 export function sessionCard(s) {
   const card = el("article", "", "session-card");
@@ -277,7 +278,12 @@ export function initializeDashboard({ query }) {
         date: selected,
         users,
         leave,
-        rows: decorateSessions(sessions, users, schools, assignments),
+        rows: decorateSessions(
+          confirmedSessions(sessions),
+          users,
+          schools,
+          assignments,
+        ),
       };
       choices();
       render();

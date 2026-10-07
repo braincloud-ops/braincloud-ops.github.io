@@ -1,21 +1,26 @@
-import { initializeDashboard } from "./dashboard.mjs?v=a2d3aa58e2e0";
-import { initializeAttendance } from "./attendance.mjs?v=a2d3aa58e2e0";
+import { initializeDashboard } from "./dashboard.mjs?v=2355712a139c";
+import { initializeAttendance } from "./attendance.mjs?v=2355712a139c";
 import {
   initializeRequestWorkflows,
   confirmSubmission,
-} from "./request-workflows.mjs?v=a2d3aa58e2e0";
-import { API_URL } from "./config.js?v=a2d3aa58e2e0";
-import { initializeAdminCalendar } from "./admin-calendar.mjs?v=a2d3aa58e2e0";
-import { initializeDirectory } from "./directory.mjs?v=a2d3aa58e2e0";
-import { initializeTimeline } from "./timeline.mjs?v=a2d3aa58e2e0";
-import { initializeLearning } from "./learning.mjs?v=a2d3aa58e2e0";
-import { closeNavigation } from "./interface.mjs?v=a2d3aa58e2e0";
-import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=a2d3aa58e2e0";
-import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=a2d3aa58e2e0";
-import { combobox } from "./combobox.mjs?v=a2d3aa58e2e0";
-import { enterSection } from "./motion.mjs?v=a2d3aa58e2e0";
-import { character } from "./characters.mjs?v=a2d3aa58e2e0";
-import { groupTone, teacherActive, teacherType } from "./schedule-model.mjs?v=a2d3aa58e2e0";
+} from "./request-workflows.mjs?v=2355712a139c";
+import { API_URL } from "./config.js?v=2355712a139c";
+import { initializeAdminCalendar } from "./admin-calendar.mjs?v=2355712a139c";
+import { initializeDirectory } from "./directory.mjs?v=2355712a139c";
+import { initializeTimeline } from "./timeline.mjs?v=2355712a139c";
+import { initializeLearning } from "./learning.mjs?v=2355712a139c";
+import { closeNavigation } from "./interface.mjs?v=2355712a139c";
+import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=2355712a139c";
+import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=2355712a139c";
+import { combobox } from "./combobox.mjs?v=2355712a139c";
+import { enterSection } from "./motion.mjs?v=2355712a139c";
+import { character } from "./characters.mjs?v=2355712a139c";
+import {
+  confirmedSessions,
+  groupTone,
+  teacherActive,
+  teacherType,
+} from "./schedule-model.mjs?v=2355712a139c";
 const $ = (id) => document.getElementById(id),
   state = {
     schools: [],
@@ -427,10 +432,12 @@ $("report-form").addEventListener("submit", (e) => {
         rows.map((r) => ({ ...r, teacher: teacherName(r.teacher_id) })),
       );
     } else {
-      rows = await query("fact_daily_session", filters(f.start, f.end), false, [
-        { column: "date" },
-        { column: "session_id" },
-      ]);
+      rows = confirmedSessions(
+        await query("fact_daily_session", filters(f.start, f.end), false, [
+          { column: "date" },
+          { column: "session_id" },
+        ]),
+      );
       if (f.report === "summary") {
         const summary = new Map();
         for (const r of rows) {

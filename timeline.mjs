@@ -1,14 +1,15 @@
-import { el, button, download } from "./dom.mjs?v=a2d3aa58e2e0";
+import { el, button, download } from "./dom.mjs?v=2355712a139c";
 import {
   bangkokDay,
   time,
   cancelled,
   category,
   decorateSessions,
+  confirmedSessions,
   displayName,
-} from "./schedule-model.mjs?v=a2d3aa58e2e0";
-import { coverConflict } from "./operations.mjs?v=a2d3aa58e2e0";
-import { sessionCard } from "./dashboard.mjs?v=a2d3aa58e2e0";
+} from "./schedule-model.mjs?v=2355712a139c";
+import { coverConflict } from "./operations.mjs?v=2355712a139c";
+import { sessionCard } from "./dashboard.mjs?v=2355712a139c";
 
 export function initializeTimeline({ query, api, message, table }) {
   const $ = (id) => document.getElementById(id),
@@ -500,7 +501,12 @@ export function initializeTimeline({ query, api, message, table }) {
         schools,
         leave,
         requests,
-        rows: decorateSessions(sessions, users, schools, assignments),
+        rows: decorateSessions(
+          confirmedSessions(sessions),
+          users,
+          schools,
+          assignments,
+        ),
       };
       proposals.clear();
       selected = null;
