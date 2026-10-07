@@ -1,20 +1,20 @@
-import { initializeDashboard } from "./dashboard.mjs?v=c0f77fa1234b";
-import { initializeAttendance } from "./attendance.mjs?v=c0f77fa1234b";
+import { initializeDashboard } from "./dashboard.mjs?v=4d248f3caa1c";
+import { initializeAttendance } from "./attendance.mjs?v=4d248f3caa1c";
 import {
   initializeRequestWorkflows,
   confirmSubmission,
-} from "./request-workflows.mjs?v=c0f77fa1234b";
-import { API_URL } from "./config.js?v=c0f77fa1234b";
-import { initializeAdminCalendar } from "./admin-calendar.mjs?v=c0f77fa1234b";
-import { initializeTimeline } from "./timeline.mjs?v=c0f77fa1234b";
-import { initializeLearning } from "./learning.mjs?v=c0f77fa1234b";
-import { closeNavigation } from "./interface.mjs?v=c0f77fa1234b";
-import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=c0f77fa1234b";
-import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=c0f77fa1234b";
-import { combobox } from "./combobox.mjs?v=c0f77fa1234b";
-import { enterSection } from "./motion.mjs?v=c0f77fa1234b";
-import { character } from "./characters.mjs?v=c0f77fa1234b";
-import { groupTone, teacherActive, teacherType } from "./schedule-model.mjs?v=c0f77fa1234b";
+} from "./request-workflows.mjs?v=4d248f3caa1c";
+import { API_URL } from "./config.js?v=4d248f3caa1c";
+import { initializeAdminCalendar } from "./admin-calendar.mjs?v=4d248f3caa1c";
+import { initializeTimeline } from "./timeline.mjs?v=4d248f3caa1c";
+import { initializeLearning } from "./learning.mjs?v=4d248f3caa1c";
+import { closeNavigation } from "./interface.mjs?v=4d248f3caa1c";
+import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=4d248f3caa1c";
+import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=4d248f3caa1c";
+import { combobox } from "./combobox.mjs?v=4d248f3caa1c";
+import { enterSection } from "./motion.mjs?v=4d248f3caa1c";
+import { character } from "./characters.mjs?v=4d248f3caa1c";
+import { groupTone, teacherActive, teacherType } from "./schedule-model.mjs?v=4d248f3caa1c";
 const $ = (id) => document.getElementById(id),
   state = {
     schools: [],

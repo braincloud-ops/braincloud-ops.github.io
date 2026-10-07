@@ -3122,14 +3122,12 @@ html.is-hidden *::after {
 }
 .cal-nav {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   min-width: 0;
 }
 .cal-title {
-  flex: 1 1 8.5em;
-  min-width: 0;
+  min-width: 8.5em;
   margin: 0;
   text-align: center;
   font-size: 1.15rem;
@@ -3137,6 +3135,11 @@ html.is-hidden *::after {
 @media (max-width: 420px) {
   .cal-nav {
     flex: 1 1 100%;
+    flex-wrap: wrap;
+  }
+  .cal-title {
+    flex: 1 1 0;
+    min-width: 0;
   }
   .cal-nav > button:last-child {
     flex: 1 0 100%;
