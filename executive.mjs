@@ -3,10 +3,11 @@
 // teaching workload. Every figure comes from the API; the browser never
 // downloads the schedule to calculate it. The detailed tables of the earlier
 // report are kept below the brief.
-import { decode, rise } from "./motion.mjs?v=6d6e3c726625";
-import { combobox } from "./combobox.mjs?v=6d6e3c726625";
-import { createSchoolMap } from "./school-map.mjs?v=6d6e3c726625";
-import { confirmedSessions, groupTone } from "./schedule-model.mjs?v=6d6e3c726625";
+import { decode, rise } from "./motion.mjs?v=0b12f9ffc42b";
+import { combobox } from "./combobox.mjs?v=0b12f9ffc42b";
+import { createSchoolMap } from "./school-map.mjs?v=0b12f9ffc42b";
+import { createSchoolSheet } from "./school-sheet.mjs?v=0b12f9ffc42b";
+import { confirmedSessions, groupTone } from "./schedule-model.mjs?v=0b12f9ffc42b";
 
 const $ = (id) => document.getElementById(id);
 const KEYS = ["NORMAL", "COVERED", "CANCEL_SCHOOL", "CANCEL_BC"];
@@ -304,11 +305,13 @@ function stack(counts, className) {
   return bar;
 }
 
-function renderTrend(report, table) {
+// The stacked trend bars of a report, filled into a .brief-trend container.
+// Shared with the school page.
+export function fillTrend(root, report) {
   const { unit, buckets } = report.trend;
-  const root = $("brief-trend");
   root.replaceChildren();
   root.dataset.unit = unit;
+  root.setAttribute("aria-hidden", "true");
   const max = Math.max(1, ...buckets.map(bucketTotal));
   buckets.forEach((b, i) => {
     const total = bucketTotal(b);
@@ -326,6 +329,10 @@ function renderTrend(report, table) {
     );
     root.append(col);
   });
+}
+function renderTrend(report, table) {
+  const { unit, buckets } = report.trend;
+  fillTrend($("brief-trend"), report);
   table(
     "brief-trend-table",
     [
@@ -374,7 +381,7 @@ function renderGroups(report) {
   rise(root.children);
 }
 
-function renderTopSchools(report) {
+function renderTopSchools(report, onSchool) {
   const root = $("brief-top-schools");
   root.replaceChildren();
   const list = report.top_school_cancellations;
@@ -386,7 +393,12 @@ function renderTopSchools(report) {
   for (const s of list) {
     const item = el("li", "top-row");
     item.dataset.tone = groupTone(s.group);
-    const name = el("span", "top-name");
+    // The name opens the school's page.
+    const name = el("button", "top-name link-button");
+    name.type = "button";
+    name.addEventListener("click", () =>
+      onSchool(s.school_id, s.school + " — " + (s.name || "")),
+    );
     name.append(el("strong", "", s.school), " ", el("span", "", s.name || ""));
     const bar = el("span", "top-bar");
     bar.setAttribute("aria-hidden", "true");
@@ -447,7 +459,7 @@ function renderWorkload(report) {
   const summary = el(
     "p",
     "workload-summary",
-    `${fmt(w.teachers)} ${w.teachers === 1 ? "teacher" : "teachers"} taught ${fmt(sum)} classes. Median ${fmt(w.median_taught)} classes each; most ${fmt(w.most_taught)}.`,
+    `${fmt(w.teachers)} ${w.teachers === 1 ? "teacher" : "teachers"} taught ${fmt(sum)} ${sum === 1 ? "class" : "classes"}. Median ${fmt(w.median_taught)} classes each; most ${fmt(w.most_taught)}.`,
   );
   const legend = el("ul", "workload-legend");
   for (const [type, key] of [
@@ -555,7 +567,16 @@ export function initializeExecutive({
   isAdmin,
 }) {
   const form = $("executive-form");
-  const schoolMap = createSchoolMap();
+  const openSchool = createSchoolSheet({
+    api,
+    isAdmin,
+    // The school page uses the period of the summary on screen.
+    getPeriod: () =>
+      current
+        ? { start: current.start, end: current.end }
+        : { start: form.elements.start.value, end: form.elements.end.value },
+  });
+  const schoolMap = createSchoolMap({ onSchool: openSchool });
   const loadButton = form.querySelector(":scope > button");
   let current = null,
     generation = 0,
@@ -772,7 +793,7 @@ export function initializeExecutive({
       renderChecks(report);
       renderTrend(report, table);
       renderGroups(report);
-      renderTopSchools(report);
+      renderTopSchools(report, openSchool);
       renderWorkload(report);
       schoolMap.render(report, schools);
       renderDetails(report, params);
@@ -1036,7 +1057,14 @@ export function initializeExecutive({
           message("School sessions loaded.");
         }),
       );
-      item.append(button, rows);
+      const page = el("button", "secondary", "School page");
+      page.type = "button";
+      page.addEventListener("click", () =>
+        openSchool(school.school_id, `${school.school} — ${school.name}`),
+      );
+      const actions = el("div", "detail-actions");
+      actions.append(button, page);
+      item.append(actions, rows);
       details.append(item);
     }
     table(

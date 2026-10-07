@@ -2,8 +2,8 @@
 // are a small static file built from Natural Earth (scripts/build-thailand-map.mjs);
 // each school's province comes from the public school directory and the
 // figures from the loaded report, so the map follows the period and filters.
-import { groupTone } from "./schedule-model.mjs?v=6d6e3c726625";
-import { rise } from "./motion.mjs?v=6d6e3c726625";
+import { groupTone } from "./schedule-model.mjs?v=0b12f9ffc42b";
+import { rise } from "./motion.mjs?v=0b12f9ffc42b";
 
 const SVG = "http://www.w3.org/2000/svg";
 const $ = (id) => document.getElementById(id);
@@ -20,7 +20,7 @@ export const provinceKey = (name) => ALIAS[norm(name)] || norm(name);
 let shapes = null;
 const loadShapes = () =>
   (shapes ??= fetch(
-    new URL("./maps/thailand-provinces.json?v=6d6e3c726625", import.meta.url),
+    new URL("./maps/thailand-provinces.json?v=0b12f9ffc42b", import.meta.url),
   ).then((r) => {
     if (!r.ok) throw new Error("MAP_UNAVAILABLE");
     return r.json();
@@ -50,6 +50,7 @@ export function provinceFigures(reportSchools, directory) {
       });
     const p = provinces.get(key);
     p.schools.push({
+      school_id: s.school_id,
       code: s.school,
       name: s.name,
       group: s.group,
@@ -86,7 +87,7 @@ export function legendSteps(max) {
 const stepOf = (v, steps) =>
   v > 0 ? (steps.find((s) => v >= s.from && v <= s.to)?.step ?? 5) : 0;
 
-export function createSchoolMap() {
+export function createSchoolMap({ onSchool } = {}) {
   const root = $("brief-map"),
     legend = $("brief-map-legend"),
     list = $("brief-map-list"),
@@ -230,8 +231,15 @@ export function createSchoolMap() {
       const chip = document.createElement("span");
       chip.className = "group-chip";
       chip.textContent = s.group;
-      const name = document.createElement("span");
-      name.className = "map-school-name";
+      // Opens the school's page when a handler is given.
+      const name = document.createElement(onSchool ? "button" : "span");
+      name.className = "map-school-name" + (onSchool ? " link-button" : "");
+      if (onSchool) {
+        name.type = "button";
+        name.addEventListener("click", () =>
+          onSchool(s.school_id, `${s.code} — ${s.name || ""}`),
+        );
+      }
       const code = document.createElement("strong");
       code.textContent = s.code;
       name.append(code, " " + (s.name || ""));

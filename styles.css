@@ -4574,3 +4574,67 @@ button.small {
   opacity: 0.45;
   pointer-events: none;
 }
+
+/* School page (dialog). */
+.school-dialog {
+  width: min(880px, calc(100% - 24px));
+}
+.school-head {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.school-head .button-link {
+  justify-self: start;
+}
+.school-name-en {
+  margin: 0;
+  color: var(--ink-2);
+}
+.school-meta {
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--ink-2);
+}
+.school-kpis {
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  margin-top: 8px;
+}
+.school-trend {
+  height: 160px;
+}
+.school-dialog .brief-panel h4 {
+  margin: 10px 0 4px;
+  font-size: 0.82rem;
+  color: var(--ink-2);
+}
+.secondary-link {
+  background: #fff;
+  color: var(--teal-strong);
+  border: 1px solid var(--line);
+}
+/* A button that reads as a link (opens a school's page from a list). */
+.link-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-weight: inherit;
+  text-align: left;
+  cursor: pointer;
+  min-height: 0;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--teal) 45%, transparent);
+  text-underline-offset: 3px;
+}
+.link-button:hover:not(:disabled) {
+  background: none;
+  color: var(--teal-strong);
+}
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0;
+}
