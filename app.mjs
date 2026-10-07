@@ -1,20 +1,20 @@
-import { initializeDashboard } from "./dashboard.mjs?v=fcb9b4b15308";
-import { initializeAttendance } from "./attendance.mjs?v=fcb9b4b15308";
+import { initializeDashboard } from "./dashboard.mjs?v=4610c6d503c3";
+import { initializeAttendance } from "./attendance.mjs?v=4610c6d503c3";
 import {
   initializeRequestWorkflows,
   confirmSubmission,
-} from "./request-workflows.mjs?v=fcb9b4b15308";
-import { API_URL } from "./config.js?v=fcb9b4b15308";
-import { requestDays } from "./operations.mjs?v=fcb9b4b15308";
-import { initializeTimeline } from "./timeline.mjs?v=fcb9b4b15308";
-import { initializeLearning } from "./learning.mjs?v=fcb9b4b15308";
-import { closeNavigation } from "./interface.mjs?v=fcb9b4b15308";
-import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=fcb9b4b15308";
-import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=fcb9b4b15308";
-import { combobox } from "./combobox.mjs?v=fcb9b4b15308";
-import { enterSection } from "./motion.mjs?v=fcb9b4b15308";
-import { character } from "./characters.mjs?v=fcb9b4b15308";
-import { groupTone, teacherActive, teacherType } from "./schedule-model.mjs?v=fcb9b4b15308";
+} from "./request-workflows.mjs?v=4610c6d503c3";
+import { API_URL } from "./config.js?v=4610c6d503c3";
+import { requestDays } from "./operations.mjs?v=4610c6d503c3";
+import { initializeTimeline } from "./timeline.mjs?v=4610c6d503c3";
+import { initializeLearning } from "./learning.mjs?v=4610c6d503c3";
+import { closeNavigation } from "./interface.mjs?v=4610c6d503c3";
+import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=4610c6d503c3";
+import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=4610c6d503c3";
+import { combobox } from "./combobox.mjs?v=4610c6d503c3";
+import { enterSection } from "./motion.mjs?v=4610c6d503c3";
+import { character } from "./characters.mjs?v=4610c6d503c3";
+import { groupTone, teacherActive, teacherType } from "./schedule-model.mjs?v=4610c6d503c3";
 const $ = (id) => document.getElementById(id),
   state = {
     schools: [],
@@ -176,10 +176,13 @@ function teacherItems(teachers) {
   const item = (t) => {
     const nickname = t.nickname_en || t.nickname_th;
     const thai = [t.firstname_th, t.lastname_th].filter(Boolean).join(" ");
+    const name = teacherName(t.user_id);
     return {
       value: t.user_id,
-      label: teacherName(t.user_id) + (nickname ? ` (${nickname})` : ""),
-      detail: thai || undefined,
+      label: name + (nickname ? ` (${nickname})` : ""),
+      // Some records repeat the English name in the Thai fields.
+      detail:
+        thai && thai.toLowerCase() !== name.toLowerCase() ? thai : undefined,
       meta: teacherType(t),
       search: [t.nickname_th, t.nickname_en, thai].join(" "),
     };
