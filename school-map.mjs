@@ -2,8 +2,8 @@
 // are a small static file built from Natural Earth (scripts/build-thailand-map.mjs);
 // each school's province comes from the public school directory and the
 // figures from the loaded report, so the map follows the period and filters.
-import { groupTone } from "./schedule-model.mjs?v=a7073daf9c9b";
-import { rise } from "./motion.mjs?v=a7073daf9c9b";
+import { groupTone } from "./schedule-model.mjs?v=a29056ba4dfd";
+import { rise } from "./motion.mjs?v=a29056ba4dfd";
 
 const SVG = "http://www.w3.org/2000/svg";
 const $ = (id) => document.getElementById(id);
@@ -20,7 +20,7 @@ export const provinceKey = (name) => ALIAS[norm(name)] || norm(name);
 let shapes = null;
 const loadShapes = () =>
   (shapes ??= fetch(
-    new URL("./maps/thailand-provinces.json?v=a7073daf9c9b", import.meta.url),
+    new URL("./maps/thailand-provinces.json?v=a29056ba4dfd", import.meta.url),
   ).then((r) => {
     if (!r.ok) throw new Error("MAP_UNAVAILABLE");
     return r.json();
@@ -64,17 +64,27 @@ export function provinceFigures(reportSchools, directory) {
   return { provinces, unplaced };
 }
 
-// Five shades over 1..max; a value v falls in step ceil(5v / max).
+// Five shades on a log scale over 1..max: counts are skewed (most provinces
+// have one or two schools, a few have twelve), so equal-width steps would
+// paint most of the map the same. Upper bounds are (max+1)^(k/5) - 1.
 export function legendSteps(max) {
   const steps = [];
-  for (let k = 1; k <= 5; k++) {
-    const from = Math.floor(((k - 1) * max) / 5) + 1,
-      to = Math.floor((k * max) / 5);
-    if (to >= from) steps.push({ step: k, from, to });
+  let from = 1;
+  for (let k = 1; k <= 5 && from <= max; k++) {
+    const to =
+      k === 5 ? max : Math.max(from, Math.round(Math.pow(max + 1, k / 5) - 1));
+    if (to >= from) {
+      steps.push({ step: k, from, to: Math.min(to, max) });
+      from = Math.min(to, max) + 1;
+    }
   }
-  return steps;
+  // With a small maximum there are fewer than five steps; shift them so the
+  // highest value always gets the darkest shade.
+  const shift = 5 - steps.length;
+  return steps.map((s, i) => ({ ...s, step: i + 1 + shift }));
 }
-const stepOf = (v, max) => (v > 0 ? Math.ceil((5 * v) / max) : 0);
+const stepOf = (v, steps) =>
+  v > 0 ? (steps.find((s) => v >= s.from && v <= s.to)?.step ?? 5) : 0;
 
 export function createSchoolMap() {
   const root = $("brief-map"),
@@ -130,10 +140,11 @@ export function createSchoolMap() {
   function draw() {
     const values = [...figures.provinces.values()].map(valueOf);
     const max = Math.max(0, ...values);
+    const steps = max ? legendSteps(max) : [];
     for (const [key, { path, title, name }] of paths) {
       const p = figures.provinces.get(key);
       const value = valueOf(p);
-      path.dataset.step = String(stepOf(value, max));
+      path.dataset.step = String(stepOf(value, steps));
       path.classList.toggle("is-selected", key === selected);
       title.textContent = p
         ? describe(p)
@@ -149,7 +160,7 @@ export function createSchoolMap() {
       }
     }
     legend.replaceChildren();
-    for (const s of max ? legendSteps(max) : []) {
+    for (const s of steps) {
       const li = document.createElement("li");
       li.dataset.step = String(s.step);
       li.textContent =
