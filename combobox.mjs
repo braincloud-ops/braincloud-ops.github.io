@@ -145,7 +145,7 @@ export function combobox(select, options) {
       list.append(empty);
     }
     note.textContent = tokens.length
-      ? `${shown.length} matching options${select.value ? "; your selection is kept" : ""}.`
+      ? `${shown.length} matching ${shown.length === 1 ? "option" : "options"}${select.value ? "; your selection is kept" : ""}.`
       : "";
     setActive(
       Math.max(

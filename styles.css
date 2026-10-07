@@ -4528,3 +4528,49 @@ button.small {
     transition: none;
   }
 }
+
+/* Admin: teacher profile (facts only). */
+.profile-form {
+  display: grid;
+  gap: 10px;
+  max-width: 720px;
+}
+.profile-form > button {
+  justify-self: start;
+}
+.profile-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  margin: 14px 0 12px;
+}
+.profile-head h3 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+.profile-head .nick {
+  font-weight: 500;
+  color: var(--ink-2);
+}
+.profile-period {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.profile-kpis {
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+}
+.profile-facts {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.86rem;
+}
+.profile-schools {
+  max-height: none;
+}
+#profile-output.is-loading {
+  opacity: 0.45;
+  pointer-events: none;
+}

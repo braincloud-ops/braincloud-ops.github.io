@@ -12,7 +12,7 @@
       content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob: https://profile.line-scdn.net; connect-src 'self' https://*.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'"
     />
     <title>Braincloud Operations</title>
-    <link rel="stylesheet" href="styles.css?v=a29056ba4dfd" />
+    <link rel="stylesheet" href="styles.css?v=a1abad52b3b6" />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -932,6 +932,12 @@
               People &amp; schools</button
             ><button
               type="button"
+              data-admin-tab="profiles"
+              aria-pressed="false"
+            >
+              Teacher profiles</button
+            ><button
+              type="button"
               data-admin-tab="connections"
               aria-pressed="false"
             >
@@ -1054,6 +1060,49 @@
                 overwritten by the sync.
               </p>
               <div id="directory-root"></div>
+            </section>
+          </div>
+          <div class="admin-panel" data-admin-panel="profiles" hidden="">
+            <section
+              id="teacher-profiles"
+              class="directory-workspace"
+              aria-labelledby="profiles-title"
+            >
+              <p class="eyebrow">TEACHER PROFILES</p>
+              <h2 id="profiles-title">Teacher profiles</h2>
+              <p>
+                Facts from the TMS schedule and leave records, for coaching
+                conversations. Not a score or grade. Leave reasons are not
+                shown, and each view is recorded in the audit log.
+              </p>
+              <form id="profile-form" class="profile-form">
+                <label
+                  >Teacher<select id="profile-teacher" required=""></select
+                ></label>
+                <div class="brief-presets" role="group" aria-label="Period">
+                  <button
+                    type="button"
+                    class="chip"
+                    data-profile-preset="quarter"
+                  >
+                    Last 3 months
+                  </button>
+                  <button type="button" class="chip" data-profile-preset="year">
+                    Last 12 months
+                  </button>
+                </div>
+                <div class="row">
+                  <label
+                    >Start date<input type="date" name="start" required=""
+                  /></label>
+                  <label
+                    >End date<input type="date" name="end" required=""
+                  /></label>
+                </div>
+                <button>Show profile</button>
+              </form>
+              <p id="profile-note" role="status"></p>
+              <div id="profile-output" hidden=""></div>
             </section>
           </div>
           <div class="admin-panel" data-admin-panel="connections" hidden="">
@@ -1183,6 +1232,6 @@
       <span>braincloud <strong>operations</strong></span
       ><span>For the people behind every school day.</span>
     </footer>
-    <script type="module" src="app.mjs?v=a29056ba4dfd"></script>
+    <script type="module" src="app.mjs?v=a1abad52b3b6"></script>
   </body>
 </html>

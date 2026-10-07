@@ -1,10 +1,10 @@
 // Administrator directory: keep people and schools up to date in one place.
 // Saves send the values the editor saw, so a record changed meanwhile by
 // someone else is refused instead of silently overwritten.
-import { el, button, modal } from "./dom.mjs?v=a29056ba4dfd";
-import { emptyState } from "./characters.mjs?v=a29056ba4dfd";
-import { rise } from "./motion.mjs?v=a29056ba4dfd";
-import { groupTone, teacherActive } from "./schedule-model.mjs?v=a29056ba4dfd";
+import { el, button, modal } from "./dom.mjs?v=a1abad52b3b6";
+import { emptyState } from "./characters.mjs?v=a1abad52b3b6";
+import { rise } from "./motion.mjs?v=a1abad52b3b6";
+import { groupTone, teacherActive } from "./schedule-model.mjs?v=a1abad52b3b6";
 
 const TYPE_LABEL = {
   210: "FT",
