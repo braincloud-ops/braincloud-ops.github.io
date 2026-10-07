@@ -1283,7 +1283,7 @@ td button {
   min-height: 38px;
   padding: 7px 14px;
 }
-td .request-status {
+.request-status {
   display: inline-block;
   padding: 3px 9px;
   border-radius: 5px;
@@ -1293,17 +1293,17 @@ td .request-status {
   background: #eef1f2;
   color: var(--ink-2);
 }
-td .request-status[data-status="Approved"],
-td .request-status[data-status="Acknowledged"] {
+.request-status[data-status="Approved"],
+.request-status[data-status="Acknowledged"] {
   background: #e9f5dd;
   color: #35540c;
 }
-td .request-status[data-status="Pending"] {
+.request-status[data-status="Pending"] {
   background: #fdf3d6;
   color: #6b5212;
 }
-td .request-status[data-status="Rejected"],
-td .request-status[data-status="Cancelled"] {
+.request-status[data-status="Rejected"],
+.request-status[data-status="Cancelled"] {
   background: var(--error-tint);
   color: var(--error);
 }

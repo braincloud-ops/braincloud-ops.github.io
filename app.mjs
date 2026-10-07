@@ -1,20 +1,20 @@
-import { initializeDashboard } from "./dashboard.mjs?v=544a78f34826";
-import { initializeAttendance } from "./attendance.mjs?v=544a78f34826";
+import { initializeDashboard } from "./dashboard.mjs?v=f20d62e5c1e4";
+import { initializeAttendance } from "./attendance.mjs?v=f20d62e5c1e4";
 import {
   initializeRequestWorkflows,
   confirmSubmission,
-} from "./request-workflows.mjs?v=544a78f34826";
-import { API_URL } from "./config.js?v=544a78f34826";
-import { requestDays } from "./operations.mjs?v=544a78f34826";
-import { initializeTimeline } from "./timeline.mjs?v=544a78f34826";
-import { initializeLearning } from "./learning.mjs?v=544a78f34826";
-import { closeNavigation } from "./interface.mjs?v=544a78f34826";
-import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=544a78f34826";
+} from "./request-workflows.mjs?v=f20d62e5c1e4";
+import { API_URL } from "./config.js?v=f20d62e5c1e4";
+import { requestDays } from "./operations.mjs?v=f20d62e5c1e4";
+import { initializeTimeline } from "./timeline.mjs?v=f20d62e5c1e4";
+import { initializeLearning } from "./learning.mjs?v=f20d62e5c1e4";
+import { closeNavigation } from "./interface.mjs?v=f20d62e5c1e4";
+import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=f20d62e5c1e4";
 import {
   installSearch,
   improveFormDates,
   showSubmissionReceipt,
-} from "./form-experience.mjs?v=544a78f34826";
+} from "./form-experience.mjs?v=f20d62e5c1e4";
 const $ = (id) => document.getElementById(id),
   state = {
     schools: [],
@@ -212,7 +212,11 @@ async function initialize() {
         "dim_user",
         [{ column: "user_type", op: "in", value: [210, 220] }],
         false,
-        [{ column: "user_id" }],
+        [
+          { column: "firstname_en" },
+          { column: "lastname_en" },
+          { column: "user_id" },
+        ],
       ),
     ]);
     options(
@@ -310,8 +314,16 @@ for (const [id, category] of [
         headers: { "Idempotency-Key": pending.key, ...lineRequestHeaders() },
       });
       message(`Request #${result.id} received. Status: Pending.`);
-      showSubmissionReceipt(form, result);
-      // Keep the key while the payload is unchanged, including after a successful response.
+      // Keep the key while the payload is unchanged, including after a successful
+      // response; only an explicit "Submit another request" starts a new one.
+      showSubmissionReceipt(form, result, () => {
+        pending = null;
+        if (form.elements.reason) form.elements.reason.value = "";
+        for (const box of form.querySelectorAll("[name=sessions]:checked"))
+          box.checked = false;
+        form.querySelector("[type=submit]")?.focus();
+        message("Ready for another request. Check the details before sending.");
+      });
     });
   });
 }
@@ -722,11 +734,27 @@ $("load-requests").addEventListener("click", () =>
       [
         ["id", "Request ID"],
         ["user_name", "Submitted by"],
-        ["request_category", "Type"],
+        ["verified", "Submitter check"],
+        ["request_category", "Category"],
+        ["subject", "Teacher / school"],
+        ["dates", "Dates"],
+        ["type", "Type"],
         ["reason", "Reason"],
         ["status", "Status"],
       ],
-      data,
+      data.map((r) => ({
+        ...r,
+        verified: r.user_id ? "LINE verified" : "Browser, not verified",
+        subject:
+          (r.request_category || (r.teacher_id ? "Teacher" : "School")) ===
+          "Teacher"
+            ? teacherName(r.teacher_id)
+            : r.school_code,
+        dates:
+          r.start_date === r.end_date
+            ? r.start_date
+            : `${r.start_date} to ${r.end_date}`,
+      })),
       editRequest,
     );
     message("Loaded the 100 most recent requests.");
@@ -915,6 +943,31 @@ initializeTimeline({
   getTeachers: () => state.teachers,
 });
 initializeLearning({ api, busy, message, table });
+$("email-status").addEventListener("click", () =>
+  busy($("email-status"), async () => {
+    const { data } = await api("/admin/notifications/status");
+    const last = data.last_delivered_at
+      ? new Date(data.last_delivered_at).toLocaleString("en-GB", {
+          timeZone: "Asia/Bangkok",
+        })
+      : "none yet";
+    $("email-note").textContent = !data.configured
+      ? "Email is not configured yet."
+      : `Teacher leave emails are ${data.enabled ? "on" : "off"}. Last sent: ${last}. Waiting: ${data.waiting}. Failed: ${data.failed}.`;
+    message("Email status loaded.");
+  }),
+);
+$("email-test").addEventListener("click", () =>
+  busy($("email-test"), async () => {
+    const { data } = await api("/admin/notifications/test-email", {
+      method: "POST",
+      data: {},
+    });
+    $("email-note").textContent =
+      `Test email sent${data.to ? " to " + data.to : ""}. Check the inbox in a minute.`;
+    message("Test email sent.");
+  }),
+);
 $("load-alarms").addEventListener("click", () =>
   busy($("load-alarms"), async () => {
     const { data } = await api("/admin/alarms");

@@ -1,4 +1,4 @@
-import { el, button, download } from "./dom.mjs?v=544a78f34826";
+import { el, button, download } from "./dom.mjs?v=f20d62e5c1e4";
 import {
   bangkokDay,
   time,
@@ -6,9 +6,9 @@ import {
   category,
   decorateSessions,
   displayName,
-} from "./schedule-model.mjs?v=544a78f34826";
-import { coverConflict } from "./operations.mjs?v=544a78f34826";
-import { sessionCard } from "./dashboard.mjs?v=544a78f34826";
+} from "./schedule-model.mjs?v=f20d62e5c1e4";
+import { coverConflict } from "./operations.mjs?v=f20d62e5c1e4";
+import { sessionCard } from "./dashboard.mjs?v=f20d62e5c1e4";
 
 export function initializeTimeline({ query, api, message, table }) {
   const $ = (id) => document.getElementById(id),

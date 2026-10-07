@@ -64,7 +64,7 @@ export function improveFormDates() {
   }
 }
 
-export function showSubmissionReceipt(form, result) {
+export function showSubmissionReceipt(form, result, onAnother) {
   let receipt = form.querySelector(".submission-receipt");
   if (!receipt) {
     receipt = document.createElement("div");
@@ -82,6 +82,17 @@ export function showSubmissionReceipt(form, result) {
   note.textContent =
     "Your request is saved. There is no need to submit it again.";
   receipt.append(heading, detail, note);
+  if (onAnother) {
+    const another = document.createElement("button");
+    another.type = "button";
+    another.className = "secondary";
+    another.textContent = "Submit another request";
+    another.addEventListener("click", () => {
+      receipt.remove();
+      onAnother();
+    });
+    receipt.append(another);
+  }
   if (
     document.body.classList.contains("liff-app") &&
     window.liff?.isInClient?.()

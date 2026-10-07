@@ -1,6 +1,6 @@
-import { el, button, modal } from "./dom.mjs?v=544a78f34826";
-import { hasLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=544a78f34826";
-import { time, cancelled, category } from "./schedule-model.mjs?v=544a78f34826";
+import { el, button, modal } from "./dom.mjs?v=f20d62e5c1e4";
+import { hasLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=f20d62e5c1e4";
+import { time, cancelled, category } from "./schedule-model.mjs?v=f20d62e5c1e4";
 
 export function restoreDateModes() {
   for (const id of ["school-form", "teacher-form"]) {
@@ -336,8 +336,12 @@ export function initializeRequestWorkflows({
             } catch {
               affected = null;
             }
+            const heading = el("h3", `#${r.id} `),
+              status = el("span", r.status || "Pending", "request-status");
+            status.dataset.status = r.status || "Pending";
+            heading.append(status);
             card.append(
-              el("h3", `#${r.id} · ${r.status}`),
+              heading,
               el(
                 "p",
                 category === "School"

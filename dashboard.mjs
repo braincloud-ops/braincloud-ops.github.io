@@ -1,4 +1,4 @@
-import { el, button } from "./dom.mjs?v=544a78f34826";
+import { el, button } from "./dom.mjs?v=f20d62e5c1e4";
 import {
   bangkokDay,
   time,
@@ -10,7 +10,7 @@ import {
   displayName,
   teacherType,
   statusLabel,
-} from "./schedule-model.mjs?v=544a78f34826";
+} from "./schedule-model.mjs?v=f20d62e5c1e4";
 
 export function sessionCard(s) {
   const card = el("article", "", "session-card");
