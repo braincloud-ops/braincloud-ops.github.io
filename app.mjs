@@ -1,20 +1,21 @@
-import { initializeDashboard } from "./dashboard.mjs?v=4d248f3caa1c";
-import { initializeAttendance } from "./attendance.mjs?v=4d248f3caa1c";
+import { initializeDashboard } from "./dashboard.mjs?v=a2d3aa58e2e0";
+import { initializeAttendance } from "./attendance.mjs?v=a2d3aa58e2e0";
 import {
   initializeRequestWorkflows,
   confirmSubmission,
-} from "./request-workflows.mjs?v=4d248f3caa1c";
-import { API_URL } from "./config.js?v=4d248f3caa1c";
-import { initializeAdminCalendar } from "./admin-calendar.mjs?v=4d248f3caa1c";
-import { initializeTimeline } from "./timeline.mjs?v=4d248f3caa1c";
-import { initializeLearning } from "./learning.mjs?v=4d248f3caa1c";
-import { closeNavigation } from "./interface.mjs?v=4d248f3caa1c";
-import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=4d248f3caa1c";
-import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=4d248f3caa1c";
-import { combobox } from "./combobox.mjs?v=4d248f3caa1c";
-import { enterSection } from "./motion.mjs?v=4d248f3caa1c";
-import { character } from "./characters.mjs?v=4d248f3caa1c";
-import { groupTone, teacherActive, teacherType } from "./schedule-model.mjs?v=4d248f3caa1c";
+} from "./request-workflows.mjs?v=a2d3aa58e2e0";
+import { API_URL } from "./config.js?v=a2d3aa58e2e0";
+import { initializeAdminCalendar } from "./admin-calendar.mjs?v=a2d3aa58e2e0";
+import { initializeDirectory } from "./directory.mjs?v=a2d3aa58e2e0";
+import { initializeTimeline } from "./timeline.mjs?v=a2d3aa58e2e0";
+import { initializeLearning } from "./learning.mjs?v=a2d3aa58e2e0";
+import { closeNavigation } from "./interface.mjs?v=a2d3aa58e2e0";
+import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=a2d3aa58e2e0";
+import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=a2d3aa58e2e0";
+import { combobox } from "./combobox.mjs?v=a2d3aa58e2e0";
+import { enterSection } from "./motion.mjs?v=a2d3aa58e2e0";
+import { character } from "./characters.mjs?v=a2d3aa58e2e0";
+import { groupTone, teacherActive, teacherType } from "./schedule-model.mjs?v=a2d3aa58e2e0";
 const $ = (id) => document.getElementById(id),
   state = {
     schools: [],
@@ -731,6 +732,7 @@ function signOut() {
   $("admin-requests").replaceChildren();
   $("job-output").replaceChildren();
   calendar.clear();
+  directory.clear();
   $("edit-coverage").replaceChildren();
   $("edit-details").textContent = "";
   $("edit-form").reset();
@@ -740,6 +742,19 @@ function signOut() {
 }
 initializeAttendance({ api });
 const calendar = initializeAdminCalendar({ api, query, message });
+const directory = initializeDirectory({ api, message });
+// Administrator sections: one visible at a time; data loads on first visit.
+function showAdminTab(name) {
+  for (const b of document.querySelectorAll("[data-admin-tab]"))
+    b.setAttribute("aria-pressed", String(b.dataset.adminTab === name));
+  for (const panel of document.querySelectorAll("[data-admin-panel]"))
+    panel.hidden = panel.dataset.adminPanel !== name;
+  if (name === "calendar") calendar.start();
+  if (name === "directory") directory.start();
+  enterSection(document.querySelector(`[data-admin-panel="${name}"]`));
+}
+for (const b of document.querySelectorAll("[data-admin-tab]"))
+  b.addEventListener("click", () => showAdminTab(b.dataset.adminTab));
 $("login-form").addEventListener("submit", (e) => {
   e.preventDefault();
   busy(e.submitter, async () => {
@@ -756,7 +771,7 @@ $("login-form").addEventListener("submit", (e) => {
         timeZone: "Asia/Bangkok",
       });
     message("Signed in.");
-    calendar.start();
+    showAdminTab("calendar");
   });
 });
 $("logout").addEventListener("click", () =>

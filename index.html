@@ -12,7 +12,7 @@
       content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob: https://profile.line-scdn.net; connect-src 'self' https://*.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'"
     />
     <title>Braincloud Operations</title>
-    <link rel="stylesheet" href="styles.css?v=4d248f3caa1c" />
+    <link rel="stylesheet" href="styles.css?v=a2d3aa58e2e0" />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -840,77 +840,33 @@
             <p id="session-expiry"></p>
             <button id="logout" class="secondary">Sign out</button>
           </div>
-          <section
-            id="admin-calendar"
-            class="calendar-workspace"
-            aria-labelledby="calendar-title"
+          <div
+            class="admin-tabs"
+            role="group"
+            aria-label="Administrator sections"
           >
-            <p class="eyebrow">TEAM CALENDAR</p>
-            <h2 id="calendar-title">Leave &amp; school closures</h2>
-            <p>
-              Who is away and which schools are closed. Each request is checked
-              against the recorded schedule: it is handled when every affected
-              class is cancelled or covered.
-            </p>
-            <div id="calendar-root"></div>
-          </section>
-          <section id="attendance-report" class="attendance-workspace">
-            <p class="eyebrow">PRIVATE REPORT · PREVIEW</p>
-            <h2>Teaching &amp; classroom connections</h2>
-            <p>
-              Compare scheduled times with recorded joins and departures across
-              all available schools.
-            </p>
-            <form id="attendance-form" class="inline-form">
-              <label
-                >Start date<input type="date" name="start" required
-              /></label>
-              <label>End date<input type="date" name="end" required /></label>
-              <label
-                >School<select name="school">
-                  <option value="">All schools</option>
-                </select></label
-              >
-              <label
-                >Teacher<select name="teacher">
-                  <option value="">All teachers</option>
-                </select></label
-              >
-              <button>Load connection report</button>
-            </form>
-            <div class="toolbar">
-              <button
-                type="button"
-                class="secondary"
-                data-attendance-export="xlsx"
-                disabled
-              >
-                Export Excel</button
-              ><button
-                type="button"
-                class="secondary"
-                data-attendance-export="csv"
-                disabled
-              >
-                Export CSV
-              </button>
-            </div>
-            <p class="input-hint">
-              Asia/Bangkok · Classroom times describe the attendant account, not
-              individual student attendance. Missing events mean “not recorded”.
-              Summaries use the scheduled period plus 30 minutes on either side;
-              details retain all events.
-            </p>
-            <p id="attendance-note" role="status">
-              Load a date range to see collection coverage and session details.
-            </p>
-            <div id="attendance-output"></div>
-          </section>
-          <h2>Recent requests</h2>
-          <button id="load-requests" class="secondary">
-            Load recent requests
-          </button>
-          <div id="admin-requests" class="table-wrap"></div>
+            <button type="button" data-admin-tab="calendar" aria-pressed="true">
+              Calendar</button
+            ><button
+              type="button"
+              data-admin-tab="directory"
+              aria-pressed="false"
+            >
+              People &amp; schools</button
+            ><button
+              type="button"
+              data-admin-tab="connections"
+              aria-pressed="false"
+            >
+              Connections</button
+            ><button
+              type="button"
+              data-admin-tab="settings"
+              aria-pressed="false"
+            >
+              Requests &amp; settings
+            </button>
+          </div>
           <dialog
             id="edit-dialog"
             class="detail-dialog edit-dialog"
@@ -991,62 +947,158 @@
               </div>
             </form>
           </dialog>
-          <h2>Email notifications</h2>
-          <p>
-            New teacher leave requests are emailed from the company Google
-            Workspace account. Its Apps Script mailer checks for new mail every
-            minute; recipients are set in that project.
-          </p>
-          <div class="toolbar">
-            <button id="email-status" class="secondary">
-              Check email status
-            </button>
-            <button id="email-test" class="secondary">Send test email</button>
-          </div>
-          <p id="email-note" role="status"></p>
-          <h2>Pending request reminders</h2>
-          <p>
-            Reminder times use Asia/Bangkok. Delivery runs on the server and
-            requires notification activation. A missed or unconfirmed delivery
-            is not replayed automatically.
-          </p>
-          <button id="load-alarms" class="secondary">Load reminders</button>
-          <div id="alarm-output" class="table-wrap"></div>
-          <form id="alarm-form">
-            <h3 id="alarm-heading">New reminder</h3>
-            <label>Time<input type="time" name="time" required="" /></label>
-            <label
-              >Label<input name="label" maxlength="120" required=""
-            /></label>
-            <label
-              ><input type="checkbox" name="is_active" checked="" />
-              Enabled</label
+          <div class="admin-panel" data-admin-panel="calendar">
+            <section
+              id="admin-calendar"
+              class="calendar-workspace"
+              aria-labelledby="calendar-title"
             >
-            <button type="submit">Save reminder</button>
-            <button type="button" id="new-alarm" class="secondary">
-              Start a new reminder
+              <p class="eyebrow">TEAM CALENDAR</p>
+              <h2 id="calendar-title">Leave &amp; school closures</h2>
+              <p>
+                Who is away and which schools are closed. Each request is
+                checked against the recorded schedule: it is handled when every
+                affected class is cancelled or covered.
+              </p>
+              <div id="calendar-root"></div>
+            </section>
+          </div>
+          <div class="admin-panel" data-admin-panel="directory" hidden="">
+            <section
+              id="admin-directory"
+              class="directory-workspace"
+              aria-labelledby="directory-title"
+            >
+              <p class="eyebrow">DIRECTORY</p>
+              <h2 id="directory-title">People &amp; schools</h2>
+              <p>
+                Keep names, nicknames, FT/PT and status up to date. New people
+                from TMS still arrive automatically; edits here are never
+                overwritten by the sync.
+              </p>
+              <div id="directory-root"></div>
+            </section>
+          </div>
+          <div class="admin-panel" data-admin-panel="connections" hidden="">
+            <section id="attendance-report" class="attendance-workspace">
+              <p class="eyebrow">PRIVATE REPORT · PREVIEW</p>
+              <h2>Teaching &amp; classroom connections</h2>
+              <p>
+                Compare scheduled times with recorded joins and departures
+                across all available schools.
+              </p>
+              <form id="attendance-form" class="inline-form">
+                <label
+                  >Start date<input type="date" name="start" required
+                /></label>
+                <label>End date<input type="date" name="end" required /></label>
+                <label
+                  >School<select name="school">
+                    <option value="">All schools</option>
+                  </select></label
+                >
+                <label
+                  >Teacher<select name="teacher">
+                    <option value="">All teachers</option>
+                  </select></label
+                >
+                <button>Load connection report</button>
+              </form>
+              <div class="toolbar">
+                <button
+                  type="button"
+                  class="secondary"
+                  data-attendance-export="xlsx"
+                  disabled
+                >
+                  Export Excel</button
+                ><button
+                  type="button"
+                  class="secondary"
+                  data-attendance-export="csv"
+                  disabled
+                >
+                  Export CSV
+                </button>
+              </div>
+              <p class="input-hint">
+                Asia/Bangkok · Classroom times describe the attendant account,
+                not individual student attendance. Missing events mean “not
+                recorded”. Summaries use the scheduled period plus 30 minutes on
+                either side; details retain all events.
+              </p>
+              <p id="attendance-note" role="status">
+                Load a date range to see collection coverage and session
+                details.
+              </p>
+              <div id="attendance-output"></div>
+            </section>
+          </div>
+          <div class="admin-panel" data-admin-panel="settings" hidden="">
+            <h2>Recent requests</h2>
+            <button id="load-requests" class="secondary">
+              Load recent requests
             </button>
-          </form>
-          <h2>Data sync</h2>
-          <button id="load-jobs" class="secondary">Check job status</button>
-          <div id="job-output" class="table-wrap"></div>
-          <h2>Export a draft for payment review</h2>
-          <p>
-            Each export creates a new file. The spreadsheet reviewed and
-            adjusted by the team is the final payment record. Exported units
-            represent sessions, not currency.
-          </p>
-          <form id="export-form" class="inline-form">
-            <label
-              >Start date<input type="date" name="start" required="" /></label
-            ><label>End date<input type="date" name="end" required="" /></label
-            ><label
-              >Format<select name="format">
-                <option value="xlsx">Excel (.xlsx)</option>
-                <option value="csv">Details (.csv)</option>
-              </select></label
-            ><button>Download a new file</button>
-          </form>
+            <div id="admin-requests" class="table-wrap"></div>
+
+            <h2>Email notifications</h2>
+            <p>
+              New teacher leave requests are emailed from the company Google
+              Workspace account. Its Apps Script mailer checks for new mail
+              every minute; recipients are set in that project.
+            </p>
+            <div class="toolbar">
+              <button id="email-status" class="secondary">
+                Check email status
+              </button>
+              <button id="email-test" class="secondary">Send test email</button>
+            </div>
+            <p id="email-note" role="status"></p>
+            <h2>Pending request reminders</h2>
+            <p>
+              Reminder times use Asia/Bangkok. Delivery runs on the server and
+              requires notification activation. A missed or unconfirmed delivery
+              is not replayed automatically.
+            </p>
+            <button id="load-alarms" class="secondary">Load reminders</button>
+            <div id="alarm-output" class="table-wrap"></div>
+            <form id="alarm-form">
+              <h3 id="alarm-heading">New reminder</h3>
+              <label>Time<input type="time" name="time" required="" /></label>
+              <label
+                >Label<input name="label" maxlength="120" required=""
+              /></label>
+              <label
+                ><input type="checkbox" name="is_active" checked="" />
+                Enabled</label
+              >
+              <button type="submit">Save reminder</button>
+              <button type="button" id="new-alarm" class="secondary">
+                Start a new reminder
+              </button>
+            </form>
+            <h2>Data sync</h2>
+            <button id="load-jobs" class="secondary">Check job status</button>
+            <div id="job-output" class="table-wrap"></div>
+            <h2>Export a draft for payment review</h2>
+            <p>
+              Each export creates a new file. The spreadsheet reviewed and
+              adjusted by the team is the final payment record. Exported units
+              represent sessions, not currency.
+            </p>
+            <form id="export-form" class="inline-form">
+              <label
+                >Start date<input type="date" name="start" required="" /></label
+              ><label
+                >End date<input type="date" name="end" required="" /></label
+              ><label
+                >Format<select name="format">
+                  <option value="xlsx">Excel (.xlsx)</option>
+                  <option value="csv">Details (.csv)</option>
+                </select></label
+              ><button>Download a new file</button>
+            </form>
+          </div>
         </div>
       </section>
     </main>
@@ -1054,6 +1106,6 @@
       <span>braincloud <strong>operations</strong></span
       ><span>For the people behind every school day.</span>
     </footer>
-    <script type="module" src="app.mjs?v=4d248f3caa1c"></script>
+    <script type="module" src="app.mjs?v=a2d3aa58e2e0"></script>
   </body>
 </html>

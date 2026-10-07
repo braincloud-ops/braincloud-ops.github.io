@@ -2,10 +2,10 @@
 // are closed, with the server's check of whether each affected class is
 // already cancelled or covered. One request per month; the day panel works
 // from the same data.
-import { el, button, modal } from "./dom.mjs?v=4d248f3caa1c";
-import { character, emptyState } from "./characters.mjs?v=4d248f3caa1c";
-import { rise, punch } from "./motion.mjs?v=4d248f3caa1c";
-import { bangkokDay, cancelled, category, time } from "./schedule-model.mjs?v=4d248f3caa1c";
+import { el, button, modal } from "./dom.mjs?v=a2d3aa58e2e0";
+import { character, emptyState } from "./characters.mjs?v=a2d3aa58e2e0";
+import { rise, punch } from "./motion.mjs?v=a2d3aa58e2e0";
+import { bangkokDay, cancelled, category, time } from "./schedule-model.mjs?v=a2d3aa58e2e0";
 
 const TONES = [
   ["thesaban", "Thesaban"],
