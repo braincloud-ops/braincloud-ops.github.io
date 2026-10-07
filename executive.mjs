@@ -3,10 +3,10 @@
 // teaching workload. Every figure comes from the API; the browser never
 // downloads the schedule to calculate it. The detailed tables of the earlier
 // report are kept below the brief.
-import { decode, rise } from "./motion.mjs?v=a1abad52b3b6";
-import { combobox } from "./combobox.mjs?v=a1abad52b3b6";
-import { createSchoolMap } from "./school-map.mjs?v=a1abad52b3b6";
-import { confirmedSessions, groupTone } from "./schedule-model.mjs?v=a1abad52b3b6";
+import { decode, rise } from "./motion.mjs?v=6d6e3c726625";
+import { combobox } from "./combobox.mjs?v=6d6e3c726625";
+import { createSchoolMap } from "./school-map.mjs?v=6d6e3c726625";
+import { confirmedSessions, groupTone } from "./schedule-model.mjs?v=6d6e3c726625";
 
 const $ = (id) => document.getElementById(id);
 const KEYS = ["NORMAL", "COVERED", "CANCEL_SCHOOL", "CANCEL_BC"];

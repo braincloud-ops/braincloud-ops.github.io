@@ -22,9 +22,10 @@ export function groupTone(group) {
   if (g.includes("obec south")) return "obecsouth";
   return "other";
 }
-// Same rule as supabase/functions/_shared/sessions.mjs: on a past day, a
-// class not refreshed on that day was removed from TMS after it was first
-// seen, unless nothing at all was refreshed that day (sync outage).
+// Same rule as supabase/functions/_shared/sessions.mjs: a class marked as
+// deleted in TMS (removed_at) is left out; and on a past day, a class not
+// refreshed on that day was removed from TMS after it was first seen, unless
+// nothing at all was refreshed that day (sync outage).
 export function confirmedSessions(sessions, today = bangkokDay()) {
   const refreshed = (s) =>
     !!s.last_updated && String(s.last_updated).slice(0, 10) >= s.date;
@@ -32,7 +33,9 @@ export function confirmedSessions(sessions, today = bangkokDay()) {
     sessions.filter((s) => s.date < today && refreshed(s)).map((s) => s.date),
   );
   return sessions.filter(
-    (s) => s.date >= today || !confirmedDays.has(s.date) || refreshed(s),
+    (s) =>
+      !s.removed_at &&
+      (s.date >= today || !confirmedDays.has(s.date) || refreshed(s)),
   );
 }
 export const teacherActive = (t) =>

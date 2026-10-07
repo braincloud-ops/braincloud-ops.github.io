@@ -1,6 +1,6 @@
-import { el, button, modal } from "./dom.mjs?v=a1abad52b3b6";
-import { hasLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=a1abad52b3b6";
-import { time, cancelled, category } from "./schedule-model.mjs?v=a1abad52b3b6";
+import { el, button, modal } from "./dom.mjs?v=6d6e3c726625";
+import { hasLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=6d6e3c726625";
+import { time, cancelled, category } from "./schedule-model.mjs?v=6d6e3c726625";
 
 export function restoreDateModes() {
   for (const id of ["school-form", "teacher-form"]) {
@@ -145,20 +145,23 @@ export function initializeRequestWorkflows({
     }
     note.textContent = "Loading classes…";
     try {
-      const rows = await query(
-        "fact_daily_session",
-        [
-          { column: "school_id", op: "eq", value: s.school_id },
-          { column: "date", op: "gte", value: start },
-          { column: "date", op: "lte", value: end },
-        ],
-        false,
-        [
-          { column: "date" },
-          { column: "start_time" },
-          { column: "session_id" },
-        ],
-      );
+      // Classes deleted in TMS are not offered.
+      const rows = (
+        await query(
+          "fact_daily_session",
+          [
+            { column: "school_id", op: "eq", value: s.school_id },
+            { column: "date", op: "gte", value: start },
+            { column: "date", op: "lte", value: end },
+          ],
+          false,
+          [
+            { column: "date" },
+            { column: "start_time" },
+            { column: "session_id" },
+          ],
+        )
+      ).filter((r) => !r.removed_at);
       if (id !== generation) return;
       note.textContent = rows.length
         ? `${rows.length} recorded classes. Cancelled classes cannot be selected again.`
