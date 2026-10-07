@@ -2353,15 +2353,6 @@ button[type="submit"]:disabled,
 .form-actions p {
   color: var(--ink-2);
 }
-.lookup-search {
-  margin: 4px 0 10px;
-}
-.lookup-search input {
-  background: #f5fafb;
-  border-color: #b7cacc;
-  border-radius: 24px;
-  padding-inline: 15px;
-}
 .search-result-note {
   display: block;
   margin-top: 5px;
@@ -2576,4 +2567,543 @@ th {
   footer {
     font-size: 10px;
   }
+}
+
+/* ───────────── Motion, school groups, choosers and characters ─────────────
+   Motion personality: quick start, soft settle; light as rings and glows;
+   transform/opacity only; never delays reading or moves a click target.
+   See docs/MOTION.md. */
+:root {
+  --e-brake: cubic-bezier(0.16, 1, 0.3, 1);
+  --e-ui: cubic-bezier(0.22, 1, 0.36, 1);
+  --e-settle: cubic-bezier(0.34, 1.45, 0.64, 1);
+  --e-wipe: cubic-bezier(0.7, 0, 0.3, 1);
+  --t-quick: 180ms;
+  --t-ui: 250ms;
+  --t-move: 450ms;
+  --t-reveal: 600ms;
+  /* School groups: tint, edge, text, solid dot. Text keeps AA contrast. */
+  --tone-thesaban-bg: #fde8f1;
+  --tone-thesaban-line: #f3a9c9;
+  --tone-thesaban-ink: #86164f;
+  --tone-thesaban-dot: #e5559a;
+  --tone-private-bg: #efe8fb;
+  --tone-private-line: #c6b3ec;
+  --tone-private-ink: #4a2a8f;
+  --tone-private-dot: #8a60d8;
+  --tone-obec3-bg: #fff5c7;
+  --tone-obec3-line: #edcd52;
+  --tone-obec3-ink: #634b00;
+  --tone-obec3-dot: #e2b400;
+  --tone-obecsouth-bg: #e3f5e8;
+  --tone-obecsouth-line: #94d3a5;
+  --tone-obecsouth-ink: #1c6431;
+  --tone-obecsouth-dot: #33a457;
+  --tone-other-bg: #eef2f4;
+  --tone-other-line: #cbd5da;
+  --tone-other-ink: #43575f;
+  --tone-other-dot: #8fa2aa;
+}
+[data-tone] {
+  --tone-bg: var(--tone-other-bg);
+  --tone-line: var(--tone-other-line);
+  --tone-ink: var(--tone-other-ink);
+  --tone-dot: var(--tone-other-dot);
+}
+[data-tone="thesaban"] {
+  --tone-bg: var(--tone-thesaban-bg);
+  --tone-line: var(--tone-thesaban-line);
+  --tone-ink: var(--tone-thesaban-ink);
+  --tone-dot: var(--tone-thesaban-dot);
+}
+[data-tone="private"] {
+  --tone-bg: var(--tone-private-bg);
+  --tone-line: var(--tone-private-line);
+  --tone-ink: var(--tone-private-ink);
+  --tone-dot: var(--tone-private-dot);
+}
+[data-tone="obec3"] {
+  --tone-bg: var(--tone-obec3-bg);
+  --tone-line: var(--tone-obec3-line);
+  --tone-ink: var(--tone-obec3-ink);
+  --tone-dot: var(--tone-obec3-dot);
+}
+[data-tone="obecsouth"] {
+  --tone-bg: var(--tone-obecsouth-bg);
+  --tone-line: var(--tone-obecsouth-line);
+  --tone-ink: var(--tone-obecsouth-ink);
+  --tone-dot: var(--tone-obecsouth-dot);
+}
+.group-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 1px 9px 1px 7px;
+  border-radius: 999px;
+  background: var(--tone-bg);
+  border: 1px solid var(--tone-line);
+  color: var(--tone-ink);
+  font-weight: 650;
+  font-size: 0.78em;
+}
+.group-chip::before,
+.combo-option[data-tone]::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tone-dot);
+  flex: none;
+}
+.group-card[data-tone] {
+  border-color: var(--tone-line);
+  background: linear-gradient(90deg, var(--tone-bg), #fff 70%);
+  border-left: 5px solid var(--tone-dot);
+}
+.group-card[data-tone] strong {
+  color: var(--tone-ink);
+}
+/* FT / PT: present but quiet. */
+.type-tag,
+.combo-meta {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  opacity: 0.85;
+}
+
+/* ── Combobox: one field to type or choose ── */
+.combo {
+  position: relative;
+  margin-top: 7px;
+}
+.combo-input {
+  margin-top: 0;
+  padding-right: 44px;
+  transition:
+    border-color var(--t-quick) var(--e-ui),
+    box-shadow var(--t-ui) var(--e-ui);
+}
+.combo[data-tone]:not([data-tone=""]) .combo-input {
+  padding-left: 30px;
+  background:
+    radial-gradient(circle at 15px 50%, var(--tone-dot) 4.5px, transparent 5px)
+      no-repeat,
+    var(--surface);
+}
+.combo.is-open .combo-input {
+  border-color: var(--teal-strong);
+  box-shadow: 0 0 0 4px #0097b11f;
+}
+.combo-clear {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  translate: 0 -50%;
+  min-height: 34px;
+  width: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.25rem;
+  line-height: 1;
+}
+.combo-clear:hover:not(:disabled) {
+  background: var(--teal-tint);
+  color: var(--teal-dark);
+}
+.combo-list {
+  position: absolute;
+  z-index: 30;
+  inset: calc(100% + 6px) 0 auto;
+  max-height: min(52vh, 360px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: #fff;
+  border: 1px solid #c7d9dc;
+  border-radius: 12px;
+  box-shadow: 0 18px 40px -18px #0b3d4466;
+  transform-origin: top center;
+  animation: combo-in var(--t-ui) var(--e-brake);
+}
+@keyframes combo-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+}
+.combo-option {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 9px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+.combo-option:not([data-tone])::before {
+  content: "";
+  width: 0;
+}
+.combo-option:not([data-tone]) {
+  column-gap: 0;
+}
+.combo-option:not([data-tone]) .combo-meta {
+  margin-left: 9px;
+}
+.combo-main {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.combo-detail {
+  grid-column: 2 / -1;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 400;
+}
+.combo-option.is-active {
+  background: var(--teal-tint);
+  box-shadow: inset 3px 0 0 var(--teal);
+}
+.combo-option[aria-selected="true"] .combo-main::after {
+  content: " ✓";
+  color: var(--teal-strong);
+}
+.combo-heading {
+  padding: 10px 10px 4px;
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.combo-empty {
+  padding: 12px 10px;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+/* ── Leave type: three large choices ── */
+fieldset.choice-cards {
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  margin: 0 0 19px;
+}
+.choice-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+fieldset.choice-cards legend {
+  color: var(--ink-2);
+  font-size: 0.84rem;
+  font-weight: 650;
+  margin-bottom: 8px;
+  padding: 0;
+}
+.choice-card {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 16px 10px 14px;
+  text-align: center;
+  border: 1.5px solid #cfdcde;
+  border-radius: 14px;
+  background: #fff;
+  cursor: pointer;
+  transition:
+    border-color var(--t-quick) var(--e-ui),
+    background var(--t-quick) var(--e-ui),
+    transform var(--t-quick) var(--e-ui);
+}
+.choice-card input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  cursor: pointer;
+}
+.choice-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--teal-tint);
+  color: var(--teal-strong);
+  transition:
+    transform var(--t-ui) var(--e-settle),
+    background var(--t-quick) var(--e-ui);
+}
+.choice-icon svg {
+  width: 24px;
+  height: 24px;
+}
+.choice-title {
+  font-family: var(--font-display);
+  font-weight: 750;
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+.choice-note {
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--muted);
+  line-height: 1.3;
+}
+.choice-card:has(input:checked) {
+  border-color: var(--teal-strong);
+  background: linear-gradient(180deg, var(--teal-tint), #fff);
+  box-shadow: 0 0 0 3px #0097b124;
+}
+.choice-card:has(input:checked) .choice-icon {
+  background: var(--lime);
+  color: var(--lime-ink);
+  transform: scale(1.08);
+}
+.choice-card:has(input:focus-visible) {
+  outline: 3px solid var(--teal-strong);
+  outline-offset: 3px;
+}
+@media (max-width: 380px) {
+  .choice-note {
+    display: none;
+  }
+  .choice-card {
+    padding: 12px 6px;
+  }
+}
+
+/* ── Press ring: light blooming from where you tap ── */
+.press-ring {
+  position: fixed;
+  z-index: 60;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  border-radius: 50%;
+  border: 1.5px solid var(--teal);
+  box-shadow:
+    0 0 10px #0097b155,
+    inset 0 0 8px #0097b133;
+  pointer-events: none;
+  animation: press-ring 480ms var(--e-brake) forwards;
+}
+.press-ring.is-lime {
+  border-color: #9cbf1a;
+  box-shadow:
+    0 0 12px #bad53277,
+    inset 0 0 8px #bad53255;
+}
+@keyframes press-ring {
+  from {
+    opacity: 1;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2.2);
+  }
+}
+/* Value changed: a small punch. */
+.punch {
+  animation: punch var(--t-quick) var(--e-brake);
+}
+@keyframes punch {
+  from {
+    transform: scale(1.08);
+  }
+}
+/* New content rises in, in a short stagger. */
+.rise {
+  animation: rise var(--t-move) var(--e-brake) both;
+  animation-delay: calc(min(var(--i, 0), 6) * 50ms);
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+main > section.is-entering .page-heading,
+main > section.is-entering .form-layout,
+main > section.is-entering .report-panel {
+  animation: rise var(--t-reveal) var(--e-brake) both;
+}
+main > section.is-entering .form-layout {
+  animation-delay: 70ms;
+}
+/* Invalid input: a short brake shake next to the message. */
+.shake {
+  animation: shake 520ms var(--e-ui);
+}
+@keyframes shake {
+  20% {
+    transform: translateX(-6px) rotate(-0.6deg);
+  }
+  45% {
+    transform: translateX(5px);
+  }
+  70% {
+    transform: translateX(-3px);
+  }
+}
+/* Metric bars grow with a slight overshoot (scale, never width). */
+.grow-x {
+  transform-origin: left center;
+  animation: grow-x var(--t-reveal) var(--e-settle) both;
+}
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* ── Success: receipt with a burst and a character ── */
+.submission-receipt {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  column-gap: 12px;
+  overflow: hidden;
+  animation: rise var(--t-move) var(--e-brake) both;
+}
+.submission-receipt > :not(.character):not(.burst) {
+  grid-column: 1;
+}
+.submission-receipt .character {
+  grid-column: 2;
+  grid-row: 1 / span 5;
+  align-self: end;
+}
+.submission-receipt button {
+  justify-self: start;
+  margin-top: 12px;
+}
+.burst {
+  position: absolute;
+  right: 54px;
+  bottom: 70px;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.burst span {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  margin: -4.5px;
+  border-radius: 50%;
+  background: var(--lime);
+  box-shadow: 0 0 8px #bad532aa;
+  animation: burst-dot 900ms var(--e-brake) forwards;
+}
+.burst span:nth-child(2n) {
+  background: var(--teal);
+  box-shadow: 0 0 8px #0097b188;
+  width: 6px;
+  height: 6px;
+}
+.burst::before {
+  content: "";
+  position: absolute;
+  width: 70px;
+  height: 70px;
+  margin: -35px;
+  border-radius: 50%;
+  border: 2px solid var(--lime);
+  animation: press-ring 900ms var(--e-brake) forwards;
+}
+@keyframes burst-dot {
+  from {
+    opacity: 1;
+    transform: translate(0, 0) scale(0.4);
+  }
+  70% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translate(var(--dx), var(--dy)) scale(1);
+  }
+}
+.character {
+  display: block;
+  height: 120px;
+  width: auto;
+  pointer-events: none;
+  user-select: none;
+  animation: character-pop 600ms var(--e-settle) both;
+}
+.character.is-small {
+  height: 84px;
+}
+@keyframes character-pop {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.86);
+  }
+}
+.empty-state {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border: 1px dashed #c6d6d8;
+  border-radius: 14px;
+  background: #fbfdfd;
+  color: var(--ink-2);
+}
+.empty-state p {
+  margin: 0;
+}
+.login-character {
+  float: right;
+  margin: -8px 0 0 12px;
+}
+@media (max-width: 340px) {
+  .character {
+    display: none;
+  }
+}
+
+/* ── Accessibility and battery guards ── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+  }
+  .press-ring,
+  .burst {
+    display: none;
+  }
+}
+/* Pause everything while the tab is in the background. */
+html.is-hidden *,
+html.is-hidden *::before,
+html.is-hidden *::after {
+  animation-play-state: paused !important;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--t-ui);
+  animation-timing-function: var(--e-ui);
 }

@@ -12,6 +12,18 @@ export const teacherType = (t) =>
     : String(t?.user_type) === "220"
       ? "PT"
       : "Other";
+// School-group colour family, matched loosely so "Thesaban (others)" and
+// spacing variants share a colour. Anything unrecognised is neutral.
+export function groupTone(group) {
+  const g = String(group || "").toLowerCase();
+  if (g.includes("thesaban")) return "thesaban";
+  if (g.includes("private")) return "private";
+  if (/obec\s*3/.test(g)) return "obec3";
+  if (g.includes("obec south")) return "obecsouth";
+  return "other";
+}
+export const teacherActive = (t) =>
+  /^(active|enabled)$/i.test(String(t?.status || "").trim());
 export const displayName = (u) =>
   [u?.firstname_en, u?.lastname_en].filter(Boolean).join(" ") ||
   u?.nickname_en ||

@@ -1,4 +1,6 @@
-import { el, button } from "./dom.mjs?v=e453dd168869";
+import { el, button } from "./dom.mjs?v=fcb9b4b15308";
+import { emptyState } from "./characters.mjs?v=fcb9b4b15308";
+import { rise } from "./motion.mjs?v=fcb9b4b15308";
 import {
   bangkokDay,
   time,
@@ -10,7 +12,8 @@ import {
   displayName,
   teacherType,
   statusLabel,
-} from "./schedule-model.mjs?v=e453dd168869";
+  groupTone,
+} from "./schedule-model.mjs?v=fcb9b4b15308";
 
 export function sessionCard(s) {
   const card = el("article", "", "session-card");
@@ -28,15 +31,17 @@ export function sessionCard(s) {
   );
   if (inProgress(s))
     clock.append(el("span", "In progress", "class-badge live"));
-  card.append(
-    clock,
-    el("p", `${s.teacher} · ${s.teacherType || ""}`, "session-teacher"),
-  );
+  const teacher = el("p", s.teacher, "session-teacher");
+  if (s.teacherType && s.teacherType !== "Other")
+    teacher.append(" ", el("span", s.teacherType, "type-tag"));
+  card.append(clock, teacher);
   if (category(s) === "covered")
     card.append(el("p", `Cover for: ${s.original}`, "cover-for"));
-  card.append(
-    el("p", `${s.group} · Coordinator: ${s.coordinator}`, "session-meta"),
-  );
+  const meta = el("p", "", "session-meta");
+  const group = el("span", s.group, "group-chip");
+  group.dataset.tone = groupTone(s.group);
+  meta.append(group, ` · Coordinator: ${s.coordinator}`);
+  card.append(meta);
   return card;
 }
 
@@ -53,7 +58,8 @@ export function initializeDashboard({ query }) {
   let snapshot,
     pending = 0,
     status = "all",
-    initialized = false;
+    initialized = false,
+    lastKey = null;
   const counts = (rows) => ({
     all: rows.length,
     live: rows.filter((s) => inProgress(s)).length,
@@ -148,12 +154,13 @@ export function initializeDashboard({ query }) {
             String(s.original_teacher_id) === String(person.user_id) &&
             records.some((l) => leaveOverlaps(s, l)),
         );
-        card.append(
-          el(
-            "summary",
-            `${displayName(person)} · ${teacherType(person)} · ${affected.length} affected classes`,
-          ),
+        const summary = el("summary", displayName(person));
+        summary.append(
+          " ",
+          el("span", teacherType(person), "type-tag"),
+          ` · ${affected.length} affected classes`,
         );
+        card.append(summary);
         for (const l of records)
           card.append(
             el(
@@ -188,6 +195,7 @@ export function initializeDashboard({ query }) {
             },
             "group-card",
           );
+        b.dataset.tone = groupTone(group);
         b.append(
           el("strong", group),
           el(
@@ -215,14 +223,27 @@ export function initializeDashboard({ query }) {
       } else for (const s of rows) results.append(sessionCard(s));
       if (!rows.length)
         results.append(
-          el(
-            "p",
-            snapshot.rows.length
-              ? "No classes match these filters."
-              : "No recorded classes for this date. This does not confirm a holiday.",
-            "empty-message",
-          ),
+          snapshot.rows.length
+            ? emptyState("No classes match these filters.", "boy-confused")
+            : emptyState(
+                "No recorded classes for this date. This does not confirm a holiday.",
+                "robot-r-neutral",
+              ),
         );
+    }
+    // Animate only when the person changed what they are looking at, not on
+    // the minute refresh.
+    const key = [
+      snapshot.date,
+      view.value,
+      mode.value,
+      filter.value,
+      status,
+    ].join("|");
+    if (key !== lastKey) {
+      rise(results.children);
+      if (lastKey?.split("|")[0] !== snapshot.date) rise(metrics.children);
+      lastKey = key;
     }
   }
   async function load() {
@@ -262,10 +283,19 @@ export function initializeDashboard({ query }) {
       render();
       note.textContent = `${selected} · Asia/Bangkok · Retrieved ${new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Bangkok", hour: "2-digit", minute: "2-digit" }).format(new Date())}. In progress is based on scheduled time, not attendance.`;
     } catch {
-      if (version === pending)
-        note.textContent = snapshot
-          ? "Refresh failed. Showing the previous snapshot; it may be out of date."
-          : "The day could not be loaded. Please retry; missing data is not zero activity.";
+      if (version !== pending) return;
+      if (snapshot)
+        note.textContent =
+          "Refresh failed. Showing the previous snapshot; it may be out of date.";
+      else {
+        note.textContent = "";
+        results.replaceChildren(
+          emptyState(
+            "The day could not be loaded. Please retry; missing data is not zero activity.",
+            "robot-r-confused",
+          ),
+        );
+      }
     }
   }
   root.querySelector("form").addEventListener("submit", (e) => {

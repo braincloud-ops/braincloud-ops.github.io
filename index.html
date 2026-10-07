@@ -12,7 +12,7 @@
       content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob: https://profile.line-scdn.net; connect-src 'self' https://*.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'"
     />
     <title>Braincloud Operations</title>
-    <link rel="stylesheet" href="styles.css?v=e453dd168869" />
+    <link rel="stylesheet" href="styles.css?v=fcb9b4b15308" />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -400,13 +400,46 @@
               <p class="field-note">
                 Choose a leave type and add any useful context.
               </p>
+              <fieldset class="choice-cards">
+                <legend>Leave type</legend>
+                <div class="choice-grid">
+                  <label class="choice-card"
+                    ><input
+                      type="radio"
+                      name="type"
+                      value="Sick"
+                      checked=""
+                    /><span
+                      class="choice-icon"
+                      data-icon="sick"
+                      aria-hidden="true"
+                    ></span
+                    ><span class="choice-title">Sick leave</span
+                    ><span class="choice-note"
+                      >Unwell or a medical visit</span
+                    ></label
+                  ><label class="choice-card"
+                    ><input type="radio" name="type" value="Annual" /><span
+                      class="choice-icon"
+                      data-icon="annual"
+                      aria-hidden="true"
+                    ></span
+                    ><span class="choice-title">Annual leave</span
+                    ><span class="choice-note">Planned time off</span></label
+                  ><label class="choice-card"
+                    ><input type="radio" name="type" value="Other" /><span
+                      class="choice-icon"
+                      data-icon="other"
+                      aria-hidden="true"
+                    ></span
+                    ><span class="choice-title">Other</span
+                    ><span class="choice-note"
+                      >Add the reason below</span
+                    ></label
+                  >
+                </div>
+              </fieldset>
               <label
-                >Leave type<select name="type">
-                  <option value="Sick">Sick leave</option>
-                  <option value="Annual">Annual leave</option>
-                  <option value="Other">Other</option>
-                </select></label
-              ><label
                 >Reason (optional)<textarea
                   name="reason"
                   maxlength="2000"
@@ -998,6 +1031,6 @@
       <span>braincloud <strong>operations</strong></span
       ><span>For the people behind every school day.</span>
     </footer>
-    <script type="module" src="app.mjs?v=e453dd168869"></script>
+    <script type="module" src="app.mjs?v=fcb9b4b15308"></script>
   </body>
 </html>

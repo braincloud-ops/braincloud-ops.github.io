@@ -1,43 +1,5 @@
-export function installSearch(id, label, placeholder) {
-  const select = document.getElementById(id);
-  const choices = [...select.options].map((option) => option.cloneNode(true));
-  const searchLabel = document.createElement("label");
-  searchLabel.className = "lookup-search";
-  const title = document.createElement("span");
-  title.className = "visually-hidden";
-  title.textContent = label;
-  const search = document.createElement("input");
-  search.type = "search";
-  search.placeholder = placeholder;
-  search.autocomplete = "off";
-  search.setAttribute("aria-controls", id);
-  const results = document.createElement("small");
-  results.className = "search-result-note";
-  results.setAttribute("role", "status");
-  searchLabel.append(title, search, results);
-  select.closest("label").before(searchLabel);
-  search.addEventListener("input", () => {
-    const term = search.value.trim().toLocaleLowerCase();
-    const previous = select.value;
-    const matches = choices
-      .slice(1)
-      .filter((option) =>
-        option.textContent.toLocaleLowerCase().includes(term),
-      );
-    const keep = choices.find((option) => option.value === previous);
-    const shown = [...matches];
-    if (previous && keep && !shown.some((option) => option.value === previous))
-      shown.unshift(keep);
-    select.replaceChildren(
-      choices[0].cloneNode(true),
-      ...shown.map((option) => option.cloneNode(true)),
-    );
-    select.value = previous;
-    results.textContent = term
-      ? `${matches.length} matching options${previous ? "; your selection is kept" : ""}.`
-      : "";
-  });
-}
+import { character } from "./characters.mjs?v=fcb9b4b15308";
+import { burst } from "./motion.mjs?v=fcb9b4b15308";
 
 export function improveFormDates() {
   for (const form of document.forms) {
@@ -103,6 +65,12 @@ export function showSubmissionReceipt(form, result, onAnother) {
     done.addEventListener("click", () => window.liff.closeWindow());
     receipt.append(done);
   }
+  receipt.append(
+    character(form.id === "teacher-form" ? "girl-cheer" : "robot-b-cheer", {
+      eager: true,
+    }),
+  );
+  burst(receipt);
   receipt.focus({ preventScroll: true });
   receipt.scrollIntoView({ block: "nearest", behavior: "instant" });
 }

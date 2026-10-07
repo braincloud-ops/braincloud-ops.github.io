@@ -1,20 +1,20 @@
-import { initializeDashboard } from "./dashboard.mjs?v=e453dd168869";
-import { initializeAttendance } from "./attendance.mjs?v=e453dd168869";
+import { initializeDashboard } from "./dashboard.mjs?v=fcb9b4b15308";
+import { initializeAttendance } from "./attendance.mjs?v=fcb9b4b15308";
 import {
   initializeRequestWorkflows,
   confirmSubmission,
-} from "./request-workflows.mjs?v=e453dd168869";
-import { API_URL } from "./config.js?v=e453dd168869";
-import { requestDays } from "./operations.mjs?v=e453dd168869";
-import { initializeTimeline } from "./timeline.mjs?v=e453dd168869";
-import { initializeLearning } from "./learning.mjs?v=e453dd168869";
-import { closeNavigation } from "./interface.mjs?v=e453dd168869";
-import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=e453dd168869";
-import {
-  installSearch,
-  improveFormDates,
-  showSubmissionReceipt,
-} from "./form-experience.mjs?v=e453dd168869";
+} from "./request-workflows.mjs?v=fcb9b4b15308";
+import { API_URL } from "./config.js?v=fcb9b4b15308";
+import { requestDays } from "./operations.mjs?v=fcb9b4b15308";
+import { initializeTimeline } from "./timeline.mjs?v=fcb9b4b15308";
+import { initializeLearning } from "./learning.mjs?v=fcb9b4b15308";
+import { closeNavigation } from "./interface.mjs?v=fcb9b4b15308";
+import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=fcb9b4b15308";
+import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=fcb9b4b15308";
+import { combobox } from "./combobox.mjs?v=fcb9b4b15308";
+import { enterSection } from "./motion.mjs?v=fcb9b4b15308";
+import { character } from "./characters.mjs?v=fcb9b4b15308";
+import { groupTone, teacherActive, teacherType } from "./schedule-model.mjs?v=fcb9b4b15308";
 const $ = (id) => document.getElementById(id),
   state = {
     schools: [],
@@ -160,6 +160,41 @@ const filters = (start, end, column = "date") => [
   { column, op: "gte", value: start },
   { column, op: "lte", value: end },
 ];
+const combos = {};
+function schoolItem(s) {
+  return {
+    value: s.school_code,
+    label: `${s.school_code} — ${s.school_name_th || s.school_name_en || ""}`,
+    detail: s.school_name_th && s.school_name_en ? s.school_name_en : undefined,
+    meta: s.school_group || "Other",
+    tone: groupTone(s.school_group),
+    search: [s.school_name_en, s.school_name_th].join(" "),
+  };
+}
+// Active teachers are listed; inactive ones appear only when searched for.
+function teacherItems(teachers) {
+  const item = (t) => {
+    const nickname = t.nickname_en || t.nickname_th;
+    const thai = [t.firstname_th, t.lastname_th].filter(Boolean).join(" ");
+    return {
+      value: t.user_id,
+      label: teacherName(t.user_id) + (nickname ? ` (${nickname})` : ""),
+      detail: thai || undefined,
+      meta: teacherType(t),
+      search: [t.nickname_th, t.nickname_en, thai].join(" "),
+    };
+  };
+  return [
+    ...teachers.filter(teacherActive).map(item),
+    ...teachers
+      .filter((t) => !teacherActive(t))
+      .map((t) => ({
+        ...item(t),
+        section: "Inactive",
+        hiddenUntilSearch: true,
+      })),
+  ];
+}
 function options(id, rows, value, label) {
   for (const row of rows) {
     const option = document.createElement("option");
@@ -189,11 +224,17 @@ function route(moveFocus = false) {
   if (moveFocus) {
     heading.focus({ preventScroll: true });
     window.scrollTo({ top: 0, behavior: "instant" });
+    enterSection($(id));
   }
   message("");
 }
 addEventListener("hashchange", () => route(true));
 route();
+{
+  const wave = character("robot-b-wave", { small: true });
+  wave.classList.add("login-character");
+  $("login-form").prepend(wave);
+}
 const today = new Intl.DateTimeFormat("en-CA", {
   timeZone: "Asia/Bangkok",
   year: "numeric",
@@ -219,30 +260,21 @@ async function initialize() {
         ],
       ),
     ]);
-    options(
-      "school-select",
-      state.schools.filter((s) => String(s.status).toLowerCase() === "active"),
-      "school_code",
-      (s) =>
-        `${s.school_code} — ${s.school_name_th || s.school_name_en} · ${s.school_group || "Other"}`,
+    const activeSchools = state.schools.filter(
+      (s) => String(s.status).toLowerCase() === "active",
     );
-    options(
-      "teacher-select",
-      state.teachers,
-      "user_id",
-      (t) =>
-        `${teacherName(t.user_id)} · ${String(t.user_type) === "210" ? "FT" : "PT"}`,
-    );
-    installSearch(
-      "school-select",
-      "Search schools",
-      "Find a school by name or code",
-    );
-    installSearch(
-      "teacher-select",
-      "Search teachers",
-      "Find a teacher by name",
-    );
+    combos.school = combobox($("school-select"), {
+      items: activeSchools.map(schoolItem),
+      placeholder: "Type a school name or code",
+      invalidText: "Choose a school from the list.",
+      emptyText: "No school matches. Check the spelling or code.",
+    });
+    combos.teacher = combobox($("teacher-select"), {
+      items: teacherItems(state.teachers),
+      placeholder: "Type a teacher's name",
+      invalidText: "Choose a teacher from the list.",
+      emptyText: "No teacher matches. Ask an administrator to check the list.",
+    });
     const reportSchools = state.schools.filter(
       (s) => s.school_group !== "Trial School",
     );
@@ -263,10 +295,23 @@ async function initialize() {
     options("executive-teachers", state.teachers, "user_id", (t) =>
       teacherName(t.user_id),
     );
-    options("edit-school", state.schools, "school_code", (s) => s.school_code);
-    options("edit-teacher", state.teachers, "user_id", (t) =>
-      teacherName(t.user_id),
-    );
+    combos.editSchool = combobox($("edit-school"), {
+      items: [
+        ...activeSchools.map(schoolItem),
+        ...state.schools
+          .filter((s) => !activeSchools.includes(s))
+          .map((s) => ({
+            ...schoolItem(s),
+            section: "Inactive schools",
+            hiddenUntilSearch: true,
+          })),
+      ],
+      placeholder: "Type a school name or code",
+    });
+    combos.editTeacher = combobox($("edit-teacher"), {
+      items: teacherItems(state.teachers),
+      placeholder: "Type a teacher's name",
+    });
   } catch (e) {
     message(e.message, true);
   }
@@ -811,11 +856,14 @@ function editRequest(item) {
   $("edit-school-fields").hidden = teacher;
   $("edit-teacher-fields").hidden = !teacher;
   $("edit-type").replaceChildren();
+  const types = teacher
+    ? ["Sick", "Annual", "Other"]
+    : ["Whole Day", "Partial"];
+  // Keep an older type (e.g. "Personal") selectable so the record can be saved.
+  if (teacher && item.type && !types.includes(item.type)) types.push(item.type);
   options(
     "edit-type",
-    (teacher ? ["Sick", "Annual", "Other"] : ["Whole Day", "Partial"]).map(
-      (type) => ({ type }),
-    ),
+    types.map((type) => ({ type })),
     "type",
     (r) => r.type,
   );
@@ -832,6 +880,8 @@ function editRequest(item) {
   const f = $("edit-form").elements;
   f.teacher_id.value = item.teacher_id || "";
   f.school_code.value = item.school_code || "";
+  combos.editTeacher?.refresh();
+  combos.editSchool?.refresh();
   f.startTime.value = affected?.startTime || "08:00";
   f.endTime.value = affected?.endTime || "16:00";
   f.session_ids.value = Array.isArray(affected) ? affected.join("\n") : "";
