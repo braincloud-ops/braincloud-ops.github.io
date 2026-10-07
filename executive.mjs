@@ -3,9 +3,9 @@
 // teaching workload. Every figure comes from the API; the browser never
 // downloads the schedule to calculate it. The detailed tables of the earlier
 // report are kept below the brief.
-import { decode, rise } from "./motion.mjs?v=e17cb7a7c8b3";
-import { combobox } from "./combobox.mjs?v=e17cb7a7c8b3";
-import { confirmedSessions, groupTone } from "./schedule-model.mjs?v=e17cb7a7c8b3";
+import { decode, rise } from "./motion.mjs?v=fcb540a8dcd9";
+import { combobox } from "./combobox.mjs?v=fcb540a8dcd9";
+import { confirmedSessions, groupTone } from "./schedule-model.mjs?v=fcb540a8dcd9";
 
 const $ = (id) => document.getElementById(id);
 const KEYS = ["NORMAL", "COVERED", "CANCEL_SCHOOL", "CANCEL_BC"];
@@ -136,7 +136,9 @@ function kpiTiles(report) {
   const f = report.figures,
     p = report.previous,
     against = p ? rangeLabel(p.start, p.end) : "";
-  const lost = f.covered + f.cancel_bc;
+  // Mass-cancellation days are not individual absences (see briefFigures).
+  const event = f.cancel_bc_event || 0,
+    lost = f.covered + f.cancel_bc - event;
   const tiles = [
     {
       label: "Classes delivered",
@@ -169,7 +171,9 @@ function kpiTiles(report) {
     {
       label: "Cancelled by Braincloud",
       value: fmt(f.cancel_bc),
-      sub: `${pct(f.cancel_bc_rate)} of scheduled`,
+      sub:
+        `${pct(f.cancel_bc_rate)} of scheduled` +
+        (event ? ` · ${fmt(event)} on mass-cancellation days` : ""),
       cmp: [
         f.cancel_bc_rate,
         p?.cancel_bc_rate,
@@ -180,7 +184,8 @@ function kpiTiles(report) {
       label: "Saved by cover",
       value: pct(f.cover_rate),
       sub: lost
-        ? `${fmt(f.covered)} of ${fmt(lost)} classes the planned teacher could not teach`
+        ? `${fmt(f.covered)} of ${fmt(lost)} classes the planned teacher could not teach` +
+          (event ? " (mass-cancellation days left out)" : "")
         : "No class needed a cover teacher",
       cmp: [f.cover_rate, p?.cover_rate, { kind: "points", better: "up" }],
     },
@@ -261,6 +266,19 @@ function renderChecks(report) {
     const more = unconfirmed_days.length - shown.length;
     items.push(
       `Not confirmed by the schedule sync, kept as recorded: ${shown.join(", ")}${more ? ` and ${more} more` : ""}.`,
+    );
+  }
+  const events = report.checks.bc_event_days || [];
+  if (events.length) {
+    const shown = events
+      .slice(0, 5)
+      .map(
+        (e) =>
+          `${day(e.date, { day: "numeric", month: "short", year: "numeric" })} (${fmt(e.classes)} classes, ${e.teachers} teachers)`,
+      );
+    const more = events.length - shown.length;
+    items.push(
+      `Mass cancellations by Braincloud (10 or more teachers in one day), left out of "Saved by cover": ${shown.join(", ")}${more ? ` and ${more} more` : ""}.`,
     );
   }
   if (report.includes_future)
@@ -488,7 +506,7 @@ export function briefText(r) {
     `Braincloud operations brief: ${rangeLabel(r.start, r.end)}${p ? ` (compared with ${rangeLabel(p.start, p.end)})` : ""}`,
     `Classes delivered: ${fmt(f.delivered)} of ${fmt(f.scheduled)} scheduled (${pct(f.delivery_rate)}${vs(f.delivery_rate, p?.delivery_rate)})`,
     `Cancelled by schools: ${fmt(f.cancel_school)} (${pct(f.cancel_school_rate)}); by Braincloud: ${fmt(f.cancel_bc)} (${pct(f.cancel_bc_rate)})`,
-    `Saved by cover: ${pct(f.cover_rate)} (${fmt(f.covered)} of ${fmt(f.covered + f.cancel_bc)})`,
+    `Saved by cover: ${pct(f.cover_rate)} (${fmt(f.covered)} of ${fmt(f.covered + f.cancel_bc - (f.cancel_bc_event || 0))}${f.cancel_bc_event ? "; mass-cancellation days left out" : ""})`,
     `Schools served: ${fmt(r.schools_served)} · Teachers teaching: ${fmt(r.active_teachers)}` +
       (r.leave ? ` · Teacher leave days: ${fmt(r.leave.days)}` : ""),
   ];
