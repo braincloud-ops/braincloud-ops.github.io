@@ -1,23 +1,6 @@
 const clockTime = (v) => String(v || "").slice(0, 5);
 export const overlaps = (a, b, c, d) =>
   clockTime(a) < clockTime(d) && clockTime(c) < clockTime(b);
-export function requestDays(requests, start, end) {
-  const result = [];
-  for (
-    let n = Date.parse(start + "T00:00:00Z");
-    n <= Date.parse(end + "T00:00:00Z");
-    n += 86400000
-  ) {
-    const date = new Date(n).toISOString().slice(0, 10);
-    result.push({
-      date,
-      requests: requests.filter(
-        (r) => r.start_date <= date && r.end_date >= date,
-      ),
-    });
-  }
-  return result;
-}
 export function coverConflict(
   target,
   teacherId,

@@ -12,7 +12,7 @@
       content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob: https://profile.line-scdn.net; connect-src 'self' https://*.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'"
     />
     <title>Braincloud Operations</title>
-    <link rel="stylesheet" href="styles.css?v=4610c6d503c3" />
+    <link rel="stylesheet" href="styles.css?v=c0f77fa1234b" />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -71,14 +71,6 @@
         <a href="#executive"
           ><span class="nav-icon" data-icon="chart" aria-hidden="true"></span
           >Executive summary</a
-        >
-        <a href="#operations"
-          ><span
-            class="nav-icon"
-            data-icon="workspace"
-            aria-hidden="true"
-          ></span
-          >Daily workspace</a
         >
         <a href="#learning"
           ><span class="nav-icon" data-icon="learning" aria-hidden="true"></span
@@ -163,19 +155,22 @@
               >Open leave form <span aria-hidden="true">→</span></span
             ></a
           >
-          <a href="#operations"
+          <a href="#admin"
             ><span class="card-top"
               ><span
                 class="card-icon neutral"
-                data-icon="workspace"
+                data-icon="calendar"
                 aria-hidden="true"
               ></span
               ><span class="card-arrow" aria-hidden="true">↗</span></span
             >
-            <h2>Plan the day</h2>
-            <p>See the teaching timeline and try out cover assignments.</p>
+            <h2>Team calendar</h2>
+            <p>
+              See who is away and which schools are closed, and find cover for
+              classes that still need it.
+            </p>
             <span class="card-link"
-              >Open daily workspace <span aria-hidden="true">→</span></span
+              >Open team calendar <span aria-hidden="true">→</span></span
             ></a
           >
         </div>
@@ -845,6 +840,20 @@
             <p id="session-expiry"></p>
             <button id="logout" class="secondary">Sign out</button>
           </div>
+          <section
+            id="admin-calendar"
+            class="calendar-workspace"
+            aria-labelledby="calendar-title"
+          >
+            <p class="eyebrow">TEAM CALENDAR</p>
+            <h2 id="calendar-title">Leave &amp; school closures</h2>
+            <p>
+              Who is away and which schools are closed. Each request is checked
+              against the recorded schedule: it is handled when every affected
+              class is cancelled or covered.
+            </p>
+            <div id="calendar-root"></div>
+          </section>
           <section id="attendance-report" class="attendance-workspace">
             <p class="eyebrow">PRIVATE REPORT · PREVIEW</p>
             <h2>Teaching &amp; classroom connections</h2>
@@ -897,77 +906,91 @@
             </p>
             <div id="attendance-output"></div>
           </section>
-          <h2>Requests</h2>
-          <form id="request-calendar-form" class="inline-form">
-            <label
-              >Start date<input type="date" name="start" required=""
-            /></label>
-            <label>End date<input type="date" name="end" required="" /></label>
-            <button>Load request calendar</button>
-          </form>
-          <div id="request-calendar" class="request-calendar"></div>
+          <h2>Recent requests</h2>
           <button id="load-requests" class="secondary">
             Load recent requests
           </button>
           <div id="admin-requests" class="table-wrap"></div>
-          <form id="edit-form" hidden="">
-            <h3 id="edit-heading">Edit request</h3>
-            <p id="edit-details"></p>
-            <label
-              >Status<select name="status">
-                <option>Pending</option>
-                <option>Approved</option>
-                <option>Rejected</option>
-                <option>Cancelled</option>
-                <option>Acknowledged</option>
-              </select></label
-            >
-            <div class="row">
+          <dialog
+            id="edit-dialog"
+            class="detail-dialog edit-dialog"
+            aria-labelledby="edit-heading"
+          >
+            <form id="edit-form">
+              <h3 id="edit-heading">Edit request</h3>
+              <p id="edit-details"></p>
               <label
-                >Start date<input
-                  type="date"
-                  name="start_date"
-                  required="" /></label
-              ><label
-                >End date<input type="date" name="end_date" required=""
-              /></label>
-            </div>
-            <label
-              >Request type<select name="type" id="edit-type"></select
-            ></label>
-            <div id="edit-school-fields">
-              <label
-                >School<select name="school_code" id="edit-school"></select
-              ></label>
-              <label
-                >Selected session IDs (one per line; only for selected
-                sessions)<textarea name="session_ids" rows="3"></textarea>
-              </label>
-              <button type="button" id="edit-check-sessions" class="secondary">
-                Check affected sessions
-              </button>
-            </div>
-            <div id="edit-teacher-fields">
-              <label
-                >Teacher<select name="teacher_id" id="edit-teacher"></select
-              ></label>
+                >Status<select name="status">
+                  <option>Pending</option>
+                  <option>Approved</option>
+                  <option>Rejected</option>
+                  <option>Cancelled</option>
+                  <option>Acknowledged</option>
+                </select></label
+              >
               <div class="row">
-                <label>Start time<input type="time" name="startTime" /></label>
-                <label>End time<input type="time" name="endTime" /></label>
+                <label
+                  >Start date<input
+                    type="date"
+                    name="start_date"
+                    required="" /></label
+                ><label
+                  >End date<input type="date" name="end_date" required=""
+                /></label>
               </div>
-              <button type="button" id="edit-check-teaching" class="secondary">
-                Check teaching coverage
-              </button>
-            </div>
-            <div id="edit-coverage" class="table-wrap"></div>
-            <label
-              >Reason<textarea
-                name="reason"
-                maxlength="2000"
-                rows="4"
-              ></textarea></label
-            ><button type="submit">Save changes</button>
-          </form>
+              <label
+                >Request type<select name="type" id="edit-type"></select
+              ></label>
+              <div id="edit-school-fields">
+                <label
+                  >School<select name="school_code" id="edit-school"></select
+                ></label>
+                <label
+                  >Selected session IDs (one per line; only for selected
+                  sessions)<textarea name="session_ids" rows="3"></textarea>
+                </label>
+                <button
+                  type="button"
+                  id="edit-check-sessions"
+                  class="secondary"
+                >
+                  Check affected sessions
+                </button>
+              </div>
+              <div id="edit-teacher-fields">
+                <label
+                  >Teacher<select name="teacher_id" id="edit-teacher"></select
+                ></label>
+                <div class="row">
+                  <label
+                    >Start time<input type="time" name="startTime"
+                  /></label>
+                  <label>End time<input type="time" name="endTime" /></label>
+                </div>
+                <button
+                  type="button"
+                  id="edit-check-teaching"
+                  class="secondary"
+                >
+                  Check teaching coverage
+                </button>
+              </div>
+              <div id="edit-coverage" class="table-wrap"></div>
+              <label
+                >Reason<textarea
+                  name="reason"
+                  maxlength="2000"
+                  rows="4"
+                ></textarea>
+              </label>
+              <div class="toolbar">
+                <button type="submit">Save changes</button
+                ><button type="button" id="edit-close" class="secondary">
+                  Close
+                </button>
+              </div>
+            </form>
+          </dialog>
           <h2>Email notifications</h2>
           <p>
             New teacher leave requests are emailed from the company Google
@@ -1031,6 +1054,6 @@
       <span>braincloud <strong>operations</strong></span
       ><span>For the people behind every school day.</span>
     </footer>
-    <script type="module" src="app.mjs?v=4610c6d503c3"></script>
+    <script type="module" src="app.mjs?v=c0f77fa1234b"></script>
   </body>
 </html>

@@ -1,20 +1,20 @@
-import { initializeDashboard } from "./dashboard.mjs?v=4610c6d503c3";
-import { initializeAttendance } from "./attendance.mjs?v=4610c6d503c3";
+import { initializeDashboard } from "./dashboard.mjs?v=c0f77fa1234b";
+import { initializeAttendance } from "./attendance.mjs?v=c0f77fa1234b";
 import {
   initializeRequestWorkflows,
   confirmSubmission,
-} from "./request-workflows.mjs?v=4610c6d503c3";
-import { API_URL } from "./config.js?v=4610c6d503c3";
-import { requestDays } from "./operations.mjs?v=4610c6d503c3";
-import { initializeTimeline } from "./timeline.mjs?v=4610c6d503c3";
-import { initializeLearning } from "./learning.mjs?v=4610c6d503c3";
-import { closeNavigation } from "./interface.mjs?v=4610c6d503c3";
-import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=4610c6d503c3";
-import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=4610c6d503c3";
-import { combobox } from "./combobox.mjs?v=4610c6d503c3";
-import { enterSection } from "./motion.mjs?v=4610c6d503c3";
-import { character } from "./characters.mjs?v=4610c6d503c3";
-import { groupTone, teacherActive, teacherType } from "./schedule-model.mjs?v=4610c6d503c3";
+} from "./request-workflows.mjs?v=c0f77fa1234b";
+import { API_URL } from "./config.js?v=c0f77fa1234b";
+import { initializeAdminCalendar } from "./admin-calendar.mjs?v=c0f77fa1234b";
+import { initializeTimeline } from "./timeline.mjs?v=c0f77fa1234b";
+import { initializeLearning } from "./learning.mjs?v=c0f77fa1234b";
+import { closeNavigation } from "./interface.mjs?v=c0f77fa1234b";
+import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=c0f77fa1234b";
+import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=c0f77fa1234b";
+import { combobox } from "./combobox.mjs?v=c0f77fa1234b";
+import { enterSection } from "./motion.mjs?v=c0f77fa1234b";
+import { character } from "./characters.mjs?v=c0f77fa1234b";
+import { groupTone, teacherActive, teacherType } from "./schedule-model.mjs?v=c0f77fa1234b";
 const $ = (id) => document.getElementById(id),
   state = {
     schools: [],
@@ -730,15 +730,16 @@ function signOut() {
   $("admin-workspace").hidden = true;
   $("admin-requests").replaceChildren();
   $("job-output").replaceChildren();
-  $("request-calendar").replaceChildren();
+  calendar.clear();
   $("edit-coverage").replaceChildren();
   $("edit-details").textContent = "";
   $("edit-form").reset();
   $("alarm-form").reset();
   $("alarm-output").replaceChildren();
-  $("edit-form").hidden = true;
+  if ($("edit-dialog").open) $("edit-dialog").close();
 }
 initializeAttendance({ api });
+const calendar = initializeAdminCalendar({ api, query, message });
 $("login-form").addEventListener("submit", (e) => {
   e.preventDefault();
   busy(e.submitter, async () => {
@@ -755,6 +756,7 @@ $("login-form").addEventListener("submit", (e) => {
         timeZone: "Asia/Bangkok",
       });
     message("Signed in.");
+    calendar.start();
   });
 });
 $("logout").addEventListener("click", () =>
@@ -840,13 +842,15 @@ $("edit-form").addEventListener("submit", (e) => {
       data: { revision: state.edit.revision, changes },
     });
     state.edit = null;
-    e.target.hidden = true;
-    message("Saved. Reload requests to view the latest changes.");
+    $("edit-dialog").close();
+    calendar.refresh();
+    message(
+      "Saved. The calendar is refreshing; reload recent requests to see the change there.",
+    );
   });
 });
 function editRequest(item) {
   state.edit = item;
-  $("edit-form").hidden = false;
   $("edit-coverage").replaceChildren();
   $("edit-heading").textContent = "Edit request #" + item.id;
   $("edit-details").textContent =
@@ -888,48 +892,10 @@ function editRequest(item) {
   f.startTime.value = affected?.startTime || "08:00";
   f.endTime.value = affected?.endTime || "16:00";
   f.session_ids.value = Array.isArray(affected) ? affected.join("\n") : "";
-  $("edit-form").scrollIntoView({ behavior: "smooth" });
+  if (!$("edit-dialog").open) $("edit-dialog").showModal();
 }
-$("request-calendar-form").addEventListener("submit", (e) => {
-  e.preventDefault();
-  busy(e.submitter, async () => {
-    const f = e.target.elements,
-      start = f.start.value,
-      end = f.end.value;
-    $("request-calendar").replaceChildren();
-    if (end < start || (Date.parse(end) - Date.parse(start)) / 86400000 > 62)
-      throw new Error("Select a calendar range of up to 63 days.");
-    const rows = await query(
-      "requests_log",
-      [
-        { column: "start_date", op: "lte", value: end },
-        { column: "end_date", op: "gte", value: start },
-      ],
-      true,
-      [{ column: "id" }],
-    );
-    for (const day of requestDays(rows, start, end)) {
-      const card = document.createElement("article"),
-        heading = document.createElement("h3");
-      heading.textContent = day.date;
-      card.append(heading);
-      if (!day.requests.length) {
-        const p = document.createElement("p");
-        p.textContent = "No recorded requests";
-        card.append(p);
-      }
-      for (const item of day.requests) {
-        const b = document.createElement("button");
-        b.className = "secondary";
-        b.textContent = `#${item.id} · ${item.request_category === "Teacher" ? teacherName(item.teacher_id) : item.school_code} · ${item.status}`;
-        b.addEventListener("click", () => editRequest(item));
-        card.append(b);
-      }
-      $("request-calendar").append(card);
-    }
-    message(`Loaded ${rows.length} overlapping requests.`);
-  });
-});
+$("edit-close").addEventListener("click", () => $("edit-dialog").close());
+calendar.onEdit(editRequest);
 for (const id of ["edit-check-sessions", "edit-check-teaching"])
   $(id).addEventListener("click", () =>
     busy($(id), async () => {
