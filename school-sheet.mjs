@@ -2,10 +2,10 @@
 // executive period compared with the school's group, a month-by-month trend,
 // student counts, a Google Maps link (a plain search link: no key, no cost)
 // and, for administrators, the local teachers and who teaches there most.
-import { modal } from "./dom.mjs?v=181573e23c9d";
-import { decode } from "./motion.mjs?v=181573e23c9d";
-import { groupTone } from "./schedule-model.mjs?v=181573e23c9d";
-import { fillTrend, rangeLabel } from "./executive.mjs?v=181573e23c9d";
+import { modal } from "./dom.mjs?v=ffccdc2aa1bf";
+import { decode } from "./motion.mjs?v=ffccdc2aa1bf";
+import { groupTone } from "./schedule-model.mjs?v=ffccdc2aa1bf";
+import { fillTrend, rangeLabel } from "./executive.mjs?v=ffccdc2aa1bf";
 
 const fmt = (n) => Number(n).toLocaleString("en-GB");
 const pct = (r) =>
@@ -24,6 +24,12 @@ function el(tag, className, text) {
 
 // Google Maps search for the school; opens Google's own page with photos.
 export function mapsLink(school) {
+  // A known location opens exactly there.
+  if (school.latitude != null && school.longitude != null)
+    return (
+      "https://www.google.com/maps/search/?api=1&query=" +
+      encodeURIComponent(`${school.latitude},${school.longitude}`)
+    );
   const query = [
     school.name_th || school.name_en || school.code,
     school.district,

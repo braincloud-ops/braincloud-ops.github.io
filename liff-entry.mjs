@@ -1,5 +1,5 @@
-import { API_URL } from "./config.js?v=181573e23c9d";
-import { connectLine } from "./line-context.mjs?v=181573e23c9d";
+import { API_URL } from "./config.js?v=ffccdc2aa1bf";
+import { connectLine } from "./line-context.mjs?v=ffccdc2aa1bf";
 const entries = {
   school: { id: "2008775079-PKwtDJOx", route: "school" },
   teacher: { id: "2008775079-dguzgLe4", route: "teacher" },
@@ -12,7 +12,7 @@ const base =
   (["localhost", "127.0.0.1"].includes(location.hostname) ? "/api" : "");
 
 async function mountApplication() {
-  const response = await fetch("./index.html?v=181573e23c9d");
+  const response = await fetch("./index.html?v=ffccdc2aa1bf");
   if (!response.ok) throw new Error("Application unavailable");
   const documentTemplate = new DOMParser().parseFromString(
     await response.text(),
@@ -27,7 +27,7 @@ async function mountApplication() {
   document.body.className = "liff-app";
   // Initialization has completed: now remove credential parameters and select the form.
   history.replaceState(null, "", `${location.pathname}#${entry.route}`);
-  await import("./app.mjs?v=181573e23c9d");
+  await import("./app.mjs?v=ffccdc2aa1bf");
 }
 
 async function openEntry() {
