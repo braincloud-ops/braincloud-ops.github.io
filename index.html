@@ -12,7 +12,7 @@
       content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob: https://profile.line-scdn.net; connect-src 'self' https://*.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'"
     />
     <title>Braincloud Operations</title>
-    <link rel="stylesheet" href="styles.css?v=b30c130f594d" />
+    <link rel="stylesheet" href="styles.css?v=e17cb7a7c8b3" />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -601,37 +601,54 @@
             <label>End date<input type="date" name="end" required="" /></label>
           </div>
           <details class="brief-filters">
-            <summary>Filters (optional)</summary>
-            <p>
-              Leave a filter unselected to include all. Multiple selections are
-              supported.
+            <summary>
+              Filters
+              <span id="executive-filter-summary" class="filter-summary"
+                >(optional): all schools</span
+              >
+            </summary>
+            <p class="filter-help">
+              Tap a group to include only its schools; tap again to remove it.
+              Add schools to narrow further. The summary updates straight away.
             </p>
-            <div class="report-filters">
-              <label
-                >School groups<select
-                  id="executive-groups"
-                  name="groups"
-                  multiple=""
-                  size="4"
-                ></select
-              ></label>
-              <label
-                >Schools<select
-                  id="executive-schools"
-                  name="schoolIds"
-                  multiple=""
-                  size="4"
-                ></select
-              ></label>
-              <label id="executive-teacher-filter" hidden=""
-                >Teachers (original or actual)<select
-                  id="executive-teachers"
-                  name="teacherIds"
-                  multiple=""
-                  size="4"
-                ></select
-              ></label>
+            <div
+              id="executive-groups"
+              class="tone-filters"
+              role="group"
+              aria-label="School groups"
+            ></div>
+            <div class="filter-pickers">
+              <div>
+                <label
+                  >Add a school<select id="executive-school-pick"></select
+                ></label>
+                <ul
+                  id="executive-school-chips"
+                  class="filter-chips"
+                  aria-label="Chosen schools"
+                ></ul>
+              </div>
+              <div id="executive-teacher-filter" hidden="">
+                <label
+                  >Add a teacher (original or actual)<select
+                    id="executive-teacher-pick"
+                  ></select
+                ></label>
+                <ul
+                  id="executive-teacher-chips"
+                  class="filter-chips"
+                  aria-label="Chosen teachers"
+                ></ul>
+              </div>
             </div>
+            <button
+              id="executive-clear-filters"
+              type="button"
+              class="secondary"
+              hidden=""
+            >
+              Clear filters
+            </button>
           </details>
           <button>Load executive summary</button>
         </form>
@@ -1190,6 +1207,6 @@
       <span>braincloud <strong>operations</strong></span
       ><span>For the people behind every school day.</span>
     </footer>
-    <script type="module" src="app.mjs?v=b30c130f594d"></script>
+    <script type="module" src="app.mjs?v=e17cb7a7c8b3"></script>
   </body>
 </html>

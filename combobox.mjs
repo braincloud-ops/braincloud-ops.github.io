@@ -19,17 +19,25 @@ const normalise = (s) =>
 export function combobox(select, options) {
   const label = select.closest("label");
   const id = "combo-" + ++uid;
-  const items = options.items.map((item) => ({
-    ...item,
-    key: normalise(
-      [item.label, item.detail, item.meta, item.section, item.search].join(" "),
-    ),
-  }));
-  const byValue = new Map(items.map((item) => [item.value, item]));
+  let items, byValue;
   // Keep the select's options in step with the items so the select alone
   // remains a complete, valid value holder.
-  select.replaceChildren(new Option(options.placeholder || "", ""));
-  for (const item of items) select.append(new Option(item.label, item.value));
+  function setItems(list) {
+    const kept = select.value;
+    items = list.map((item) => ({
+      ...item,
+      key: normalise(
+        [item.label, item.detail, item.meta, item.section, item.search].join(
+          " ",
+        ),
+      ),
+    }));
+    byValue = new Map(items.map((item) => [item.value, item]));
+    select.replaceChildren(new Option(options.placeholder || "", ""));
+    for (const item of items) select.append(new Option(item.label, item.value));
+    select.value = byValue.has(kept) ? kept : "";
+  }
+  setItems(options.items);
   const required = select.required;
   select.required = false;
   select.tabIndex = -1;
@@ -223,6 +231,9 @@ export function combobox(select, options) {
   // Keep focus in the input while choosing with a pointer.
   list.addEventListener("pointerdown", (event) => event.preventDefault());
   list.addEventListener("click", (event) => {
+    // The list sits inside the field's <label>: without this, the label
+    // forwards the click to the input, which reopens the list just closed.
+    event.preventDefault();
     const li = event.target.closest(".combo-option");
     if (li) choose(shown[Number(li.dataset.index)]);
   });
@@ -239,5 +250,11 @@ export function combobox(select, options) {
     input,
     refresh: commitText,
     labelFor: (value) => byValue.get(value)?.label || "",
+    // Replace the choices (for example when another filter narrows them).
+    setItems(next) {
+      setItems(next);
+      commitText();
+      if (!list.hidden) close();
+    },
   };
 }

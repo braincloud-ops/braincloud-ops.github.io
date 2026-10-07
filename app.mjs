@@ -1,27 +1,27 @@
-import { initializeDashboard } from "./dashboard.mjs?v=b30c130f594d";
-import { initializeAttendance } from "./attendance.mjs?v=b30c130f594d";
+import { initializeDashboard } from "./dashboard.mjs?v=e17cb7a7c8b3";
+import { initializeAttendance } from "./attendance.mjs?v=e17cb7a7c8b3";
 import {
   initializeRequestWorkflows,
   confirmSubmission,
-} from "./request-workflows.mjs?v=b30c130f594d";
-import { API_URL } from "./config.js?v=b30c130f594d";
-import { initializeAdminCalendar } from "./admin-calendar.mjs?v=b30c130f594d";
-import { initializeDirectory } from "./directory.mjs?v=b30c130f594d";
-import { initializeTimeline } from "./timeline.mjs?v=b30c130f594d";
-import { initializeLearning } from "./learning.mjs?v=b30c130f594d";
-import { initializeExecutive } from "./executive.mjs?v=b30c130f594d";
-import { closeNavigation } from "./interface.mjs?v=b30c130f594d";
-import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=b30c130f594d";
-import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=b30c130f594d";
-import { combobox } from "./combobox.mjs?v=b30c130f594d";
-import { enterSection } from "./motion.mjs?v=b30c130f594d";
-import { character } from "./characters.mjs?v=b30c130f594d";
+} from "./request-workflows.mjs?v=e17cb7a7c8b3";
+import { API_URL } from "./config.js?v=e17cb7a7c8b3";
+import { initializeAdminCalendar } from "./admin-calendar.mjs?v=e17cb7a7c8b3";
+import { initializeDirectory } from "./directory.mjs?v=e17cb7a7c8b3";
+import { initializeTimeline } from "./timeline.mjs?v=e17cb7a7c8b3";
+import { initializeLearning } from "./learning.mjs?v=e17cb7a7c8b3";
+import { initializeExecutive } from "./executive.mjs?v=e17cb7a7c8b3";
+import { closeNavigation } from "./interface.mjs?v=e17cb7a7c8b3";
+import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=e17cb7a7c8b3";
+import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=e17cb7a7c8b3";
+import { combobox } from "./combobox.mjs?v=e17cb7a7c8b3";
+import { enterSection } from "./motion.mjs?v=e17cb7a7c8b3";
+import { character } from "./characters.mjs?v=e17cb7a7c8b3";
 import {
   confirmedSessions,
   groupTone,
   teacherActive,
   teacherType,
-} from "./schedule-model.mjs?v=b30c130f594d";
+} from "./schedule-model.mjs?v=e17cb7a7c8b3";
 const $ = (id) => document.getElementById(id),
   state = {
     schools: [],
@@ -284,26 +284,10 @@ async function initialize() {
       invalidText: "Choose a teacher from the list.",
       emptyText: "No teacher matches. Ask an administrator to check the list.",
     });
-    const reportSchools = state.schools.filter(
-      (s) => s.school_group !== "Trial School",
-    );
-    options(
-      "executive-schools",
-      reportSchools,
-      "school_id",
-      (s) => `${s.school_code} — ${s.school_name_en || s.school_name_th}`,
-    );
-    options(
-      "executive-groups",
-      [...new Set(reportSchools.map((s) => s.school_group || "Other"))]
-        .sort()
-        .map((group) => ({ group })),
-      "group",
-      (s) => s.group,
-    );
-    options("executive-teachers", state.teachers, "user_id", (t) =>
-      teacherName(t.user_id),
-    );
+    executive.setDirectory({
+      schools: state.schools,
+      teacherItems: teacherItems(state.teachers),
+    });
     combos.editSchool = combobox($("edit-school"), {
       items: [
         ...activeSchools.map(schoolItem),
@@ -333,7 +317,7 @@ initializeRequestWorkflows({
   teacherName,
 });
 initializeDashboard({ query });
-initializeExecutive({
+const executive = initializeExecutive({
   api,
   busy,
   message,

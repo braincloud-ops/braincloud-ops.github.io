@@ -3,8 +3,9 @@
 // teaching workload. Every figure comes from the API; the browser never
 // downloads the schedule to calculate it. The detailed tables of the earlier
 // report are kept below the brief.
-import { decode, punch, rise } from "./motion.mjs?v=b30c130f594d";
-import { confirmedSessions, groupTone } from "./schedule-model.mjs?v=b30c130f594d";
+import { decode, rise } from "./motion.mjs?v=e17cb7a7c8b3";
+import { combobox } from "./combobox.mjs?v=e17cb7a7c8b3";
+import { confirmedSessions, groupTone } from "./schedule-model.mjs?v=e17cb7a7c8b3";
 
 const $ = (id) => document.getElementById(id);
 const KEYS = ["NORMAL", "COVERED", "CANCEL_SCHOOL", "CANCEL_BC"];
@@ -534,8 +535,18 @@ export function initializeExecutive({
   isAdmin,
 }) {
   const form = $("executive-form");
+  const loadButton = form.querySelector(":scope > button");
   let current = null,
-    generation = 0;
+    generation = 0,
+    loaded = false,
+    timer = null;
+  // Filters and a chosen period apply straight away (after a short pause, so
+  // several quick changes make one request).
+  const loadSoon = (delay = 450) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => load(loadButton), delay);
+  };
+
   const presets = [...form.querySelectorAll("[data-preset]")];
   const choosePreset = (name) => {
     const range = presetRange(name);
@@ -545,24 +556,137 @@ export function initializeExecutive({
       b.setAttribute("aria-pressed", String(b.dataset.preset === name));
   };
   for (const b of presets)
-    b.addEventListener("click", () => choosePreset(b.dataset.preset));
-  for (const input of [form.elements.start, form.elements.end])
+    b.addEventListener("click", () => {
+      choosePreset(b.dataset.preset);
+      loadSoon(0);
+    });
+  for (const input of [form.elements.start, form.elements.end]) {
     input.addEventListener("input", () => {
       for (const b of presets) b.setAttribute("aria-pressed", "false");
     });
+    input.addEventListener("change", () => {
+      if (
+        form.elements.start.value &&
+        form.elements.end.value &&
+        form.elements.start.value <= form.elements.end.value
+      )
+        loadSoon(900);
+    });
+  }
   choosePreset("month");
+
+  // ── Filters: group chips, then schools (within the chosen groups) and,
+  // for administrators, teachers. Chosen schools and teachers show as chips.
+  const chosen = { groups: new Set(), schools: new Set(), teachers: new Set() };
+  let schools = [],
+    schoolCombo = null,
+    teacherCombo = null,
+    teacherLabels = new Map();
+  const groupOf = (s) => s.school_group || "Other";
+  const schoolLabel = (s) =>
+    `${s.school_code} — ${s.school_name_en || s.school_name_th || ""}`;
+  const schoolItems = () =>
+    schools
+      .filter((s) => !chosen.groups.size || chosen.groups.has(groupOf(s)))
+      .filter((s) => !chosen.schools.has(s.school_id))
+      .map((s) => {
+        const active = String(s.status || "").toLowerCase() === "active";
+        return {
+          value: s.school_id,
+          label: schoolLabel(s),
+          detail:
+            s.school_name_th && s.school_name_en ? s.school_name_th : undefined,
+          meta: groupOf(s),
+          tone: groupTone(s.school_group),
+          ...(active
+            ? {}
+            : { section: "Inactive schools", hiddenUntilSearch: true }),
+        };
+      })
+      .sort((a, b) => (a.section ? 1 : 0) - (b.section ? 1 : 0));
+
+  function chip(list, label, onRemove, tone) {
+    const li = el("li", "filter-chip");
+    if (tone) li.dataset.tone = tone;
+    const remove = el("button", "", "×");
+    remove.type = "button";
+    remove.setAttribute("aria-label", "Remove " + label);
+    remove.addEventListener("click", onRemove);
+    li.append(el("span", "", label), remove);
+    list.append(li);
+  }
+  function renderFilters() {
+    for (const b of $("executive-groups").children)
+      b.setAttribute(
+        "aria-pressed",
+        String(chosen.groups.has(b.dataset.group)),
+      );
+    const schoolList = $("executive-school-chips");
+    schoolList.replaceChildren();
+    for (const id of chosen.schools) {
+      const s = schools.find((x) => x.school_id === id);
+      chip(
+        schoolList,
+        s ? schoolLabel(s) : id,
+        () => {
+          chosen.schools.delete(id);
+          changed();
+        },
+        groupTone(s?.school_group),
+      );
+    }
+    const teacherList = $("executive-teacher-chips");
+    teacherList.replaceChildren();
+    for (const id of chosen.teachers)
+      chip(teacherList, teacherLabels.get(id) || teacherName(id), () => {
+        chosen.teachers.delete(id);
+        changed();
+      });
+    schoolCombo?.setItems(schoolItems());
+    const parts = [];
+    if (chosen.groups.size) parts.push([...chosen.groups].join(", "));
+    if (chosen.schools.size)
+      parts.push(
+        `${chosen.schools.size} ${chosen.schools.size === 1 ? "school" : "schools"}`,
+      );
+    if (chosen.teachers.size)
+      parts.push(
+        `${chosen.teachers.size} ${chosen.teachers.size === 1 ? "teacher" : "teachers"}`,
+      );
+    $("executive-filter-summary").textContent = parts.length
+      ? ": " + parts.join(" · ")
+      : "(optional): all schools";
+    $("executive-clear-filters").hidden = !parts.length;
+  }
+  function changed() {
+    // A school outside the chosen groups would make the result empty.
+    if (chosen.groups.size)
+      for (const id of chosen.schools) {
+        const s = schools.find((x) => x.school_id === id);
+        if (s && !chosen.groups.has(groupOf(s))) chosen.schools.delete(id);
+      }
+    renderFilters();
+    if (loaded) loadSoon();
+  }
+  $("executive-clear-filters").addEventListener("click", () => {
+    chosen.groups.clear();
+    chosen.schools.clear();
+    chosen.teachers.clear();
+    changed();
+  });
 
   const teacherFilter = $("executive-teacher-filter");
   const clear = () => {
     generation++;
     current = null;
     $("executive-output").hidden = true;
+    $("executive-output").classList.remove("is-loading");
   };
   addEventListener("admin-signed-in", () => (teacherFilter.hidden = false));
   addEventListener("admin-signed-out", () => {
     teacherFilter.hidden = true;
-    for (const option of $("executive-teachers").options)
-      option.selected = false;
+    chosen.teachers.clear();
+    renderFilters();
     // Teacher figures must not stay on screen after signing out.
     if (current?.admin_detail) {
       clear();
@@ -570,24 +694,26 @@ export function initializeExecutive({
     }
   });
 
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    busy(e.submitter, async () => {
-      clear();
-      const ticket = generation;
+  async function load(button) {
+    clearTimeout(timer);
+    await busy(button, async () => {
+      const ticket = ++generation;
+      const output = $("executive-output");
+      // Keep the last figures visible, faded, until the new ones arrive.
+      output.classList.add("is-loading");
+      output.setAttribute("aria-busy", "true");
       $("executive-note").textContent = "Loading the selected period…";
-      const f = new FormData(form);
       const params = {
-        start: f.get("start"),
-        end: f.get("end"),
-        groups: f.getAll("groups"),
-        schoolIds: f.getAll("schoolIds"),
-        teacherIds: isAdmin() ? f.getAll("teacherIds") : [],
+        start: form.elements.start.value,
+        end: form.elements.end.value,
+        groups: [...chosen.groups],
+        schoolIds: [...chosen.schools],
+        teacherIds: isAdmin() ? [...chosen.teachers] : [],
       };
-      if (params.start > params.end)
-        throw new Error("The start date is after the end date.");
       let report;
       try {
+        if (!params.start || !params.end || params.start > params.end)
+          throw new Error("Choose a start date on or before the end date.");
         report = (
           await api(
             isAdmin() ? "/admin/reports/executive" : "/reports/executive",
@@ -595,16 +721,23 @@ export function initializeExecutive({
           )
         ).data;
       } catch (error) {
-        if (ticket === generation)
+        if (ticket === generation) {
+          clear();
           $("executive-note").textContent =
             "This report could not be loaded. No replacement totals were calculated.";
+        }
         throw error;
+      } finally {
+        if (ticket === generation) output.removeAttribute("aria-busy");
       }
       if (ticket !== generation) return;
+      loaded = true;
+      output.classList.remove("is-loading");
       $("executive-note").textContent = "";
       if (!report.total) {
-        const note = $("executive-note");
-        note.textContent = `${rangeLabel(report.start, report.end)}: no recorded sessions match this selection. This does not confirm zero activity.`;
+        clear();
+        $("executive-note").textContent =
+          `${rangeLabel(report.start, report.end)}: no recorded sessions match this selection. This does not confirm zero activity.`;
         message("Report loaded.");
         return;
       }
@@ -622,12 +755,76 @@ export function initializeExecutive({
       renderWorkload(report);
       renderDetails(report, params);
       current = report;
-      $("executive-output").hidden = false;
-      punch($("brief-kpis"));
+      output.hidden = false;
       message("Executive summary loaded.");
     });
+  }
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    load(e.submitter || loadButton);
   });
+  // Opening the page shows this month straight away.
+  const openPage = () => {
+    if (location.hash === "#executive" && !loaded && !current) loadSoon(0);
+  };
+  addEventListener("hashchange", openPage);
+  openPage();
 
+  // Called once the school and teacher lists have loaded.
+  function setDirectory({ schools: list, teacherItems }) {
+    schools = list.filter((s) => s.school_group !== "Trial School");
+    const counts = new Map();
+    for (const s of schools) {
+      const g = groupOf(s);
+      const active = String(s.status || "").toLowerCase() === "active";
+      counts.set(g, (counts.get(g) || 0) + (active ? 1 : 0));
+    }
+    const root = $("executive-groups");
+    root.replaceChildren();
+    // Busiest groups first; groups with no active school last.
+    for (const [group, active] of [...counts].sort(
+      (a, b) => b[1] - a[1] || a[0].localeCompare(b[0]),
+    )) {
+      const b = el("button", "tone-filter", group);
+      b.type = "button";
+      b.dataset.group = group;
+      b.dataset.tone = groupTone(group === "Other" ? "" : group);
+      b.setAttribute("aria-pressed", "false");
+      b.title = `${active} active ${active === 1 ? "school" : "schools"}`;
+      b.addEventListener("click", () => {
+        if (chosen.groups.has(group)) chosen.groups.delete(group);
+        else chosen.groups.add(group);
+        changed();
+      });
+      root.append(b);
+    }
+    schoolCombo = combobox($("executive-school-pick"), {
+      items: schoolItems(),
+      placeholder: "Type a school name or code",
+      emptyText: "No school matches in the chosen groups.",
+    });
+    $("executive-school-pick").addEventListener("change", (e) => {
+      const id = e.target.value;
+      if (!id) return;
+      chosen.schools.add(id);
+      e.target.value = "";
+      changed();
+    });
+    teacherLabels = new Map(teacherItems.map((t) => [t.value, t.label]));
+    teacherCombo = combobox($("executive-teacher-pick"), {
+      items: teacherItems,
+      placeholder: "Type a teacher's name",
+    });
+    $("executive-teacher-pick").addEventListener("change", (e) => {
+      const id = e.target.value;
+      if (!id) return;
+      chosen.teachers.add(id);
+      e.target.value = "";
+      teacherCombo.refresh();
+      changed();
+    });
+    renderFilters();
+  }
   $("copy-executive").addEventListener("click", () =>
     busy($("copy-executive"), async () => {
       if (!current) throw new Error("Load a report first.");
@@ -834,4 +1031,5 @@ export function initializeExecutive({
       report.daily,
     );
   }
+  return { setDirectory };
 }
