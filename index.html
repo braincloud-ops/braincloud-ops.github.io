@@ -6,13 +6,16 @@
       name="viewport"
       content="width=device-width,initial-scale=1,viewport-fit=cover"
     />
-    <meta name="referrer" content="no-referrer" />
+    <!-- Google sign-in reads the page origin from the referrer; send only the
+         origin to other sites (never the path or #fragment). The LINE entry
+         pages keep no-referrer because their address can carry a token. -->
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; script-src 'self' https://accounts.google.com/gsi/client; style-src 'self' https://accounts.google.com/gsi/style; frame-src https://accounts.google.com/gsi/; img-src 'self' data: blob: https://profile.line-scdn.net; connect-src 'self' https://*.supabase.co https://accounts.google.com/gsi/; object-src 'none'; base-uri 'none'; form-action 'self'"
     />
     <title>Braincloud Operations</title>
-    <link rel="stylesheet" href="styles.css?v=4a1753a12e59" />
+    <link rel="stylesheet" href="styles.css?v=45e5b57cfced" />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -1321,6 +1324,6 @@
       <span>braincloud <strong>operations</strong></span
       ><span>For the people behind every school day.</span>
     </footer>
-    <script type="module" src="app.mjs?v=4a1753a12e59"></script>
+    <script type="module" src="app.mjs?v=45e5b57cfced"></script>
   </body>
 </html>
