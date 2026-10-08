@@ -2,16 +2,16 @@
 // are closed, with the server's check of whether each affected class is
 // already cancelled or covered. One request per month; the day panel works
 // from the same data.
-import { el, button, modal } from "./dom.mjs?v=4bb7b27a0ac3";
-import { character, emptyState } from "./characters.mjs?v=4bb7b27a0ac3";
-import { rise, punch } from "./motion.mjs?v=4bb7b27a0ac3";
+import { el, button, modal } from "./dom.mjs?v=4a1753a12e59";
+import { character, emptyState } from "./characters.mjs?v=4a1753a12e59";
+import { rise, punch } from "./motion.mjs?v=4a1753a12e59";
 import {
   bangkokDay,
   cancelled,
   category,
   confirmedSessions,
   time,
-} from "./schedule-model.mjs?v=4bb7b27a0ac3";
+} from "./schedule-model.mjs?v=4a1753a12e59";
 
 const TONES = [
   ["thesaban", "Thesaban"],
@@ -90,6 +90,9 @@ export function initializeAdminCalendar({
   rootId = "calendar-root",
   endpoint = "/admin/calendar",
   readOnly = false,
+  // Signed-in administrators: what their permissions allow.
+  canEdit = () => !readOnly,
+  canSeeDetails = () => !readOnly,
   // Whether the page holding the calendar is on screen (for auto-refresh).
   isVisible = () =>
     !document.getElementById("admin-workspace").hidden &&
@@ -598,7 +601,7 @@ export function initializeAdminCalendar({
       );
     } else if (day.total)
       card.append(el("p", `All ${day.total} classes cancelled.`, "muted-line"));
-    if (!readOnly && (!compact || r.reason)) {
+    if (canSeeDetails() && (!compact || r.reason)) {
       const meta = el("p", "", "request-meta");
       meta.append(
         `#${r.id} · ${r.user_name || "Not recorded"} · ${r.verified ? "LINE verified" : "Browser, not verified"}`,
@@ -609,10 +612,10 @@ export function initializeAdminCalendar({
     }
     const tools = el("div", "", "request-tools");
     if (readOnly) {
-      // Changing a request needs the administrator password.
+      // Changing a request needs administrator access (Admin page).
       const signIn = el(
         "a",
-        "Sign in to edit",
+        "Edit in Admin",
         "button-link secondary-link small",
       );
       signIn.href = "#admin";
@@ -620,6 +623,7 @@ export function initializeAdminCalendar({
       card.append(tools);
       return card;
     }
+    if (!canEdit()) return card;
     const confirmed = r.state === "confirmed";
     tools.append(
       button(

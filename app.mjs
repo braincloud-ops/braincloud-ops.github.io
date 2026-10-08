@@ -1,28 +1,29 @@
-import { initializeDashboard } from "./dashboard.mjs?v=4bb7b27a0ac3";
-import { initializeAttendance } from "./attendance.mjs?v=4bb7b27a0ac3";
+import { initializeDashboard } from "./dashboard.mjs?v=4a1753a12e59";
+import { initializeAttendance } from "./attendance.mjs?v=4a1753a12e59";
 import {
   initializeRequestWorkflows,
   confirmSubmission,
-} from "./request-workflows.mjs?v=4bb7b27a0ac3";
-import { API_URL } from "./config.js?v=4bb7b27a0ac3";
-import { initializeAdminCalendar } from "./admin-calendar.mjs?v=4bb7b27a0ac3";
-import { forgetViewer, signIn, viewerSession } from "./viewer.mjs?v=4bb7b27a0ac3";
-import { initializeDirectory } from "./directory.mjs?v=4bb7b27a0ac3";
-import { initializeTimeline } from "./timeline.mjs?v=4bb7b27a0ac3";
-import { initializeExecutive } from "./executive.mjs?v=4bb7b27a0ac3";
-import { initializeTeacherProfile } from "./teacher-profile.mjs?v=4bb7b27a0ac3";
-import { closeNavigation } from "./interface.mjs?v=4bb7b27a0ac3";
-import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=4bb7b27a0ac3";
-import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=4bb7b27a0ac3";
-import { combobox } from "./combobox.mjs?v=4bb7b27a0ac3";
-import { enterSection } from "./motion.mjs?v=4bb7b27a0ac3";
-import { character } from "./characters.mjs?v=4bb7b27a0ac3";
+} from "./request-workflows.mjs?v=4a1753a12e59";
+import { API_URL } from "./config.js?v=4a1753a12e59";
+import { initializeAdminCalendar } from "./admin-calendar.mjs?v=4a1753a12e59";
+import { forgetViewer, keepViewer, signIn, viewerSession } from "./viewer.mjs?v=4a1753a12e59";
+import { initializeAccess, levelLabel } from "./access.mjs?v=4a1753a12e59";
+import { initializeDirectory } from "./directory.mjs?v=4a1753a12e59";
+import { initializeTimeline } from "./timeline.mjs?v=4a1753a12e59";
+import { initializeExecutive } from "./executive.mjs?v=4a1753a12e59";
+import { initializeTeacherProfile } from "./teacher-profile.mjs?v=4a1753a12e59";
+import { closeNavigation } from "./interface.mjs?v=4a1753a12e59";
+import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=4a1753a12e59";
+import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=4a1753a12e59";
+import { combobox } from "./combobox.mjs?v=4a1753a12e59";
+import { enterSection } from "./motion.mjs?v=4a1753a12e59";
+import { character } from "./characters.mjs?v=4a1753a12e59";
 import {
   confirmedSessions,
   groupTone,
   teacherActive,
   teacherType,
-} from "./schedule-model.mjs?v=4bb7b27a0ac3";
+} from "./schedule-model.mjs?v=4a1753a12e59";
 const $ = (id) => document.getElementById(id),
   state = {
     schools: [],
@@ -245,7 +246,7 @@ route();
 {
   const wave = character("robot-b-wave", { small: true });
   wave.classList.add("login-character");
-  $("login-form").prepend(wave);
+  $("login-panel").prepend(wave);
 }
 const today = new Intl.DateTimeFormat("en-CA", {
   timeZone: "Asia/Bangkok",
@@ -329,8 +330,8 @@ const executive = initializeExecutive({
   table,
   teacherName,
   filters,
-  isAdmin: () =>
-    !!state.session && Date.parse(state.session.expires_at) > Date.now(),
+  // Teacher names and school detail need that permission.
+  isAdmin: () => can("teachers.profile"),
 });
 for (const [id, category] of [
   ["school-form", "School"],
@@ -484,8 +485,12 @@ $("report-form").addEventListener("submit", (e) => {
     message("Report loaded.");
   });
 });
-// The administrator session is remembered on this device until it expires or
-// Sign out, so closing the window does not ask for the password again.
+// ── Signing in ──
+// One company Google sign-in. The server answers with a named administrator
+// session (the permissions an owner gave this person) or, for everyone else
+// from the company, a staff session for the read-only team calendar. The
+// shared password remains for emergencies and has every permission.
+// Sessions are remembered on this device until they expire or Sign out.
 const ADMIN_KEY = "braincloud-admin";
 function rememberAdmin(session) {
   try {
@@ -500,6 +505,39 @@ function rememberedAdmin() {
   } catch {}
   return null;
 }
+function adminLive() {
+  return !!state.session && Date.parse(state.session.expires_at) > Date.now();
+}
+// What the signed-in administrator may do. The server checks every request;
+// this only hides what would be refused.
+function can(key) {
+  return adminLive() && !!state.session.permissions?.includes(key);
+}
+function applyPermissions() {
+  for (const node of document.querySelectorAll("#admin-workspace [data-need]"))
+    node.hidden = !node.dataset.need.split(" ").some(can);
+  $("emergency-banner").hidden = state.session?.method !== "password";
+  $("access-tab-label").textContent = can("access.manage")
+    ? "Access & activity"
+    : "My activity";
+  updateAccount();
+}
+// The account card at the foot of the menu: who is signed in, and Sign out.
+function updateAccount() {
+  const viewer = viewerSession();
+  const admin = adminLive() ? state.session : null;
+  $("account").hidden = !admin && !viewer;
+  $("account-email").textContent = admin
+    ? admin.email || "Emergency password"
+    : viewer?.email || "";
+  $("account-role").textContent = admin
+    ? admin.method === "password"
+      ? "All permissions"
+      : levelLabel(admin.preset)
+    : viewer
+      ? "Team calendar"
+      : "";
+}
 function signOut() {
   try {
     localStorage.removeItem(ADMIN_KEY);
@@ -508,33 +546,91 @@ function signOut() {
   state.session = null;
   state.edit = null;
   state.alarm = null;
-  $("login-form").hidden = false;
+  $("login-panel").hidden = false;
   $("admin-workspace").hidden = true;
   $("admin-requests").replaceChildren();
   $("job-output").replaceChildren();
   calendar.clear();
   directory.clear();
   profiles.clear();
+  access.clear();
   $("edit-coverage").replaceChildren();
   $("edit-details").textContent = "";
   $("edit-form").reset();
   $("alarm-form").reset();
   $("alarm-output").replaceChildren();
   if ($("edit-dialog").open) $("edit-dialog").close();
+  updateAccount();
+  showAdminSignIn();
+}
+// Sign out of everything on this device: the administrator session and the
+// staff session, on the server and in this browser.
+async function signOutEverywhere(control) {
+  await busy(control, async () => {
+    const viewer = viewerSession();
+    try {
+      if (adminLive()) await api("/admin/logout", { method: "POST", data: {} });
+    } catch {}
+    try {
+      if (viewer)
+        await api("/viewer/logout", {
+          method: "POST",
+          data: {},
+          headers: { Authorization: "Bearer " + viewer.token },
+        });
+    } catch {}
+    forgetViewer();
+    if (state.session) signOut();
+    teamCalendar.clear();
+    if (!$("calendar").hidden) showTeamSignIn();
+    else $("team-calendar-wrap").hidden = true;
+    updateAccount();
+    message("Signed out.");
+  });
+}
+function handleSignIn(session) {
+  if (session.kind === "admin") {
+    forgetViewer();
+    rememberAdmin(session);
+    openWorkspace(session);
+    $("admin-signin-note").textContent = "";
+    message("Signed in as " + session.email + ".");
+  } else {
+    keepViewer(session);
+    $("admin-signin-note").textContent =
+      session.email +
+      " can see the team calendar but has no administrator access. Ask an owner if you need it.";
+    updateAccount();
+  }
+  if (!$("calendar").hidden) openTeamCalendar();
+}
+function signInError(error) {
+  $("admin-signin-note").textContent = error.message;
+  $("team-signin-note").textContent = error.message;
+}
+const signInOptions = () => ({
+  api,
+  demo,
+  onSession: handleSignIn,
+  onError: signInError,
+});
+function showAdminSignIn() {
+  signIn($("admin-signin-button"), signInOptions());
 }
 initializeAttendance({ api });
-const calendar = initializeAdminCalendar({ api, query, message });
+const calendar = initializeAdminCalendar({
+  api,
+  query,
+  message,
+  canEdit: () => can("requests.edit"),
+  canSeeDetails: () => can("leave.details"),
+});
 
 // ── Team calendar for staff: company Google sign-in, read-only ──
-// A staff viewer session (or an administrator session) reads POST /calendar,
-// which never carries reasons, submitters or leave types.
+// A staff session (or an administrator session) reads POST /calendar, which
+// never carries reasons, submitters or leave types.
 const viewerApi = (path, options = {}) => {
-  const viewer = viewerSession();
-  const admin =
-    state.session && Date.parse(state.session.expires_at) > Date.now()
-      ? state.session.token
-      : null;
-  const token = viewer?.token || admin;
+  const token = viewerSession()?.token || (adminLive() && state.session.token);
   return api(path, {
     ...options,
     headers: {
@@ -550,6 +646,7 @@ const teamCalendar = initializeAdminCalendar({
     } catch (error) {
       if (/sign in|session/i.test(error.message)) {
         forgetViewer();
+        updateAccount();
         showTeamSignIn();
       }
       throw error;
@@ -567,22 +664,17 @@ function showTeamSignIn() {
   $("team-calendar-wrap").hidden = true;
   $("team-signin").hidden = false;
   $("team-signin-note").textContent = "";
-  signIn($("team-signin-button"), { api, demo })
-    .then(() => openTeamCalendar())
-    .catch((error) => ($("team-signin-note").textContent = error.message));
+  signIn($("team-signin-button"), signInOptions());
 }
 async function openTeamCalendar(date) {
   if (date) pendingDate = date;
   const viewer = viewerSession();
-  const admin =
-    state.session && Date.parse(state.session.expires_at) > Date.now();
-  if (!viewer && !admin) return showTeamSignIn();
+  if (!viewer && !adminLive()) return showTeamSignIn();
   $("team-signin").hidden = true;
   $("team-calendar-wrap").hidden = false;
-  $("team-who").textContent = viewer
-    ? "Signed in as " + viewer.email
-    : "Signed in as administrator";
-  $("team-signout").hidden = !viewer;
+  $("team-who").textContent =
+    "Signed in as " +
+    (viewer?.email || state.session.email || "administrator (password)");
   if (pendingDate) {
     const day = pendingDate;
     pendingDate = null;
@@ -594,7 +686,6 @@ const onTeamRoute = () => {
   if (page === "calendar") openTeamCalendar(arg);
 };
 addEventListener("hashchange", onTeamRoute);
-onTeamRoute();
 // An administrator reading the team calendar loses access on sign-out.
 addEventListener("admin-signed-out", () => {
   if (viewerSession()) return;
@@ -602,28 +693,28 @@ addEventListener("admin-signed-out", () => {
   if (!$("calendar").hidden) showTeamSignIn();
   else $("team-calendar-wrap").hidden = true;
 });
-$("team-signout").addEventListener("click", () =>
-  busy($("team-signout"), async () => {
-    try {
-      await viewerApi("/viewer/logout", { method: "POST", data: {} });
-    } finally {
-      forgetViewer();
-      teamCalendar.clear();
-      showTeamSignIn();
-      message("Signed out of the team calendar.");
-    }
-  }),
-);
+for (const id of ["team-signout", "account-signout", "logout"])
+  $(id).addEventListener("click", (e) => signOutEverywhere(e.currentTarget));
 const directory = initializeDirectory({ api, message });
 const profiles = initializeTeacherProfile({ api, busy, message });
+const access = initializeAccess({
+  api,
+  busy,
+  message,
+  can,
+  me: () => state.session,
+});
 // Administrator sections: one visible at a time; data loads on first visit.
 function showAdminTab(name) {
+  const tab = document.querySelector(`[data-admin-tab="${name}"]`);
+  if (!tab || tab.hidden) name = "calendar";
   for (const b of document.querySelectorAll("[data-admin-tab]"))
     b.setAttribute("aria-pressed", String(b.dataset.adminTab === name));
   for (const panel of document.querySelectorAll("[data-admin-panel]"))
     panel.hidden = panel.dataset.adminPanel !== name;
   if (name === "calendar") calendar.start();
   if (name === "directory") directory.start();
+  if (name === "access") access.start();
   enterSection(document.querySelector(`[data-admin-panel="${name}"]`));
 }
 for (const b of document.querySelectorAll("[data-admin-tab]"))
@@ -636,33 +727,26 @@ $("login-form").addEventListener("submit", (e) => {
       data: { password: e.target.elements.password.value },
     });
     e.target.reset();
+    e.target.closest("details").open = false;
     rememberAdmin(session);
     openWorkspace(session);
-    message("Signed in.");
+    message("Signed in with the emergency password.");
   });
 });
 function openWorkspace(session) {
   state.session = session;
-  $("login-form").hidden = true;
+  $("login-panel").hidden = true;
   $("admin-workspace").hidden = false;
   $("session-expiry").textContent =
+    (session.email ? session.email + " · " : "") +
     "Session expires " +
     new Date(state.session.expires_at).toLocaleString("en-GB", {
       timeZone: "Asia/Bangkok",
     });
+  applyPermissions();
   dispatchEvent(new Event("admin-signed-in"));
   showAdminTab("calendar");
 }
-$("logout").addEventListener("click", () =>
-  busy($("logout"), async () => {
-    try {
-      await api("/admin/logout", { method: "POST", data: {} });
-    } finally {
-      signOut();
-      message("Signed out.");
-    }
-  }),
-);
 $("load-requests").addEventListener("click", () =>
   busy($("load-requests"), async () => {
     const { data } = await api("/admin/query", {
@@ -979,6 +1063,20 @@ $("export-form").addEventListener("submit", (e) => {
   const kept = rememberedAdmin();
   if (kept) {
     openWorkspace(kept);
-    if (!viewerSession()) onTeamRoute();
-  }
+    // Permissions may have changed since; the server has the current ones.
+    api("/admin/me")
+      .then(({ data }) => {
+        if (state.session?.token !== kept.token) return;
+        state.session = { ...state.session, ...data };
+        rememberAdmin(state.session);
+        applyPermissions();
+        showAdminTab(
+          document.querySelector('[data-admin-tab][aria-pressed="true"]')
+            ?.dataset.adminTab || "calendar",
+        );
+      })
+      .catch(() => {});
+  } else showAdminSignIn();
+  updateAccount();
+  onTeamRoute();
 }

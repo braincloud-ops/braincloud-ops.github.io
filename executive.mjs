@@ -3,11 +3,11 @@
 // teaching workload. Every figure comes from the API; the browser never
 // downloads the schedule to calculate it. The detailed tables of the earlier
 // report are kept below the brief.
-import { decode, rise } from "./motion.mjs?v=4bb7b27a0ac3";
-import { combobox } from "./combobox.mjs?v=4bb7b27a0ac3";
-import { createSchoolMap } from "./school-map.mjs?v=4bb7b27a0ac3";
-import { createSchoolSheet } from "./school-sheet.mjs?v=4bb7b27a0ac3";
-import { confirmedSessions, groupTone } from "./schedule-model.mjs?v=4bb7b27a0ac3";
+import { decode, rise } from "./motion.mjs?v=4a1753a12e59";
+import { combobox } from "./combobox.mjs?v=4a1753a12e59";
+import { createSchoolMap } from "./school-map.mjs?v=4a1753a12e59";
+import { createSchoolSheet } from "./school-sheet.mjs?v=4a1753a12e59";
+import { confirmedSessions, groupTone } from "./schedule-model.mjs?v=4a1753a12e59";
 
 const $ = (id) => document.getElementById(id);
 const KEYS = ["NORMAL", "COVERED", "CANCEL_SCHOOL", "CANCEL_BC"];
@@ -724,7 +724,10 @@ export function initializeExecutive({
     $("executive-output").hidden = true;
     $("executive-output").classList.remove("is-loading");
   };
-  addEventListener("admin-signed-in", () => (teacherFilter.hidden = false));
+  addEventListener(
+    "admin-signed-in",
+    () => (teacherFilter.hidden = !isAdmin()),
+  );
   addEventListener("admin-signed-out", () => {
     teacherFilter.hidden = true;
     chosen.teachers.clear();
