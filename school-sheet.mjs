@@ -2,10 +2,10 @@
 // executive period compared with the school's group, a month-by-month trend,
 // student counts, a Google Maps link (a plain search link: no key, no cost)
 // and, for administrators, the local teachers and who teaches there most.
-import { modal } from "./dom.mjs?v=45e5b57cfced";
-import { decode } from "./motion.mjs?v=45e5b57cfced";
-import { groupTone } from "./schedule-model.mjs?v=45e5b57cfced";
-import { fillTrend, rangeLabel } from "./executive.mjs?v=45e5b57cfced";
+import { modal } from "./dom.mjs?v=c2905086c37a";
+import { decode } from "./motion.mjs?v=c2905086c37a";
+import { groupTone } from "./schedule-model.mjs?v=c2905086c37a";
+import { fillTrend, rangeLabel } from "./executive.mjs?v=c2905086c37a";
 
 const fmt = (n) => Number(n).toLocaleString("en-GB");
 const pct = (r) =>

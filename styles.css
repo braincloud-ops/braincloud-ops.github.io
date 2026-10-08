@@ -4881,3 +4881,17 @@ button.small {
 .activity-diff td {
   overflow-wrap: anywhere;
 }
+
+/* Fallback when Google's own button cannot load. */
+.signin-retry {
+  width: min(100%, 400px);
+  min-height: 48px;
+  font-weight: 700;
+  background: #1a73e8;
+  border-color: #1a73e8;
+  color: #fff;
+}
+.signin-slot,
+.team-signin #team-signin-button {
+  max-width: 400px;
+}

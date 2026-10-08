@@ -3,7 +3,7 @@
 // an owner has granted access, otherwise the read-only team calendar. The
 // staff session is remembered on this device (30 days, or until Sign out).
 // Local preview offers a demo sign-in with any company address.
-import { GOOGLE_CLIENT_ID } from "./config.js?v=45e5b57cfced";
+import { GOOGLE_CLIENT_ID } from "./config.js?v=c2905086c37a";
 
 const KEY = "braincloud-viewer";
 const GIS = "https://accounts.google.com/gsi/client";
@@ -28,10 +28,23 @@ export function forgetViewer() {
 
 // Google does not allow its sign-in inside app browsers such as LINE's.
 export const inLineApp = () => / Line\//i.test(navigator.userAgent);
+// The main site (not a LINE entry page) at the same section, e.g. #calendar.
 export function externalUrl() {
-  const url = new URL(location.href);
+  const url = new URL("./", location.href);
+  url.hash = location.hash;
   url.searchParams.set("openExternalBrowser", "1");
   return url.href;
+}
+// Inside a LIFF window only LINE's own call reaches the phone's browser; in
+// LINE's plain in-app browser the link (and its openExternalBrowser flag)
+// may be ignored, so Copy link and the "⋯" menu are offered as well.
+function openOutside(event) {
+  const liff = globalThis.liff;
+  if (!liff?.isInClient?.()) return;
+  event.preventDefault();
+  const url = new URL(externalUrl());
+  url.searchParams.delete("openExternalBrowser");
+  liff.openWindow({ url: url.href, external: true });
 }
 
 let gis = null;
@@ -72,7 +85,26 @@ export function signIn(slot, { api, demo, onSession, onError }) {
     a.className = "button-link";
     a.href = externalUrl();
     a.textContent = "Open in your browser";
-    slot.append(p, a);
+    a.addEventListener("click", openOutside);
+    const copy = document.createElement("button");
+    copy.type = "button";
+    copy.className = "secondary";
+    copy.textContent = "Copy link";
+    copy.addEventListener("click", async () => {
+      const url = new URL(externalUrl());
+      url.searchParams.delete("openExternalBrowser");
+      try {
+        await navigator.clipboard.writeText(url.href);
+        copy.textContent = "Link copied";
+      } catch {
+        copy.textContent = url.href;
+      }
+    });
+    const hint = document.createElement("p");
+    hint.className = "input-hint";
+    hint.textContent =
+      "If nothing happens, tap ⋯ at the top right and choose Open in browser, or paste the copied link into Safari or Chrome.";
+    slot.append(p, a, copy, hint);
     return;
   }
   if (!GOOGLE_CLIENT_ID) {
@@ -112,12 +144,41 @@ export function signIn(slot, { api, demo, onSession, onError }) {
         });
         initialized = true;
       }
+      // Google's own button opens the sign-in window when tapped: large,
+      // as wide as the box allows (Google's limit is 400 px).
       g.renderButton(slot, {
-        theme: "outline",
+        theme: "filled_blue",
         size: "large",
         text: "signin_with",
         shape: "pill",
+        logo_alignment: "left",
+        width: Math.max(200, Math.min(400, slot.clientWidth || 320)),
       });
+      watchButton(slot, { api, demo, onSession, onError });
     })
-    .catch((error) => handlers.onError(error));
+    .catch(() => fallback(slot, { api, demo, onSession, onError }));
+}
+// If Google's button has not appeared (blocked or slow), offer a big retry.
+function watchButton(slot, options) {
+  setTimeout(() => {
+    if (slot.isConnected && !slot.querySelector("iframe, div[role=button]"))
+      fallback(slot, options);
+  }, 6000);
+}
+function fallback(slot, options) {
+  slot.replaceChildren();
+  const retry = document.createElement("button");
+  retry.type = "button";
+  retry.className = "signin-retry";
+  retry.textContent = "Sign in with Google";
+  retry.addEventListener("click", () => {
+    gis = null;
+    initialized = false;
+    signIn(slot, options);
+  });
+  const note = document.createElement("p");
+  note.className = "input-hint";
+  note.textContent =
+    "Google's sign-in did not load. Tap the button to try again. If it still does not appear, turn off ad or content blockers for this site, or open it in Chrome or Safari.";
+  slot.append(retry, note);
 }
