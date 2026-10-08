@@ -2,16 +2,16 @@
 // are closed, with the server's check of whether each affected class is
 // already cancelled or covered. One request per month; the day panel works
 // from the same data.
-import { el, button, modal } from "./dom.mjs?v=7502a32cfa1d";
-import { character, emptyState } from "./characters.mjs?v=7502a32cfa1d";
-import { rise, punch } from "./motion.mjs?v=7502a32cfa1d";
+import { el, button, modal } from "./dom.mjs?v=3fe0f0184825";
+import { character, emptyState } from "./characters.mjs?v=3fe0f0184825";
+import { rise, punch } from "./motion.mjs?v=3fe0f0184825";
 import {
   bangkokDay,
   cancelled,
   category,
   confirmedSessions,
   time,
-} from "./schedule-model.mjs?v=7502a32cfa1d";
+} from "./schedule-model.mjs?v=3fe0f0184825";
 
 const TONES = [
   ["thesaban", "Thesaban"],
@@ -94,6 +94,9 @@ export function initializeAdminCalendar({
   readOnly = false,
   // Without edit access: whether to offer "Sign in to edit".
   showEditLink = () => true,
+  // Day notes (holidays, events) may be written; the day timeline opened.
+  canEditNotes = () => false,
+  canOpenTimeline = () => true,
   // Signed-in administrators: what their permissions allow.
   canEdit = () => !readOnly,
   canSeeDetails = () => !readOnly,
@@ -254,6 +257,8 @@ export function initializeAdminCalendar({
         .toLowerCase()
         .includes(st.search));
   const dayOf = (r, date) => r.days.find((d) => d.date === date);
+  const noteOn = (date) =>
+    st.data?.notes?.find((n) => n.date === date)?.note || "";
   const needs = (r, date) =>
     r.state !== "confirmed" && dayOf(r, date)?.state === "needs_action";
   function requestsOn(date) {
@@ -395,6 +400,7 @@ export function initializeAdminCalendar({
     grid.setAttribute("aria-label", monthLabel(st.month));
     for (const name of ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]) {
       const h = el("span", name, "cal-weekday");
+      h.dataset.day = name.toLowerCase();
       h.setAttribute("role", "columnheader");
       grid.append(h);
     }
@@ -413,6 +419,12 @@ export function initializeAdminCalendar({
       const num = el("span", String(Number(date.slice(8))), "cal-date");
       cell.append(num);
       // Room for this week's leave bars, drawn over the cells.
+      const note = noteOn(date);
+      if (note) {
+        const tag = el("span", note, "cal-note");
+        tag.title = note;
+        cell.append(tag);
+      }
       const room = el("span", "", "cal-lanes");
       room.style.setProperty("--lanes", String(lanes[Math.floor(i / 7)]));
       cell.append(room);
@@ -457,7 +469,8 @@ export function initializeAdminCalendar({
   function listView(days, today) {
     const list = el("div", "", "agenda");
     const shown = days.filter(
-      ([date, s]) => date.startsWith(st.month) && (s.schools || s.teachers),
+      ([date, s]) =>
+        date.startsWith(st.month) && (s.schools || s.teachers || noteOn(date)),
     );
     if (!shown.length)
       return emptyState(
@@ -476,6 +489,7 @@ export function initializeAdminCalendar({
         el("span", longDate(date, { day: undefined, month: undefined })),
       );
       const what = el("span", "", "agenda-what");
+      if (noteOn(date)) what.append(el("span", noteOn(date), "cal-note"));
       if (s.schools) {
         what.append(toneBar(s.tones, s.schools));
         what.append(
@@ -514,6 +528,42 @@ export function initializeAdminCalendar({
     renderDay(date, st.openDay);
     dialog.showModal();
   }
+  // A note on the day (holiday, event). It changes nothing else.
+  function noteEditor(date, note) {
+    const form = el("form", "", "day-note-form");
+    const label = el("label", "Day note (holiday, event)");
+    const input = el("input");
+    input.name = "note";
+    input.maxLength = 120;
+    input.value = note;
+    input.placeholder = "For example: Chulalongkorn Day";
+    label.append(input);
+    const save = el("button", "Save note");
+    save.type = "submit";
+    form.append(label, save);
+    if (note) form.append(button("Remove", () => send(""), "secondary small"));
+    async function send(text) {
+      save.disabled = true;
+      try {
+        await api("/admin/day-notes", {
+          method: "POST",
+          data: { date, note: text },
+        });
+        message(text ? "Day note saved." : "Day note removed.");
+        await load();
+        if (st.openDay?.date === date) renderDay(date, st.openDay);
+      } catch (error) {
+        message(error.message, true);
+      } finally {
+        save.disabled = false;
+      }
+    }
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      send(input.value.trim());
+    });
+    return form;
+  }
   function renderDay(date, { content }) {
     const s = summarise(date),
       today = bangkokDay();
@@ -531,18 +581,22 @@ export function initializeAdminCalendar({
       ),
     );
     const actions = el("div", "", "toolbar");
-    actions.append(
-      button("Copy daily update", () => copyDailyUpdate(date)),
-      button("Open day timeline", () => {
-        const form = document.getElementById("daily-form");
-        form.elements.date.value = date;
-        st.openDay?.dialog.close();
-        location.hash = "operations";
-        form.requestSubmit();
-      }),
-    );
+    actions.append(button("Copy daily update", () => copyDailyUpdate(date)));
+    if (canOpenTimeline())
+      actions.append(
+        button("Open day timeline", () => {
+          const form = document.getElementById("daily-form");
+          form.elements.date.value = date;
+          st.openDay?.dialog.close();
+          location.hash = "operations";
+          form.requestSubmit();
+        }),
+      );
     head.append(actions);
     content.append(head);
+    const note = noteOn(date);
+    if (canEditNotes()) content.append(noteEditor(date, note));
+    else if (note) content.append(el("p", note, "cal-note day-note"));
     if (!s.list.length) {
       content.append(
         emptyState(

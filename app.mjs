@@ -1,11 +1,11 @@
-import { initializeDashboard } from "./dashboard.mjs?v=7502a32cfa1d";
-import { initializeAttendance } from "./attendance.mjs?v=7502a32cfa1d";
+import { initializeDashboard } from "./dashboard.mjs?v=3fe0f0184825";
+import { initializeAttendance } from "./attendance.mjs?v=3fe0f0184825";
 import {
   initializeRequestWorkflows,
   confirmSubmission,
-} from "./request-workflows.mjs?v=7502a32cfa1d";
-import { API_URL } from "./config.js?v=7502a32cfa1d";
-import { initializeAdminCalendar } from "./admin-calendar.mjs?v=7502a32cfa1d";
+} from "./request-workflows.mjs?v=3fe0f0184825";
+import { API_URL } from "./config.js?v=3fe0f0184825";
+import { initializeAdminCalendar } from "./admin-calendar.mjs?v=3fe0f0184825";
 import {
   externalUrl,
   forgetViewer,
@@ -14,25 +14,25 @@ import {
   openOutside,
   signIn,
   viewerSession,
-} from "./viewer.mjs?v=7502a32cfa1d";
-import { initializeAccess, levelLabel } from "./access.mjs?v=7502a32cfa1d";
-import { initializeNewPerson } from "./new-person.mjs?v=7502a32cfa1d";
-import { initializeDirectory } from "./directory.mjs?v=7502a32cfa1d";
-import { initializeTimeline } from "./timeline.mjs?v=7502a32cfa1d";
-import { initializeExecutive } from "./executive.mjs?v=7502a32cfa1d";
-import { initializeTeacherProfile } from "./teacher-profile.mjs?v=7502a32cfa1d";
-import { closeNavigation } from "./interface.mjs?v=7502a32cfa1d";
-import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=7502a32cfa1d";
-import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=7502a32cfa1d";
-import { combobox } from "./combobox.mjs?v=7502a32cfa1d";
-import { enterSection } from "./motion.mjs?v=7502a32cfa1d";
-import { character } from "./characters.mjs?v=7502a32cfa1d";
+} from "./viewer.mjs?v=3fe0f0184825";
+import { initializeAccess, levelLabel } from "./access.mjs?v=3fe0f0184825";
+import { initializeNewPerson } from "./new-person.mjs?v=3fe0f0184825";
+import { initializeDirectory } from "./directory.mjs?v=3fe0f0184825";
+import { initializeTimeline } from "./timeline.mjs?v=3fe0f0184825";
+import { initializeExecutive } from "./executive.mjs?v=3fe0f0184825";
+import { initializeTeacherProfile } from "./teacher-profile.mjs?v=3fe0f0184825";
+import { closeNavigation } from "./interface.mjs?v=3fe0f0184825";
+import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=3fe0f0184825";
+import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=3fe0f0184825";
+import { combobox } from "./combobox.mjs?v=3fe0f0184825";
+import { enterSection } from "./motion.mjs?v=3fe0f0184825";
+import { character } from "./characters.mjs?v=3fe0f0184825";
 import {
   confirmedSessions,
   groupTone,
   teacherActive,
   teacherType,
-} from "./schedule-model.mjs?v=7502a32cfa1d";
+} from "./schedule-model.mjs?v=3fe0f0184825";
 const $ = (id) => document.getElementById(id),
   state = {
     schools: [],
@@ -759,6 +759,8 @@ const teamCalendar = initializeAdminCalendar({
   canEdit: () => can("requests.edit"),
   canSeeDetails: () => can("leave.details"),
   showEditLink: () => !adminLive(),
+  canEditNotes: () => can("calendar.notes"),
+  canOpenTimeline: () => can("teachers.profile"),
   isVisible: () => !$("calendar").hidden && !$("team-calendar-wrap").hidden,
 });
 let pendingDate = null;
