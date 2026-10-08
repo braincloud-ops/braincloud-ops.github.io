@@ -1,29 +1,37 @@
-import { initializeDashboard } from "./dashboard.mjs?v=7974d4d75686";
-import { initializeAttendance } from "./attendance.mjs?v=7974d4d75686";
+import { initializeDashboard } from "./dashboard.mjs?v=166a9864d91a";
+import { initializeAttendance } from "./attendance.mjs?v=166a9864d91a";
 import {
   initializeRequestWorkflows,
   confirmSubmission,
-} from "./request-workflows.mjs?v=7974d4d75686";
-import { API_URL } from "./config.js?v=7974d4d75686";
-import { initializeAdminCalendar } from "./admin-calendar.mjs?v=7974d4d75686";
-import { forgetViewer, keepViewer, signIn, viewerSession } from "./viewer.mjs?v=7974d4d75686";
-import { initializeAccess, levelLabel } from "./access.mjs?v=7974d4d75686";
-import { initializeDirectory } from "./directory.mjs?v=7974d4d75686";
-import { initializeTimeline } from "./timeline.mjs?v=7974d4d75686";
-import { initializeExecutive } from "./executive.mjs?v=7974d4d75686";
-import { initializeTeacherProfile } from "./teacher-profile.mjs?v=7974d4d75686";
-import { closeNavigation } from "./interface.mjs?v=7974d4d75686";
-import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=7974d4d75686";
-import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=7974d4d75686";
-import { combobox } from "./combobox.mjs?v=7974d4d75686";
-import { enterSection } from "./motion.mjs?v=7974d4d75686";
-import { character } from "./characters.mjs?v=7974d4d75686";
+} from "./request-workflows.mjs?v=166a9864d91a";
+import { API_URL } from "./config.js?v=166a9864d91a";
+import { initializeAdminCalendar } from "./admin-calendar.mjs?v=166a9864d91a";
+import {
+  externalUrl,
+  forgetViewer,
+  inLineApp,
+  keepViewer,
+  openOutside,
+  signIn,
+  viewerSession,
+} from "./viewer.mjs?v=166a9864d91a";
+import { initializeAccess, levelLabel } from "./access.mjs?v=166a9864d91a";
+import { initializeDirectory } from "./directory.mjs?v=166a9864d91a";
+import { initializeTimeline } from "./timeline.mjs?v=166a9864d91a";
+import { initializeExecutive } from "./executive.mjs?v=166a9864d91a";
+import { initializeTeacherProfile } from "./teacher-profile.mjs?v=166a9864d91a";
+import { closeNavigation } from "./interface.mjs?v=166a9864d91a";
+import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=166a9864d91a";
+import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=166a9864d91a";
+import { combobox } from "./combobox.mjs?v=166a9864d91a";
+import { enterSection } from "./motion.mjs?v=166a9864d91a";
+import { character } from "./characters.mjs?v=166a9864d91a";
 import {
   confirmedSessions,
   groupTone,
   teacherActive,
   teacherType,
-} from "./schedule-model.mjs?v=7974d4d75686";
+} from "./schedule-model.mjs?v=166a9864d91a";
 const $ = (id) => document.getElementById(id),
   state = {
     schools: [],
@@ -215,6 +223,17 @@ function options(id, rows, value, label) {
     $(id).append(option);
   }
 }
+// Inside LINE: a focused menu (forms, calendar, dashboard) and a way out to
+// the full site in the phone's browser.
+if (inLineApp()) {
+  document.documentElement.classList.add("in-line");
+  const out = $("open-outside");
+  out.hidden = false;
+  out.addEventListener("click", (event) => {
+    out.href = externalUrl();
+    openOutside(event);
+  });
+}
 // Arriving from LINE's "Open in your browser": ?go=calendar/2026-10-08
 // becomes #calendar/2026-10-08 (and LINE's own flag is dropped).
 {
@@ -242,7 +261,12 @@ function route(moveFocus = false) {
   }
   const heading = $(id).querySelector("h1");
   const activeLink = document.querySelector('nav a[aria-current="page"]');
-  $("page-name").textContent = activeLink?.textContent.trim() || "Overview";
+  $("page-name").textContent =
+    [...(activeLink?.childNodes || [])]
+      .filter((n) => n.nodeType === Node.TEXT_NODE)
+      .map((n) => n.textContent)
+      .join("")
+      .trim() || "Overview";
   document.title = `${$("page-name").textContent} | Braincloud Operations`;
   heading.tabIndex = -1;
   closeNavigation();

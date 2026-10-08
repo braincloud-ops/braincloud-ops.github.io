@@ -2,16 +2,16 @@
 // are closed, with the server's check of whether each affected class is
 // already cancelled or covered. One request per month; the day panel works
 // from the same data.
-import { el, button, modal } from "./dom.mjs?v=7974d4d75686";
-import { character, emptyState } from "./characters.mjs?v=7974d4d75686";
-import { rise, punch } from "./motion.mjs?v=7974d4d75686";
+import { el, button, modal } from "./dom.mjs?v=166a9864d91a";
+import { character, emptyState } from "./characters.mjs?v=166a9864d91a";
+import { rise, punch } from "./motion.mjs?v=166a9864d91a";
 import {
   bangkokDay,
   cancelled,
   category,
   confirmedSessions,
   time,
-} from "./schedule-model.mjs?v=7974d4d75686";
+} from "./schedule-model.mjs?v=166a9864d91a";
 
 const TONES = [
   ["thesaban", "Thesaban"],
@@ -297,7 +297,10 @@ export function initializeAdminCalendar({
       longDate(date, { weekday: "long", month: "long" }),
       s.schools ? `${s.schools} ${plural(s.schools, "school")} closed` : "",
       s.teachers
-        ? `${s.teachers} ${plural(s.teachers, "teacher")} on leave`
+        ? `${s.teachers} ${plural(s.teachers, "teacher")} on leave: ${s.list
+            .filter((r) => r.category === "Teacher")
+            .map((r) => r.teacher_nickname || r.teacher_name)
+            .join(", ")}`
         : "",
       s.needs ? `${s.needs} need action` : "",
     ]
@@ -334,8 +337,60 @@ export function initializeAdminCalendar({
     body.replaceChildren(view);
     rise(view.querySelectorAll(".cal-day, .agenda-day"));
   }
+  // Teacher leave as bars across each week row: at most LANES per week,
+  // anyone further is counted as "+N more" in the day. A bar that runs on
+  // from or into another week has a squared end.
+  const LANES = 3;
+  function leaveBars(days) {
+    const bars = [],
+      more = new Map(),
+      lanes = [];
+    for (let w = 0; w * 7 < days.length; w++) {
+      const week = days.slice(w * 7, w * 7 + 7);
+      const open = new Map(),
+        runs = [];
+      week.forEach(([, s], c) => {
+        for (const r of s.list) {
+          if (r.category !== "Teacher") continue;
+          const run = open.get(r.id);
+          if (run && run.end === c - 1) run.end = c;
+          else {
+            const next = { r, start: c, end: c };
+            open.set(r.id, next);
+            runs.push(next);
+          }
+        }
+      });
+      runs.sort(
+        (a, b) => a.start - b.start || b.end - b.start - (a.end - a.start),
+      );
+      const laneEnds = [];
+      for (const run of runs) {
+        let lane = laneEnds.findIndex((end) => end < run.start);
+        if (lane === -1) lane = laneEnds.length;
+        if (lane >= LANES) {
+          for (let c = run.start; c <= run.end; c++)
+            more.set(week[c][0], (more.get(week[c][0]) || 0) + 1);
+          continue;
+        }
+        laneEnds[lane] = run.end;
+        const dates = week.slice(run.start, run.end + 1).map(([d]) => d);
+        bars.push({
+          ...run,
+          week: w,
+          lane,
+          from: run.r.start_date < dates[0],
+          to: run.r.end_date > dates.at(-1),
+          needs: dates.some((d) => needs(run.r, d)),
+        });
+      }
+      lanes[w] = laneEnds.length;
+    }
+    return { bars, more, lanes };
+  }
   function monthView(days, today) {
     const grid = el("div", "", "cal-grid");
+    const { bars, more, lanes } = leaveBars(days);
     grid.setAttribute("role", "grid");
     grid.setAttribute("aria-label", monthLabel(st.month));
     for (const name of ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]) {
@@ -346,6 +401,9 @@ export function initializeAdminCalendar({
     days.forEach(([date, s], i) => {
       const cell = button("", () => openDay(date), "cal-day");
       cell.style.setProperty("--i", String(Math.min(i % 7, 6)));
+      // Explicit places, so the leave bars can share the same grid rows.
+      cell.style.gridRow = String(Math.floor(i / 7) + 2);
+      cell.style.gridColumn = String((i % 7) + 1);
       cell.setAttribute("role", "gridcell");
       cell.setAttribute("aria-label", dayLabel(date, s));
       if (!date.startsWith(st.month)) cell.classList.add("is-out");
@@ -354,6 +412,10 @@ export function initializeAdminCalendar({
       if (s.needs) cell.classList.add("has-needs");
       const num = el("span", String(Number(date.slice(8))), "cal-date");
       cell.append(num);
+      // Room for this week's leave bars, drawn over the cells.
+      const room = el("span", "", "cal-lanes");
+      room.style.setProperty("--lanes", String(lanes[Math.floor(i / 7)]));
+      cell.append(room);
       if (s.schools) {
         cell.append(toneBar(s.tones, s.schools));
         cell.append(
@@ -364,9 +426,9 @@ export function initializeAdminCalendar({
           ),
         );
       }
-      if (s.teachers)
+      if (more.get(date))
         cell.append(
-          el("span", `${s.teachers} on leave`, "cal-count is-teacher"),
+          el("span", `+${more.get(date)} more`, "cal-count is-teacher"),
         );
       if (s.needs) {
         const dot = el("span", String(s.needs), "cal-needs");
@@ -375,6 +437,21 @@ export function initializeAdminCalendar({
       }
       grid.append(cell);
     });
+    for (const bar of bars) {
+      const node = el(
+        "span",
+        bar.r.teacher_nickname || bar.r.teacher_name || "Leave",
+        "leave-bar",
+      );
+      node.setAttribute("aria-hidden", "true");
+      node.style.gridRow = String(bar.week + 2);
+      node.style.gridColumn = `${bar.start + 1} / ${bar.end + 2}`;
+      node.style.setProperty("--lane", String(bar.lane));
+      node.classList.toggle("from-before", bar.from);
+      node.classList.toggle("runs-on", bar.to);
+      node.classList.toggle("needs", bar.needs);
+      grid.append(node);
+    }
     return grid;
   }
   function listView(days, today) {
@@ -407,7 +484,14 @@ export function initializeAdminCalendar({
       }
       if (s.teachers)
         what.append(
-          el("span", `${s.teachers} ${plural(s.teachers, "teacher")} on leave`),
+          el(
+            "span",
+            `On leave: ${s.list
+              .filter((r) => r.category === "Teacher")
+              .map((r) => r.teacher_nickname || r.teacher_name)
+              .join(", ")}`,
+            "agenda-leave",
+          ),
         );
       row.append(when, what);
       if (s.needs)

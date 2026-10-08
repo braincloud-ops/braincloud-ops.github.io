@@ -3,7 +3,7 @@
 // an owner has granted access, otherwise the read-only team calendar. The
 // staff session is remembered on this device (30 days, or until Sign out).
 // Local preview offers a demo sign-in with any company address.
-import { GOOGLE_CLIENT_ID } from "./config.js?v=7974d4d75686";
+import { GOOGLE_CLIENT_ID } from "./config.js?v=166a9864d91a";
 
 const KEY = "braincloud-viewer";
 const GIS = "https://accounts.google.com/gsi/client";
@@ -57,7 +57,7 @@ export function externalUrl(ua = navigator.userAgent) {
   return url.href;
 }
 // Inside a LIFF window, LINE's own call is the reliable way out.
-function openOutside(event) {
+export function openOutside(event) {
   const liff = globalThis.liff;
   if (!liff?.isInClient?.()) return;
   event.preventDefault();

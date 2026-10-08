@@ -4905,3 +4905,291 @@ button.small {
   color: var(--ink-2);
   font-size: 0.88rem;
 }
+
+/* ── Decoration round (owner, 8 Oct 2026) ── */
+/* One colour per request, used in the menu, on its page and its home card. */
+[data-accent="school"] {
+  --accent: #c4502f;
+  --accent-hero: #e2694b;
+  --accent-tint: #fdeee8;
+  --accent-blob: #f7b46c;
+  --accent-lead: #2b0e06;
+}
+[data-accent="teacher"] {
+  --accent: #4451c4;
+  --accent-hero: #5664d8;
+  --accent-tint: #eef0fd;
+  --accent-blob: #aab3f8;
+  --accent-lead: #f3f4ff;
+}
+[data-accent="calendar"] {
+  --accent: var(--teal-strong);
+  --accent-hero: var(--teal);
+  --accent-tint: var(--teal-tint);
+  --accent-blob: var(--lime);
+  --accent-lead: #08242a;
+}
+nav a[data-accent] {
+  font-weight: 650;
+  color: var(--ink);
+}
+nav a[data-accent] .nav-icon {
+  box-sizing: content-box;
+  padding: 6px;
+  margin: -6px 0 -6px -2px;
+  border-radius: 9px;
+  background: var(--accent-tint);
+  color: var(--accent);
+}
+nav a[data-accent]:hover {
+  color: var(--accent);
+}
+nav a[data-accent][aria-current="page"] {
+  color: var(--accent);
+  background: var(--accent-tint);
+  border-color: color-mix(in srgb, var(--accent) 28%, transparent);
+}
+.nav-tag {
+  margin-left: auto;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--teal-tint);
+  color: var(--teal-dark);
+  font-size: 0.62rem;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+}
+.page-heading[data-accent] {
+  background: var(--accent-hero);
+}
+.page-heading[data-accent]::after {
+  background: var(--accent-blob);
+}
+.page-heading[data-accent] .lead {
+  color: var(--accent-lead);
+}
+.page-heading[data-accent="school"] .eyebrow,
+.page-heading[data-accent="teacher"] .eyebrow {
+  background: #fff;
+  color: var(--accent);
+}
+#school-form {
+  border-top: 4px solid #e2694b;
+}
+#teacher-form {
+  border-top: 4px solid #5664d8;
+}
+.cards > a[data-accent] {
+  border-top: 4px solid var(--accent-hero);
+}
+.cards > a[data-accent]:hover {
+  border-color: var(--accent);
+}
+.cards > a[data-accent] .card-icon {
+  background: var(--accent-tint);
+  color: var(--accent);
+}
+.cards > a[data-accent] .card-link {
+  color: var(--accent);
+}
+
+/* Characters: one mascot per page, the same one on its home card. */
+.hero-character,
+.card-character,
+.hero-mascot {
+  display: block;
+  width: auto;
+  pointer-events: none;
+  user-select: none;
+  animation: character-pop 600ms var(--e-settle) both;
+}
+.hero-character {
+  position: absolute;
+  right: 44px;
+  bottom: 0;
+  height: 150px;
+}
+.page-heading.has-mascot {
+  padding-right: 210px;
+}
+.card-character {
+  height: 66px;
+  margin: -12px -8px -4px 0;
+}
+.hero-mascot {
+  position: absolute;
+  height: 175px;
+  left: 262px;
+  top: 92px;
+}
+
+/* Who can open a page: a chip in its header, a legend in the menu. */
+.page-heading .eyebrow {
+  vertical-align: middle;
+}
+.access-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 6px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  border: 1px solid #ffffff66;
+  background: #ffffff26;
+  color: #fff;
+  font: 700 10px/1.3 var(--font-display);
+  letter-spacing: 0.4px;
+  vertical-align: middle;
+}
+.access-chip::before,
+.legend-dot {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--lime);
+}
+.access-chip[data-access="company"]::before,
+.legend-dot.is-company {
+  background: #7fe3f3;
+}
+.access-chip[data-access="admin"]::before,
+.legend-dot.is-admin {
+  background: #ffffff;
+  box-shadow: inset 0 0 0 2px var(--ink-2);
+}
+.legend-dot.is-company {
+  background: var(--teal);
+}
+.access-legend {
+  list-style: none;
+  margin: 6px 0 18px;
+  padding: 0;
+  display: grid;
+  gap: 5px;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.access-legend li {
+  display: flex;
+  gap: 7px;
+  align-items: baseline;
+}
+
+/* Calendar: the selected view stays readable under the pointer. */
+.segmented button[aria-pressed="true"]:hover:not(:disabled) {
+  background: var(--teal-strong);
+  color: #fff;
+}
+
+/* Calendar: leave as bars across the days (at most 3 lanes a week). */
+.cal-lanes {
+  display: block;
+  flex: none;
+  height: calc(var(--lanes, 0) * 20px);
+}
+.leave-bar {
+  position: relative;
+  z-index: 2;
+  align-self: start;
+  margin: calc(35px + var(--lane) * 20px) 5px 0;
+  height: 17px;
+  padding: 0 7px;
+  border-radius: 6px;
+  border-left: 3px solid #5664d8;
+  background: #e9ebfd;
+  color: #3a45b5;
+  font-size: 0.68rem;
+  font-weight: 750;
+  line-height: 17px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  transform-origin: left center;
+  animation: grow-x var(--t-reveal) var(--e-settle) both;
+}
+.leave-bar.from-before {
+  margin-left: 0;
+  border-left-width: 0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.leave-bar.runs-on {
+  margin-right: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.leave-bar.needs {
+  border-left-color: var(--error);
+  background: #fde8ea;
+  color: var(--error);
+}
+.agenda-leave {
+  color: #3a45b5;
+}
+
+/* Inside LINE: a focused menu, and a way out to the full site. */
+.in-line nav a[href="#reports"],
+.in-line nav a[href="#executive"],
+.in-line nav a[href="#admin"],
+.in-line nav .nav-label:has(+ a[href="#admin"]) {
+  display: none;
+}
+.nav-outside {
+  color: var(--teal-dark);
+  font-weight: 700;
+}
+
+@media (max-width: 760px) {
+  .hero-character {
+    top: 12px;
+    bottom: auto;
+    right: 12px;
+    height: 76px;
+  }
+  .page-heading.has-mascot {
+    padding-right: 20px;
+  }
+  .page-heading.has-mascot h1 {
+    max-width: calc(100% - 70px);
+  }
+  .page-heading.has-mascot .eyebrow + .access-chip {
+    margin: 6px 0 0;
+  }
+  .card-character {
+    height: 54px;
+  }
+  .cal-lanes {
+    height: calc(var(--lanes, 0) * 8px);
+  }
+  .leave-bar {
+    margin: calc(32px + var(--lane) * 8px) 3px 0;
+    height: 5px;
+    padding: 0;
+    border-left-width: 0;
+    font-size: 0;
+    background: #5664d8;
+  }
+  .leave-bar.needs {
+    background: var(--error);
+  }
+}
+
+.nav-dot {
+  margin-left: auto;
+  flex: none;
+}
+.account-card .account-role {
+  display: block;
+}
+
+@media (max-width: 760px) {
+  /* Phone headers: the access label on its own line, clear of the mascot. */
+  .page-heading.has-mascot .access-chip {
+    display: flex;
+    width: fit-content;
+    margin: 8px 0 0;
+  }
+}

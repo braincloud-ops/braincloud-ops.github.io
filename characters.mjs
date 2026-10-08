@@ -2,14 +2,14 @@
 // beside them always carries the message, so images are alt="" (decorative).
 // Paths are literal so the build adds a cache version to each.
 const files = {
-  "girl-cheer": "characters/girl-cheer.webp?v=7974d4d75686",
-  "girl-thumbs": "characters/girl-thumbs.webp?v=7974d4d75686",
-  "boy-neutral": "characters/boy-neutral.webp?v=7974d4d75686",
-  "boy-confused": "characters/boy-confused.webp?v=7974d4d75686",
-  "robot-r-neutral": "characters/robot-r-neutral.webp?v=7974d4d75686",
-  "robot-r-confused": "characters/robot-r-confused.webp?v=7974d4d75686",
-  "robot-b-cheer": "characters/robot-b-cheer.webp?v=7974d4d75686",
-  "robot-b-wave": "characters/robot-b-wave.webp?v=7974d4d75686",
+  "girl-cheer": "characters/girl-cheer.webp?v=166a9864d91a",
+  "girl-thumbs": "characters/girl-thumbs.webp?v=166a9864d91a",
+  "boy-neutral": "characters/boy-neutral.webp?v=166a9864d91a",
+  "boy-confused": "characters/boy-confused.webp?v=166a9864d91a",
+  "robot-r-neutral": "characters/robot-r-neutral.webp?v=166a9864d91a",
+  "robot-r-confused": "characters/robot-r-confused.webp?v=166a9864d91a",
+  "robot-b-cheer": "characters/robot-b-cheer.webp?v=166a9864d91a",
+  "robot-b-wave": "characters/robot-b-wave.webp?v=166a9864d91a",
 };
 export function character(name, { small = false, eager = false } = {}) {
   const img = document.createElement("img");

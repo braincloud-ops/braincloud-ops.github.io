@@ -15,7 +15,7 @@
       content="default-src 'self'; script-src 'self' https://accounts.google.com/gsi/client; style-src 'self' https://accounts.google.com/gsi/style; frame-src https://accounts.google.com/gsi/; img-src 'self' data: blob: https://profile.line-scdn.net; connect-src 'self' https://*.supabase.co https://accounts.google.com/gsi/; object-src 'none'; base-uri 'none'; form-action 'self'"
     />
     <title>Braincloud Operations</title>
-    <link rel="stylesheet" href="styles.css?v=7974d4d75686" />
+    <link rel="stylesheet" href="styles.css?v=166a9864d91a" />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -54,18 +54,21 @@
           >Overview</a
         >
         <p class="nav-label">Requests</p>
-        <a href="#school"
+        <a href="#school" data-accent="school"
           ><span class="nav-icon" data-icon="school" aria-hidden="true"></span
           >School cancellation</a
         >
-        <a href="#teacher"
+        <a href="#teacher" data-accent="teacher"
           ><span class="nav-icon" data-icon="teacher" aria-hidden="true"></span
           >Teacher leave</a
         >
-        <a href="#calendar"
+        <a href="#calendar" data-accent="calendar"
           ><span class="nav-icon" data-icon="calendar" aria-hidden="true"></span
-          >Team calendar</a
-        >
+          >Team calendar<span
+            class="legend-dot is-company nav-dot"
+            title="Company Google account"
+          ></span
+        ></a>
         <p class="nav-label">Insights &amp; planning</p>
         <a href="#dashboard"
           ><span class="nav-icon" data-icon="calendar" aria-hidden="true"></span
@@ -82,7 +85,14 @@
         <p class="nav-label">Manage</p>
         <a href="#admin"
           ><span class="nav-icon" data-icon="lock" aria-hidden="true"></span
-          >Admin</a
+          >Admin<span
+            class="legend-dot is-admin nav-dot"
+            title="People an owner has given access"
+          ></span
+        ></a>
+        <a id="open-outside" class="nav-outside" href="./" hidden=""
+          ><span class="nav-icon" data-icon="chart" aria-hidden="true"></span
+          >Open the full site in your browser</a
         >
       </nav>
       <div id="account" class="account-card" hidden="">
@@ -97,8 +107,18 @@
         </button>
       </div>
       <div class="sidebar-note">
-        <span class="small-label">Built for the school day</span>
-        <p>A shared space for your team.</p>
+        <span class="small-label">Who can open what</span>
+        <ul class="access-legend">
+          <li><span class="legend-dot is-open"></span>Most pages: everyone</li>
+          <li>
+            <span class="legend-dot is-company"></span>Team calendar: company
+            Google account
+          </li>
+          <li>
+            <span class="legend-dot is-admin"></span>Admin: people an owner has
+            given access
+          </li>
+        </ul>
         <span class="sidebar-signature" aria-hidden="true"
           >braincloud / work together</span
         >
@@ -127,6 +147,14 @@
             <div class="art-tile tile-lime"><span>connect</span><b>02</b></div>
             <div class="art-tile tile-white"><span>grow</span><b>03</b></div>
             <span class="art-caption">GOOD DAYS START TOGETHER</span>
+            <img
+              class="hero-mascot"
+              src="characters/girl-cheer.webp?v=166a9864d91a"
+              alt=""
+              loading="lazy"
+              decoding="async"
+              draggable="false"
+            />
           </div>
         </div>
         <div class="section-heading">
@@ -134,18 +162,24 @@
             <p class="eyebrow">START HERE</p>
             <h2>What do you need to do?</h2>
           </div>
-          <span class="subtle">No sign-in needed</span>
+          <span class="subtle">Forms need no sign-in</span>
         </div>
         <div class="cards action-cards">
-          <a href="#school"
+          <a href="#school" data-accent="school"
             ><span class="card-top"
               ><span
                 class="card-icon teal"
                 data-icon="school"
                 aria-hidden="true"
               ></span
-              ><span class="card-arrow" aria-hidden="true">↗</span></span
-            >
+              ><img
+                class="card-character"
+                src="characters/robot-b-cheer.webp?v=166a9864d91a"
+                alt=""
+                loading="lazy"
+                decoding="async"
+                draggable="false"
+            /></span>
             <h2>School cancellation</h2>
             <p>
               Cancel a full school day or choose specific teaching sessions.
@@ -154,30 +188,42 @@
               >Open school form <span aria-hidden="true">→</span></span
             ></a
           >
-          <a href="#teacher"
+          <a href="#teacher" data-accent="teacher"
             ><span class="card-top"
               ><span
                 class="card-icon lime"
                 data-icon="teacher"
                 aria-hidden="true"
               ></span
-              ><span class="card-arrow" aria-hidden="true">↗</span></span
-            >
+              ><img
+                class="card-character"
+                src="characters/girl-thumbs.webp?v=166a9864d91a"
+                alt=""
+                loading="lazy"
+                decoding="async"
+                draggable="false"
+            /></span>
             <h2>Teacher leave</h2>
             <p>Let the team know when you are unavailable to teach.</p>
             <span class="card-link"
               >Open leave form <span aria-hidden="true">→</span></span
             ></a
           >
-          <a href="#calendar"
+          <a href="#calendar" data-accent="calendar"
             ><span class="card-top"
               ><span
                 class="card-icon neutral"
                 data-icon="calendar"
                 aria-hidden="true"
               ></span
-              ><span class="card-arrow" aria-hidden="true">↗</span></span
-            >
+              ><img
+                class="card-character"
+                src="characters/boy-neutral.webp?v=166a9864d91a"
+                alt=""
+                loading="lazy"
+                decoding="async"
+                draggable="false"
+            /></span>
             <h2>Team calendar</h2>
             <p>
               See who is away and which schools are closed, and find cover for
@@ -203,10 +249,10 @@
           </div>
           <aside class="notice-panel">
             <span class="status-tag">Service update</span>
-            <h2>Requests are saved here.</h2>
+            <h2>Requests reach the team.</h2>
             <p>
-              Email notifications are paused. Your submitted request appears in
-              the administrator workspace for review.
+              Teacher leave is emailed to the leave team as soon as it is sent,
+              and every request appears in the Team calendar.
             </p>
             <a href="#reports"
               >Check request status <span aria-hidden="true">→</span></a
@@ -215,8 +261,17 @@
         </div>
       </section>
       <section id="school" hidden="" class="workspace-page">
-        <div class="page-heading">
+        <div class="page-heading has-mascot" data-accent="school">
+          <img
+            class="hero-character"
+            src="characters/robot-b-cheer.webp?v=166a9864d91a"
+            alt=""
+            loading="lazy"
+            decoding="async"
+            draggable="false"
+          />
           <p class="eyebrow">SCHOOL REQUEST</p>
+          <span class="access-chip" data-access="open">Open to everyone</span>
           <h1>School cancellation</h1>
           <p class="lead">
             Keep teaching plans up to date. Submit a full-day or
@@ -339,8 +394,17 @@
         </div>
       </section>
       <section id="teacher" hidden="" class="workspace-page">
-        <div class="page-heading">
+        <div class="page-heading has-mascot" data-accent="teacher">
+          <img
+            class="hero-character"
+            src="characters/girl-thumbs.webp?v=166a9864d91a"
+            alt=""
+            loading="lazy"
+            decoding="async"
+            draggable="false"
+          />
           <p class="eyebrow">TEACHER REQUEST</p>
+          <span class="access-chip" data-access="open">Open to everyone</span>
           <h1>Teacher leave</h1>
           <p class="lead">
             Share your leave dates so the team can plan teaching coverage.
@@ -506,8 +570,19 @@
         </div>
       </section>
       <section id="calendar" hidden="" class="workspace-page">
-        <div class="page-heading">
+        <div class="page-heading has-mascot" data-accent="calendar">
+          <img
+            class="hero-character"
+            src="characters/boy-neutral.webp?v=166a9864d91a"
+            alt=""
+            loading="lazy"
+            decoding="async"
+            draggable="false"
+          />
           <p class="eyebrow">TEAM CALENDAR</p>
+          <span class="access-chip" data-access="company"
+            >Company Google account</span
+          >
           <h1>Who is away, which schools are closed</h1>
           <p class="lead">
             Read-only for everyone with a company Google account. Editing needs
@@ -529,8 +604,17 @@
         </div>
       </section>
       <section id="dashboard" hidden class="workspace-page">
-        <div class="page-heading">
+        <div class="page-heading has-mascot">
+          <img
+            class="hero-character"
+            src="characters/robot-r-neutral.webp?v=166a9864d91a"
+            alt=""
+            loading="lazy"
+            decoding="async"
+            draggable="false"
+          />
           <p class="eyebrow">THE SCHOOL DAY</p>
+          <span class="access-chip" data-access="open">Open to everyone</span>
           <h1>Daily dashboard</h1>
           <p class="lead">
             Classes, cover and changes. Today's picture, in one place.
@@ -581,8 +665,17 @@
         <div id="dashboard-results" class="dashboard-results"></div>
       </section>
       <section id="reports" hidden="" class="workspace-page">
-        <div class="page-heading">
+        <div class="page-heading has-mascot">
+          <img
+            class="hero-character"
+            src="characters/robot-b-wave.webp?v=166a9864d91a"
+            alt=""
+            loading="lazy"
+            decoding="async"
+            draggable="false"
+          />
           <p class="eyebrow">OPERATIONS REPORT</p>
+          <span class="access-chip" data-access="open">Open to everyone</span>
           <h1>Schedules &amp; reports</h1>
           <p class="lead">
             Find a schedule, follow a request or review school activity.
@@ -611,8 +704,19 @@
         </div>
       </section>
       <section id="executive" hidden="" class="workspace-page">
-        <div class="page-heading">
+        <div class="page-heading has-mascot">
+          <img
+            class="hero-character"
+            src="characters/girl-cheer.webp?v=166a9864d91a"
+            alt=""
+            loading="lazy"
+            decoding="async"
+            draggable="false"
+          />
           <p class="eyebrow">OPERATIONS BRIEF</p>
+          <span class="access-chip" data-access="open"
+            >Open to everyone · more when signed in</span
+          >
           <h1>Executive summary</h1>
           <p class="lead">
             How many classes ran, why the others did not, and where. From the
@@ -861,8 +965,17 @@
         </div>
       </section>
       <section id="operations" hidden="" class="workspace-page">
-        <div class="page-heading">
+        <div class="page-heading has-mascot">
+          <img
+            class="hero-character"
+            src="characters/boy-confused.webp?v=166a9864d91a"
+            alt=""
+            loading="lazy"
+            decoding="async"
+            draggable="false"
+          />
           <p class="eyebrow">DAILY WORKSPACE</p>
+          <span class="access-chip" data-access="open">Open to everyone</span>
           <h1>Timeline &amp; cover planning</h1>
           <p class="lead">
             A shared view of the day, with space to explore cover options.
@@ -932,6 +1045,9 @@
       <section id="admin" hidden="" class="workspace-page">
         <div class="page-heading">
           <p class="eyebrow">ADMINISTRATION</p>
+          <span class="access-chip" data-access="admin"
+            >People given access</span
+          >
           <h1>Administrator workspace</h1>
           <p class="lead">
             Review requests, manage reminders and prepare files for payment
@@ -1289,6 +1405,6 @@
       <span>braincloud <strong>operations</strong></span
       ><span>For the people behind every school day.</span>
     </footer>
-    <script type="module" src="app.mjs?v=7974d4d75686"></script>
+    <script type="module" src="app.mjs?v=166a9864d91a"></script>
   </body>
 </html>
