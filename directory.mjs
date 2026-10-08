@@ -1,13 +1,13 @@
 // Administrator directory: keep people and schools up to date in one place.
 // Saves send the values the editor saw, so a record changed meanwhile by
 // someone else is refused instead of silently overwritten.
-import { el, button, modal } from "./dom.mjs?v=3fe0f0184825";
-import { emptyState } from "./characters.mjs?v=3fe0f0184825";
-import { rise } from "./motion.mjs?v=3fe0f0184825";
-import { groupTone, teacherActive } from "./schedule-model.mjs?v=3fe0f0184825";
-import { combobox } from "./combobox.mjs?v=3fe0f0184825";
-import { loadProvinceNames, provinceKey } from "./school-map.mjs?v=3fe0f0184825";
-import { mapsLink } from "./school-sheet.mjs?v=3fe0f0184825";
+import { el, button, modal } from "./dom.mjs?v=10f38cf10e5f";
+import { emptyState } from "./characters.mjs?v=10f38cf10e5f";
+import { rise } from "./motion.mjs?v=10f38cf10e5f";
+import { groupTone, teacherActive } from "./schedule-model.mjs?v=10f38cf10e5f";
+import { combobox } from "./combobox.mjs?v=10f38cf10e5f";
+import { loadProvinceNames, provinceKey } from "./school-map.mjs?v=10f38cf10e5f";
+import { mapsLink } from "./school-sheet.mjs?v=10f38cf10e5f";
 
 const TYPE_LABEL = {
   210: "FT",

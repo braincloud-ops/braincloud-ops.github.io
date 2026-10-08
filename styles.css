@@ -5463,3 +5463,10 @@ nav a[data-accent][aria-current="page"] {
     background: #fff4cc;
   }
 }
+
+/* Panels: the title and Close stay at the top while the content scrolls. */
+.detail-dialog .dialog-heading {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}

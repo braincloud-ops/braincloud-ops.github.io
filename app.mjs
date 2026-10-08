@@ -1,11 +1,11 @@
-import { initializeDashboard } from "./dashboard.mjs?v=3fe0f0184825";
-import { initializeAttendance } from "./attendance.mjs?v=3fe0f0184825";
+import { initializeDashboard } from "./dashboard.mjs?v=10f38cf10e5f";
+import { initializeAttendance } from "./attendance.mjs?v=10f38cf10e5f";
 import {
   initializeRequestWorkflows,
   confirmSubmission,
-} from "./request-workflows.mjs?v=3fe0f0184825";
-import { API_URL } from "./config.js?v=3fe0f0184825";
-import { initializeAdminCalendar } from "./admin-calendar.mjs?v=3fe0f0184825";
+} from "./request-workflows.mjs?v=10f38cf10e5f";
+import { API_URL } from "./config.js?v=10f38cf10e5f";
+import { initializeAdminCalendar } from "./admin-calendar.mjs?v=10f38cf10e5f";
 import {
   externalUrl,
   forgetViewer,
@@ -14,25 +14,25 @@ import {
   openOutside,
   signIn,
   viewerSession,
-} from "./viewer.mjs?v=3fe0f0184825";
-import { initializeAccess, levelLabel } from "./access.mjs?v=3fe0f0184825";
-import { initializeNewPerson } from "./new-person.mjs?v=3fe0f0184825";
-import { initializeDirectory } from "./directory.mjs?v=3fe0f0184825";
-import { initializeTimeline } from "./timeline.mjs?v=3fe0f0184825";
-import { initializeExecutive } from "./executive.mjs?v=3fe0f0184825";
-import { initializeTeacherProfile } from "./teacher-profile.mjs?v=3fe0f0184825";
-import { closeNavigation } from "./interface.mjs?v=3fe0f0184825";
-import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=3fe0f0184825";
-import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=3fe0f0184825";
-import { combobox } from "./combobox.mjs?v=3fe0f0184825";
-import { enterSection } from "./motion.mjs?v=3fe0f0184825";
-import { character } from "./characters.mjs?v=3fe0f0184825";
+} from "./viewer.mjs?v=10f38cf10e5f";
+import { initializeAccess, levelLabel } from "./access.mjs?v=10f38cf10e5f";
+import { initializeNewPerson } from "./new-person.mjs?v=10f38cf10e5f";
+import { initializeDirectory } from "./directory.mjs?v=10f38cf10e5f";
+import { initializeTimeline } from "./timeline.mjs?v=10f38cf10e5f";
+import { initializeExecutive } from "./executive.mjs?v=10f38cf10e5f";
+import { initializeTeacherProfile } from "./teacher-profile.mjs?v=10f38cf10e5f";
+import { closeNavigation } from "./interface.mjs?v=10f38cf10e5f";
+import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=10f38cf10e5f";
+import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=10f38cf10e5f";
+import { combobox } from "./combobox.mjs?v=10f38cf10e5f";
+import { enterSection } from "./motion.mjs?v=10f38cf10e5f";
+import { character } from "./characters.mjs?v=10f38cf10e5f";
 import {
   confirmedSessions,
   groupTone,
   teacherActive,
   teacherType,
-} from "./schedule-model.mjs?v=3fe0f0184825";
+} from "./schedule-model.mjs?v=10f38cf10e5f";
 const $ = (id) => document.getElementById(id),
   state = {
     schools: [],

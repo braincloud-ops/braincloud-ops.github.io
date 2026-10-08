@@ -33,3 +33,30 @@ export function modal(title) {
   dialog.addEventListener("close", () => dialog.remove(), { once: true });
   return { dialog, body };
 }
+
+// Panels and pop-ups close when you click the dimmed area outside them (the
+// press must also start outside, so selecting text and releasing outside does
+// not close anything). Editing windows keep their typing: they close only with
+// their own buttons or Escape.
+let pressedOn = null;
+document.addEventListener("pointerdown", (event) => {
+  pressedOn = event.target;
+});
+document.addEventListener("click", (event) => {
+  const dialog = event.target;
+  if (
+    !(dialog instanceof HTMLDialogElement) ||
+    !dialog.open ||
+    pressedOn !== dialog ||
+    !dialog.classList.contains("detail-dialog") ||
+    dialog.matches(".edit-dialog, .directory-dialog")
+  )
+    return;
+  const r = dialog.getBoundingClientRect();
+  const inside =
+    event.clientX >= r.left &&
+    event.clientX <= r.right &&
+    event.clientY >= r.top &&
+    event.clientY <= r.bottom;
+  if (!inside) dialog.close();
+});
