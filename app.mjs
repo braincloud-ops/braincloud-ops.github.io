@@ -1,29 +1,29 @@
-import { initializeDashboard } from "./dashboard.mjs?v=4374ee290a9d";
-import { initializeAttendance } from "./attendance.mjs?v=4374ee290a9d";
+import { initializeDashboard } from "./dashboard.mjs?v=7974d4d75686";
+import { initializeAttendance } from "./attendance.mjs?v=7974d4d75686";
 import {
   initializeRequestWorkflows,
   confirmSubmission,
-} from "./request-workflows.mjs?v=4374ee290a9d";
-import { API_URL } from "./config.js?v=4374ee290a9d";
-import { initializeAdminCalendar } from "./admin-calendar.mjs?v=4374ee290a9d";
-import { forgetViewer, keepViewer, signIn, viewerSession } from "./viewer.mjs?v=4374ee290a9d";
-import { initializeAccess, levelLabel } from "./access.mjs?v=4374ee290a9d";
-import { initializeDirectory } from "./directory.mjs?v=4374ee290a9d";
-import { initializeTimeline } from "./timeline.mjs?v=4374ee290a9d";
-import { initializeExecutive } from "./executive.mjs?v=4374ee290a9d";
-import { initializeTeacherProfile } from "./teacher-profile.mjs?v=4374ee290a9d";
-import { closeNavigation } from "./interface.mjs?v=4374ee290a9d";
-import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=4374ee290a9d";
-import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=4374ee290a9d";
-import { combobox } from "./combobox.mjs?v=4374ee290a9d";
-import { enterSection } from "./motion.mjs?v=4374ee290a9d";
-import { character } from "./characters.mjs?v=4374ee290a9d";
+} from "./request-workflows.mjs?v=7974d4d75686";
+import { API_URL } from "./config.js?v=7974d4d75686";
+import { initializeAdminCalendar } from "./admin-calendar.mjs?v=7974d4d75686";
+import { forgetViewer, keepViewer, signIn, viewerSession } from "./viewer.mjs?v=7974d4d75686";
+import { initializeAccess, levelLabel } from "./access.mjs?v=7974d4d75686";
+import { initializeDirectory } from "./directory.mjs?v=7974d4d75686";
+import { initializeTimeline } from "./timeline.mjs?v=7974d4d75686";
+import { initializeExecutive } from "./executive.mjs?v=7974d4d75686";
+import { initializeTeacherProfile } from "./teacher-profile.mjs?v=7974d4d75686";
+import { closeNavigation } from "./interface.mjs?v=7974d4d75686";
+import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=7974d4d75686";
+import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=7974d4d75686";
+import { combobox } from "./combobox.mjs?v=7974d4d75686";
+import { enterSection } from "./motion.mjs?v=7974d4d75686";
+import { character } from "./characters.mjs?v=7974d4d75686";
 import {
   confirmedSessions,
   groupTone,
   teacherActive,
   teacherType,
-} from "./schedule-model.mjs?v=4374ee290a9d";
+} from "./schedule-model.mjs?v=7974d4d75686";
 const $ = (id) => document.getElementById(id),
   state = {
     schools: [],
@@ -549,6 +549,17 @@ function updateAccount() {
     : viewer
       ? "Team calendar"
       : "";
+  const until = (admin || viewer)?.expires_at;
+  $("account-expiry").textContent = until
+    ? "Signed in until " +
+      new Date(until).toLocaleString("en-GB", {
+        timeZone: "Asia/Bangkok",
+        day: "numeric",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "";
 }
 function signOut() {
   try {
@@ -562,7 +573,6 @@ function signOut() {
   $("admin-workspace").hidden = true;
   $("admin-requests").replaceChildren();
   $("job-output").replaceChildren();
-  calendar.clear();
   directory.clear();
   profiles.clear();
   access.clear();
@@ -605,6 +615,7 @@ function handleSignIn(session) {
     forgetViewer();
     rememberAdmin(session);
     openWorkspace(session);
+    teamCalendar.clear();
     $("admin-signin-note").textContent = "";
     message("Signed in as " + session.email + ".");
   } else {
@@ -630,17 +641,12 @@ function showAdminSignIn() {
   signIn($("admin-signin-button"), signInOptions());
 }
 initializeAttendance({ api });
-const calendar = initializeAdminCalendar({
-  api,
-  query,
-  message,
-  canEdit: () => can("requests.edit"),
-  canSeeDetails: () => can("leave.details"),
-});
 
-// ── Team calendar for staff: company Google sign-in, read-only ──
-// A staff session (or an administrator session) reads POST /calendar, which
-// never carries reasons, submitters or leave types.
+// ── Team calendar: the one calendar for everyone ──
+// Company staff read POST /calendar, which never carries reasons,
+// submitters or leave types. People an owner has given access see more on
+// the same page: leave details with `leave.details`, Mark handled and Edit
+// with `requests.edit`.
 const viewerApi = (path, options = {}) => {
   const token = viewerSession()?.token || (adminLive() && state.session.token);
   return api(path, {
@@ -667,8 +673,13 @@ const teamCalendar = initializeAdminCalendar({
   query,
   message,
   rootId: "team-calendar-root",
-  endpoint: "/calendar",
+  // People allowed to see leave details (owners, HR, coordinators) get the
+  // full view here too; everyone else the company view without reasons.
+  endpoint: () => (can("leave.details") ? "/admin/calendar" : "/calendar"),
   readOnly: true,
+  canEdit: () => can("requests.edit"),
+  canSeeDetails: () => can("leave.details"),
+  showEditLink: () => !adminLive(),
   isVisible: () => !$("calendar").hidden && !$("team-calendar-wrap").hidden,
 });
 let pendingDate = null;
@@ -684,9 +695,6 @@ async function openTeamCalendar(date) {
   if (!viewer && !adminLive()) return showTeamSignIn();
   $("team-signin").hidden = true;
   $("team-calendar-wrap").hidden = false;
-  $("team-who").textContent =
-    "Signed in as " +
-    (viewer?.email || state.session.email || "administrator (password)");
   if (pendingDate) {
     const day = pendingDate;
     pendingDate = null;
@@ -698,15 +706,19 @@ const onTeamRoute = () => {
   if (page === "calendar") openTeamCalendar(arg);
 };
 addEventListener("hashchange", onTeamRoute);
-// An administrator reading the team calendar loses access on sign-out.
+// Signing out of Admin removes any leave details from the team calendar.
 addEventListener("admin-signed-out", () => {
-  if (viewerSession()) return;
   teamCalendar.clear();
+  if (viewerSession()) {
+    if (!$("calendar").hidden) openTeamCalendar();
+    return;
+  }
   if (!$("calendar").hidden) showTeamSignIn();
   else $("team-calendar-wrap").hidden = true;
 });
-for (const id of ["team-signout", "account-signout", "logout"])
-  $(id).addEventListener("click", (e) => signOutEverywhere(e.currentTarget));
+$("account-signout").addEventListener("click", (e) =>
+  signOutEverywhere(e.currentTarget),
+);
 const directory = initializeDirectory({ api, message });
 const profiles = initializeTeacherProfile({ api, busy, message });
 const access = initializeAccess({
@@ -719,12 +731,15 @@ const access = initializeAccess({
 // Administrator sections: one visible at a time; data loads on first visit.
 function showAdminTab(name) {
   const tab = document.querySelector(`[data-admin-tab="${name}"]`);
-  if (!tab || tab.hidden) name = "calendar";
+  // A tab the person cannot use falls back to the first one they can.
+  if (!tab || tab.hidden)
+    name = [...document.querySelectorAll("[data-admin-tab]")].find(
+      (b) => !b.hidden,
+    ).dataset.adminTab;
   for (const b of document.querySelectorAll("[data-admin-tab]"))
     b.setAttribute("aria-pressed", String(b.dataset.adminTab === name));
   for (const panel of document.querySelectorAll("[data-admin-panel]"))
     panel.hidden = panel.dataset.adminPanel !== name;
-  if (name === "calendar") calendar.start();
   if (name === "directory") directory.start();
   if (name === "access") access.start();
   enterSection(document.querySelector(`[data-admin-panel="${name}"]`));
@@ -749,15 +764,9 @@ function openWorkspace(session) {
   state.session = session;
   $("login-panel").hidden = true;
   $("admin-workspace").hidden = false;
-  $("session-expiry").textContent =
-    (session.email ? session.email + " · " : "") +
-    "Session expires " +
-    new Date(state.session.expires_at).toLocaleString("en-GB", {
-      timeZone: "Asia/Bangkok",
-    });
   applyPermissions();
   dispatchEvent(new Event("admin-signed-in"));
-  showAdminTab("calendar");
+  showAdminTab("settings");
 }
 $("load-requests").addEventListener("click", () =>
   busy($("load-requests"), async () => {
@@ -833,7 +842,7 @@ $("edit-form").addEventListener("submit", (e) => {
     });
     state.edit = null;
     $("edit-dialog").close();
-    calendar.refresh();
+    teamCalendar.refresh();
     message(
       "Saved. The calendar is refreshing; reload recent requests to see the change there.",
     );
@@ -885,7 +894,7 @@ function editRequest(item) {
   if (!$("edit-dialog").open) $("edit-dialog").showModal();
 }
 $("edit-close").addEventListener("click", () => $("edit-dialog").close());
-calendar.onEdit(editRequest);
+teamCalendar.onEdit(editRequest);
 for (const id of ["edit-check-sessions", "edit-check-teaching"])
   $(id).addEventListener("click", () =>
     busy($(id), async () => {
@@ -1082,9 +1091,12 @@ $("export-form").addEventListener("submit", (e) => {
         state.session = { ...state.session, ...data };
         rememberAdmin(state.session);
         applyPermissions();
+        // The team calendar may show more (or less) with current permissions.
+        teamCalendar.clear();
+        if (!$("calendar").hidden) openTeamCalendar();
         showAdminTab(
           document.querySelector('[data-admin-tab][aria-pressed="true"]')
-            ?.dataset.adminTab || "calendar",
+            ?.dataset.adminTab || "settings",
         );
       })
       .catch(() => {});

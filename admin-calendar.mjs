@@ -2,16 +2,16 @@
 // are closed, with the server's check of whether each affected class is
 // already cancelled or covered. One request per month; the day panel works
 // from the same data.
-import { el, button, modal } from "./dom.mjs?v=4374ee290a9d";
-import { character, emptyState } from "./characters.mjs?v=4374ee290a9d";
-import { rise, punch } from "./motion.mjs?v=4374ee290a9d";
+import { el, button, modal } from "./dom.mjs?v=7974d4d75686";
+import { character, emptyState } from "./characters.mjs?v=7974d4d75686";
+import { rise, punch } from "./motion.mjs?v=7974d4d75686";
 import {
   bangkokDay,
   cancelled,
   category,
   confirmedSessions,
   time,
-} from "./schedule-model.mjs?v=4374ee290a9d";
+} from "./schedule-model.mjs?v=7974d4d75686";
 
 const TONES = [
   ["thesaban", "Thesaban"],
@@ -88,8 +88,12 @@ export function initializeAdminCalendar({
   query,
   message,
   rootId = "calendar-root",
+  // A path, or a function choosing one (the team calendar uses the full
+  // administrator view for people allowed to see leave details).
   endpoint = "/admin/calendar",
   readOnly = false,
+  // Without edit access: whether to offer "Sign in to edit".
+  showEditLink = () => true,
   // Signed-in administrators: what their permissions allow.
   canEdit = () => !readOnly,
   canSeeDetails = () => !readOnly,
@@ -211,10 +215,10 @@ export function initializeAdminCalendar({
     status.textContent = "Loading the calendar…";
     body.classList.add("is-loading");
     try {
-      const { data } = await api(endpoint, {
-        method: "POST",
-        data: { start, end },
-      });
+      const { data } = await api(
+        typeof endpoint === "function" ? endpoint() : endpoint,
+        { method: "POST", data: { start, end } },
+      );
       if (generation !== st.generation) return;
       st.data = data;
       st.loadedAt = new Date();
@@ -611,19 +615,20 @@ export function initializeAdminCalendar({
       card.append(meta);
     }
     const tools = el("div", "", "request-tools");
-    if (readOnly) {
-      // Changing a request needs administrator access (Admin page).
-      const signIn = el(
-        "a",
-        "Edit in Admin",
-        "button-link secondary-link small",
-      );
-      signIn.href = "#admin";
-      tools.append(signIn);
-      card.append(tools);
+    if (!canEdit()) {
+      // Not signed in with edit access: point to signing in (Admin page).
+      if (readOnly && showEditLink()) {
+        const signIn = el(
+          "a",
+          "Sign in to edit",
+          "button-link secondary-link small",
+        );
+        signIn.href = "#admin";
+        tools.append(signIn);
+        card.append(tools);
+      }
       return card;
     }
-    if (!canEdit()) return card;
     const confirmed = r.state === "confirmed";
     tools.append(
       button(
