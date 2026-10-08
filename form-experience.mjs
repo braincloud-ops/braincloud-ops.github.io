@@ -1,5 +1,5 @@
-import { character } from "./characters.mjs?v=166a9864d91a";
-import { burst } from "./motion.mjs?v=166a9864d91a";
+import { character } from "./characters.mjs?v=4c98110a12d7";
+import { burst } from "./motion.mjs?v=4c98110a12d7";
 
 export function improveFormDates() {
   for (const form of document.forms) {
@@ -37,12 +37,13 @@ export function showSubmissionReceipt(form, result, onAnother) {
   }
   receipt.replaceChildren();
   const heading = document.createElement("h3");
-  heading.textContent = "Request received";
+  heading.textContent = "Sent";
   const detail = document.createElement("p");
-  detail.textContent = `Request #${result.id} · Pending review`;
+  detail.textContent = `#${result.id} · The team takes it from there`;
   const note = document.createElement("p");
-  note.textContent =
-    "Your request is saved. There is no need to submit it again.";
+  note.textContent = result.teacher_id
+    ? "You have also been added to the staff list. There is no need to send it again."
+    : "It is saved. There is no need to send it again.";
   receipt.append(heading, detail, note);
   if (onAnother) {
     const another = document.createElement("button");

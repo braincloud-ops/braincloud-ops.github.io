@@ -1,11 +1,11 @@
-import { initializeDashboard } from "./dashboard.mjs?v=166a9864d91a";
-import { initializeAttendance } from "./attendance.mjs?v=166a9864d91a";
+import { initializeDashboard } from "./dashboard.mjs?v=4c98110a12d7";
+import { initializeAttendance } from "./attendance.mjs?v=4c98110a12d7";
 import {
   initializeRequestWorkflows,
   confirmSubmission,
-} from "./request-workflows.mjs?v=166a9864d91a";
-import { API_URL } from "./config.js?v=166a9864d91a";
-import { initializeAdminCalendar } from "./admin-calendar.mjs?v=166a9864d91a";
+} from "./request-workflows.mjs?v=4c98110a12d7";
+import { API_URL } from "./config.js?v=4c98110a12d7";
+import { initializeAdminCalendar } from "./admin-calendar.mjs?v=4c98110a12d7";
 import {
   externalUrl,
   forgetViewer,
@@ -14,24 +14,25 @@ import {
   openOutside,
   signIn,
   viewerSession,
-} from "./viewer.mjs?v=166a9864d91a";
-import { initializeAccess, levelLabel } from "./access.mjs?v=166a9864d91a";
-import { initializeDirectory } from "./directory.mjs?v=166a9864d91a";
-import { initializeTimeline } from "./timeline.mjs?v=166a9864d91a";
-import { initializeExecutive } from "./executive.mjs?v=166a9864d91a";
-import { initializeTeacherProfile } from "./teacher-profile.mjs?v=166a9864d91a";
-import { closeNavigation } from "./interface.mjs?v=166a9864d91a";
-import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=166a9864d91a";
-import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=166a9864d91a";
-import { combobox } from "./combobox.mjs?v=166a9864d91a";
-import { enterSection } from "./motion.mjs?v=166a9864d91a";
-import { character } from "./characters.mjs?v=166a9864d91a";
+} from "./viewer.mjs?v=4c98110a12d7";
+import { initializeAccess, levelLabel } from "./access.mjs?v=4c98110a12d7";
+import { initializeNewPerson } from "./new-person.mjs?v=4c98110a12d7";
+import { initializeDirectory } from "./directory.mjs?v=4c98110a12d7";
+import { initializeTimeline } from "./timeline.mjs?v=4c98110a12d7";
+import { initializeExecutive } from "./executive.mjs?v=4c98110a12d7";
+import { initializeTeacherProfile } from "./teacher-profile.mjs?v=4c98110a12d7";
+import { closeNavigation } from "./interface.mjs?v=4c98110a12d7";
+import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=4c98110a12d7";
+import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=4c98110a12d7";
+import { combobox } from "./combobox.mjs?v=4c98110a12d7";
+import { enterSection } from "./motion.mjs?v=4c98110a12d7";
+import { character } from "./characters.mjs?v=4c98110a12d7";
 import {
   confirmedSessions,
   groupTone,
   teacherActive,
   teacherType,
-} from "./schedule-model.mjs?v=166a9864d91a";
+} from "./schedule-model.mjs?v=4c98110a12d7";
 const $ = (id) => document.getElementById(id),
   state = {
     schools: [],
@@ -164,7 +165,9 @@ function table(target, columns, rows, action) {
   root.append(t);
 }
 const teacherName = (id) => {
-  const t = state.teachers.find((t) => t.user_id === id);
+  const t =
+    state.teachers.find((t) => t.user_id === id) ||
+    state.people?.find((t) => t.user_id === id);
   return t
     ? [t.firstname_en, t.lastname_en].filter(Boolean).join(" ")
     : id || "Not specified";
@@ -200,7 +203,11 @@ function teacherItems(teachers) {
       // Some records repeat the English name in the Thai fields.
       detail:
         thai && thai.toLowerCase() !== name.toLowerCase() ? thai : undefined,
-      meta: teacherType(t),
+      // FT/PT for teachers; otherwise the position (Thai teacher, Staff).
+      meta:
+        teacherType(t) !== "Other"
+          ? teacherType(t)
+          : { 110: "Thai teacher", 200: "Staff" }[t.position] || "",
       search: [t.nickname_th, t.nickname_en, thai].join(" "),
     };
   };
@@ -296,11 +303,22 @@ improveFormDates();
 async function initialize() {
   if (!base) return;
   try {
-    [state.schools, state.teachers] = await Promise.all([
+    [state.schools, state.teachers, state.people] = await Promise.all([
       query("dim_school", [], false, [{ column: "school_code" }]),
       query(
         "dim_user",
         [{ column: "user_type", op: "in", value: [210, 220] }],
+        false,
+        [
+          { column: "firstname_en" },
+          { column: "lastname_en" },
+          { column: "user_id" },
+        ],
+      ),
+      // Everyone at Braincloud (teachers and Thai staff) for the leave form.
+      query(
+        "dim_user",
+        [{ column: "affiliation", op: "eq", value: "BC" }],
         false,
         [
           { column: "firstname_en" },
@@ -319,10 +337,10 @@ async function initialize() {
       emptyText: "No school matches. Check the spelling or code.",
     });
     combos.teacher = combobox($("teacher-select"), {
-      items: teacherItems(state.teachers),
-      placeholder: "Type a teacher's name",
-      invalidText: "Choose a teacher from the list.",
-      emptyText: "No teacher matches. Ask an administrator to check the list.",
+      items: teacherItems(state.people),
+      placeholder: "Type your name",
+      invalidText: "Choose a person from the list, or add yourself below.",
+      emptyText: "No match. Can't find your name? Add yourself below.",
     });
     executive.setDirectory({
       schools: state.schools,
@@ -343,7 +361,7 @@ async function initialize() {
       placeholder: "Type a school name or code",
     });
     combos.editTeacher = combobox($("edit-teacher"), {
-      items: teacherItems(state.teachers),
+      items: teacherItems(state.people),
       placeholder: "Type a teacher's name",
     });
   } catch (e) {
@@ -351,6 +369,14 @@ async function initialize() {
   }
 }
 initialize();
+const newPerson = initializeNewPerson({
+  form: $("teacher-form"),
+  getPeople: () => state.people || [],
+  choose(id) {
+    $("teacher-select").value = id;
+    combos.teacher?.refresh();
+  },
+});
 initializeRequestWorkflows({
   query,
   api,
@@ -391,10 +417,19 @@ for (const [id, category] of [
       delete data.startTime;
       delete data.endTime;
       delete data.sessions;
+      // Not in the list: the person adds themselves with this request.
+      for (const key of Object.keys(data))
+        if (key.startsWith("np_")) delete data[key];
+      if (category === "Teacher" && newPerson.isOpen()) {
+        data.new_person = newPerson.read();
+        delete data.teacher_id;
+      }
       const serialized = JSON.stringify(data);
       if (!pending || pending.serialized !== serialized)
         pending = { serialized, key: crypto.randomUUID() };
-      if (!(await confirmSubmission(form, data, teacherName))) {
+      const who = (id) =>
+        data.new_person ? newPerson.describe(data.new_person) : teacherName(id);
+      if (!(await confirmSubmission(form, data, who))) {
         message("You can edit your request before sending.");
         return;
       }
@@ -403,7 +438,18 @@ for (const [id, category] of [
         data,
         headers: { "Idempotency-Key": pending.key, ...lineRequestHeaders() },
       });
-      message(`Request #${result.id} received. Status: Pending.`);
+      message(`#${result.id} sent. The team takes it from there.`);
+      if (result.teacher_id && data.new_person) {
+        // Now in the staff list: select them for any next request.
+        state.people.push({
+          user_id: result.teacher_id,
+          ...data.new_person,
+          affiliation: "BC",
+          status: "Active",
+        });
+        combos.teacher?.setItems(teacherItems(state.people));
+        newPerson.done(result.teacher_id);
+      }
       // Keep the key while the payload is unchanged, including after a successful
       // response; only an explicit "Submit another request" starts a new one.
       showSubmissionReceipt(form, result, () => {

@@ -3,7 +3,7 @@
 // an owner has granted access, otherwise the read-only team calendar. The
 // staff session is remembered on this device (30 days, or until Sign out).
 // Local preview offers a demo sign-in with any company address.
-import { GOOGLE_CLIENT_ID } from "./config.js?v=166a9864d91a";
+import { GOOGLE_CLIENT_ID } from "./config.js?v=4c98110a12d7";
 
 const KEY = "braincloud-viewer";
 const GIS = "https://accounts.google.com/gsi/client";

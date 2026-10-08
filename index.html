@@ -15,7 +15,7 @@
       content="default-src 'self'; script-src 'self' https://accounts.google.com/gsi/client; style-src 'self' https://accounts.google.com/gsi/style; frame-src https://accounts.google.com/gsi/; img-src 'self' data: blob: https://profile.line-scdn.net; connect-src 'self' https://*.supabase.co https://accounts.google.com/gsi/; object-src 'none'; base-uri 'none'; form-action 'self'"
     />
     <title>Braincloud Operations</title>
-    <link rel="stylesheet" href="styles.css?v=166a9864d91a" />
+    <link rel="stylesheet" href="styles.css?v=4c98110a12d7" />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -149,7 +149,7 @@
             <span class="art-caption">GOOD DAYS START TOGETHER</span>
             <img
               class="hero-mascot"
-              src="characters/girl-cheer.webp?v=166a9864d91a"
+              src="characters/girl-cheer.webp?v=4c98110a12d7"
               alt=""
               loading="lazy"
               decoding="async"
@@ -174,7 +174,7 @@
               ></span
               ><img
                 class="card-character"
-                src="characters/robot-b-cheer.webp?v=166a9864d91a"
+                src="characters/robot-b-cheer.webp?v=4c98110a12d7"
                 alt=""
                 loading="lazy"
                 decoding="async"
@@ -197,7 +197,7 @@
               ></span
               ><img
                 class="card-character"
-                src="characters/girl-thumbs.webp?v=166a9864d91a"
+                src="characters/girl-thumbs.webp?v=4c98110a12d7"
                 alt=""
                 loading="lazy"
                 decoding="async"
@@ -218,7 +218,7 @@
               ></span
               ><img
                 class="card-character"
-                src="characters/boy-neutral.webp?v=166a9864d91a"
+                src="characters/boy-neutral.webp?v=4c98110a12d7"
                 alt=""
                 loading="lazy"
                 decoding="async"
@@ -264,7 +264,7 @@
         <div class="page-heading has-mascot" data-accent="school">
           <img
             class="hero-character"
-            src="characters/robot-b-cheer.webp?v=166a9864d91a"
+            src="characters/robot-b-cheer.webp?v=4c98110a12d7"
             alt=""
             loading="lazy"
             decoding="async"
@@ -345,20 +345,21 @@
                   name="reason"
                   maxlength="2000"
                   rows="4"
-                  placeholder="Add details to help the team review your request."
+                  placeholder="Anything the team should know."
                   aria-describedby="school-privacy"
                 ></textarea
                 ><small id="school-privacy" class="input-hint"
-                  >Only administrators can see your reason.</small
+                  >Only the leave team (HR and administrators) can see your
+                  reason.</small
                 ></label
               >
             </fieldset>
             <div class="form-actions">
               <p>
-                Check your details before submitting.<br />Your request will be
-                marked <strong>Pending</strong>.
+                Check the details, then send once.<br />The team takes it from
+                there.
               </p>
-              <button type="submit">Submit request</button>
+              <button type="submit">Send</button>
             </div>
           </form>
           <aside class="form-guide">
@@ -368,20 +369,17 @@
               aria-hidden="true"
             ></span>
             <p class="eyebrow">GOOD TO KNOW</p>
-            <h2>A clear update helps everyone plan.</h2>
+            <h2>Send it, and the team takes it from there.</h2>
             <ol class="next-steps">
               <li>
-                <strong>Send your request</strong
-                ><span>Check the dates and submit once.</span>
+                <strong>Send it once</strong
+                ><span>Check the dates and send. No approval is needed.</span>
               </li>
               <li>
-                <strong>The team reviews it</strong
-                ><span>Administrators can see the full details.</span>
-              </li>
-              <li>
-                <strong>Follow its status</strong
+                <strong>The team takes it from there</strong
                 ><span
-                  >Open Schedules &amp; reports and select Request status.</span
+                  >The office updates the teaching schedule for that
+                  school.</span
                 >
               </li>
             </ol>
@@ -389,7 +387,6 @@
               <strong>Bangkok time</strong>
               <p>All dates and times use Asia/Bangkok (UTC+7).</p>
             </div>
-            <a class="text-link" href="#reports">View request status →</a>
           </aside>
         </div>
       </section>
@@ -397,7 +394,7 @@
         <div class="page-heading has-mascot" data-accent="teacher">
           <img
             class="hero-character"
-            src="characters/girl-thumbs.webp?v=166a9864d91a"
+            src="characters/girl-thumbs.webp?v=4c98110a12d7"
             alt=""
             loading="lazy"
             decoding="async"
@@ -426,12 +423,12 @@
                   autocomplete="name"
                   placeholder="Your full name" /></label
               ><label
-                >Teacher<select
+                >Teacher or staff member<select
                   name="teacher_id"
                   id="teacher-select"
                   required=""
                 >
-                  <option value="">Select a teacher</option>
+                  <option value="">Select a person</option>
                 </select></label
               >
             </fieldset>
@@ -517,24 +514,25 @@
                   name="reason"
                   maxlength="2000"
                   rows="4"
-                  placeholder="Add details to help the team review your request."
+                  placeholder="Anything the team should know."
                   aria-describedby="teacher-privacy"
                 ></textarea
                 ><small id="teacher-privacy" class="input-hint"
-                  >Only administrators can see your reason.</small
+                  >Only the leave team (HR and administrators) can see your
+                  reason.</small
                 ></label
               >
             </fieldset>
             <div class="form-actions">
               <p>
-                Check your details before submitting.<br />Your request will be
-                marked <strong>Pending</strong>.
+                Check the details, then send once.<br />The team takes it from
+                there.
               </p>
-              <button type="submit">Submit request</button>
+              <button type="submit">Send</button>
             </div>
             <p class="privacy-line">
               Colleagues see only your name, dates and times; the leave type and
-              reason are seen by administrators only.
+              reason are seen only by the leave team (HR and administrators).
             </p>
           </form>
           <aside class="form-guide">
@@ -544,20 +542,17 @@
               aria-hidden="true"
             ></span>
             <p class="eyebrow">GOOD TO KNOW</p>
-            <h2>Keep your team in the loop.</h2>
+            <h2>Let the team know. They take it from there.</h2>
             <ol class="next-steps">
               <li>
-                <strong>Send your request</strong
-                ><span>Check the dates and submit once.</span>
+                <strong>Send it once</strong
+                ><span>Check the dates and send. No approval is needed.</span>
               </li>
               <li>
-                <strong>The team reviews it</strong
-                ><span>Administrators can see the full details.</span>
-              </li>
-              <li>
-                <strong>Follow its status</strong
+                <strong>The team takes it from there</strong
                 ><span
-                  >Open Schedules &amp; reports and select Request status.</span
+                  >The office arranges cover for your classes, and your leave
+                  shows in the Team calendar.</span
                 >
               </li>
             </ol>
@@ -565,7 +560,6 @@
               <strong>Bangkok time</strong>
               <p>All dates and times use Asia/Bangkok (UTC+7).</p>
             </div>
-            <a class="text-link" href="#reports">View request status →</a>
           </aside>
         </div>
       </section>
@@ -573,7 +567,7 @@
         <div class="page-heading has-mascot" data-accent="calendar">
           <img
             class="hero-character"
-            src="characters/boy-neutral.webp?v=166a9864d91a"
+            src="characters/boy-neutral.webp?v=4c98110a12d7"
             alt=""
             loading="lazy"
             decoding="async"
@@ -607,7 +601,7 @@
         <div class="page-heading has-mascot">
           <img
             class="hero-character"
-            src="characters/robot-r-neutral.webp?v=166a9864d91a"
+            src="characters/robot-r-neutral.webp?v=4c98110a12d7"
             alt=""
             loading="lazy"
             decoding="async"
@@ -668,7 +662,7 @@
         <div class="page-heading has-mascot">
           <img
             class="hero-character"
-            src="characters/robot-b-wave.webp?v=166a9864d91a"
+            src="characters/robot-b-wave.webp?v=4c98110a12d7"
             alt=""
             loading="lazy"
             decoding="async"
@@ -707,7 +701,7 @@
         <div class="page-heading has-mascot">
           <img
             class="hero-character"
-            src="characters/girl-cheer.webp?v=166a9864d91a"
+            src="characters/girl-cheer.webp?v=4c98110a12d7"
             alt=""
             loading="lazy"
             decoding="async"
@@ -968,7 +962,7 @@
         <div class="page-heading has-mascot">
           <img
             class="hero-character"
-            src="characters/boy-confused.webp?v=166a9864d91a"
+            src="characters/boy-confused.webp?v=4c98110a12d7"
             alt=""
             loading="lazy"
             decoding="async"
@@ -1405,6 +1399,6 @@
       <span>braincloud <strong>operations</strong></span
       ><span>For the people behind every school day.</span>
     </footer>
-    <script type="module" src="app.mjs?v=166a9864d91a"></script>
+    <script type="module" src="app.mjs?v=4c98110a12d7"></script>
   </body>
 </html>

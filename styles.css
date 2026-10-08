@@ -5193,3 +5193,91 @@ nav a[data-accent][aria-current="page"] {
     margin: 8px 0 0;
   }
 }
+
+/* Teacher leave: "Can't find your name? Add yourself". */
+.new-person-hint {
+  margin-top: -4px;
+}
+.new-person {
+  margin: 4px 0 16px;
+  padding: 16px 18px;
+  border: 1px dashed #5664d8;
+  border-radius: 14px;
+  background: #f6f7fe;
+}
+.new-person legend {
+  padding: 0 6px;
+  font-weight: 750;
+  color: #3a45b5;
+}
+.new-person-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0 14px;
+}
+.pill-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 0;
+  padding: 0;
+  border: 0;
+}
+.pill-choices legend {
+  width: 100%;
+  padding: 0 0 6px;
+  color: var(--ink);
+  font-weight: 650;
+}
+.pill-choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  padding: 7px 13px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+.pill-choice:has(input:checked) {
+  border-color: #5664d8;
+  background: #eef0fd;
+  color: #3a45b5;
+}
+.new-person-match {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fff4cc;
+  color: #4a3a00;
+}
+.new-person-review {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #eef0fd;
+  color: #2c3590;
+}
+.new-person-review p {
+  margin: 0 0 8px;
+}
+
+/* Pill choices keep their words whole (not the full-width field style). */
+.pill-choice {
+  width: auto;
+  flex-direction: row;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  font-size: 0.86rem;
+}
+.pill-choice input[type="radio"] {
+  display: inline-block;
+  width: auto;
+  inline-size: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  accent-color: #5664d8;
+}

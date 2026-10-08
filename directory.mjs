@@ -1,13 +1,13 @@
 // Administrator directory: keep people and schools up to date in one place.
 // Saves send the values the editor saw, so a record changed meanwhile by
 // someone else is refused instead of silently overwritten.
-import { el, button, modal } from "./dom.mjs?v=166a9864d91a";
-import { emptyState } from "./characters.mjs?v=166a9864d91a";
-import { rise } from "./motion.mjs?v=166a9864d91a";
-import { groupTone, teacherActive } from "./schedule-model.mjs?v=166a9864d91a";
-import { combobox } from "./combobox.mjs?v=166a9864d91a";
-import { loadProvinceNames, provinceKey } from "./school-map.mjs?v=166a9864d91a";
-import { mapsLink } from "./school-sheet.mjs?v=166a9864d91a";
+import { el, button, modal } from "./dom.mjs?v=4c98110a12d7";
+import { emptyState } from "./characters.mjs?v=4c98110a12d7";
+import { rise } from "./motion.mjs?v=4c98110a12d7";
+import { groupTone, teacherActive } from "./schedule-model.mjs?v=4c98110a12d7";
+import { combobox } from "./combobox.mjs?v=4c98110a12d7";
+import { loadProvinceNames, provinceKey } from "./school-map.mjs?v=4c98110a12d7";
+import { mapsLink } from "./school-sheet.mjs?v=4c98110a12d7";
 
 const TYPE_LABEL = {
   210: "FT",
@@ -196,9 +196,17 @@ export function initializeDirectory({ api, message, onChanged = () => {} }) {
   }
 
   // ── People ──
+  // People who added themselves on the teacher leave form, until checked.
+  const newFromForm = (p) =>
+    (st.data.newPeople || []).find((r) => r.user_id === p.user_id);
   const peopleIssues = () => {
     const people = st.data.people;
     return [
+      [
+        "new-from-form",
+        "New from the leave form (check once)",
+        (p) => !!newFromForm(p),
+      ],
       [
         "no-type",
         "Braincloud staff without FT/PT",
@@ -512,6 +520,41 @@ export function initializeDirectory({ api, message, onChanged = () => {} }) {
           "muted-line",
         ),
       );
+    const review = p && newFromForm(p);
+    if (review) {
+      // Added by themselves on the leave form: check the details, then confirm.
+      const note = el("div", "", "new-person-review");
+      note.append(
+        el(
+          "p",
+          `Added from the teacher leave form${review.submitted_by ? ` by ${review.submitted_by}` : ""} on ${new Date(review.created_at).toLocaleDateString("en-GB", { timeZone: "Asia/Bangkok", day: "numeric", month: "short", year: "numeric" })}. Check the name, role and FT/PT, save any corrections, then confirm.`,
+        ),
+        button(
+          "Confirm details",
+          async (event) => {
+            const control = event.currentTarget;
+            control.disabled = true;
+            try {
+              await api("/admin/directory/confirm", {
+                method: "POST",
+                data: { user_id: p.user_id },
+              });
+              st.data.newPeople = st.data.newPeople.filter(
+                (r) => r.user_id !== p.user_id,
+              );
+              message(`${fullName(p)} confirmed.`);
+              note.remove();
+              render();
+            } catch (error) {
+              control.disabled = false;
+              message(error.message, true);
+            }
+          },
+          "",
+        ),
+      );
+      form.append(note);
+    }
     const grid = el("div", "", "form-grid");
     form.append(grid);
     field(grid, "firstname_en", "First name (English)", p?.firstname_en, {

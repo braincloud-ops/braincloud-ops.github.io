@@ -1,6 +1,6 @@
-import { el, button, modal } from "./dom.mjs?v=166a9864d91a";
-import { hasLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=166a9864d91a";
-import { time, cancelled, category } from "./schedule-model.mjs?v=166a9864d91a";
+import { el, button, modal } from "./dom.mjs?v=4c98110a12d7";
+import { hasLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=4c98110a12d7";
+import { time, cancelled, category } from "./schedule-model.mjs?v=4c98110a12d7";
 
 export function restoreDateModes() {
   for (const id of ["school-form", "teacher-form"]) {
@@ -64,7 +64,7 @@ export function confirmSubmission(form, data, teacherName) {
     const values = [
       ["Submitting as", data.user_name],
       [
-        data.request_category === "School" ? "School" : "Teacher",
+        data.request_category === "School" ? "School" : "Who is away",
         data.request_category === "School"
           ? form.elements.school_code.selectedOptions[0]?.textContent
           : teacherName(data.teacher_id),
@@ -98,7 +98,7 @@ export function confirmSubmission(form, data, teacherName) {
     body.append(
       el(
         "p",
-        "Your request will be marked Pending. It does not change the teaching schedule automatically.",
+        "Once sent, the team takes it from there. Sending does not change the teaching schedule by itself.",
         "input-hint",
       ),
     );
@@ -396,10 +396,4 @@ export function initializeRequestWorkflows({
         ),
       );
   }
-  const help = el(
-    "p",
-    "Teacher missing from the list? Ask an administrator to check the teacher directory before submitting.",
-    "input-hint",
-  );
-  document.getElementById("teacher-select").closest("label").after(help);
 }
