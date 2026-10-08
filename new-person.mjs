@@ -2,7 +2,7 @@
 // 8 October 2026). Thai staff and others missing from TMS give their real
 // name, role and employment type; the server adds them to the staff list with
 // the leave request, and an administrator confirms the details once.
-import { el, button } from "./dom.mjs?v=e49974ba8823";
+import { el, button } from "./dom.mjs?v=2c0067239c1d";
 
 const ROLES = [
   ["nes_teacher", "NES teacher"],

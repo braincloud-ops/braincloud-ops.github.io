@@ -1,11 +1,11 @@
-import { initializeDashboard } from "./dashboard.mjs?v=e49974ba8823";
-import { initializeAttendance } from "./attendance.mjs?v=e49974ba8823";
+import { initializeDashboard } from "./dashboard.mjs?v=2c0067239c1d";
+import { initializeAttendance } from "./attendance.mjs?v=2c0067239c1d";
 import {
   initializeRequestWorkflows,
   confirmSubmission,
-} from "./request-workflows.mjs?v=e49974ba8823";
-import { API_URL } from "./config.js?v=e49974ba8823";
-import { initializeAdminCalendar } from "./admin-calendar.mjs?v=e49974ba8823";
+} from "./request-workflows.mjs?v=2c0067239c1d";
+import { API_URL } from "./config.js?v=2c0067239c1d";
+import { initializeAdminCalendar } from "./admin-calendar.mjs?v=2c0067239c1d";
 import {
   externalUrl,
   forgetViewer,
@@ -14,25 +14,25 @@ import {
   openOutside,
   signIn,
   viewerSession,
-} from "./viewer.mjs?v=e49974ba8823";
-import { initializeAccess, levelLabel } from "./access.mjs?v=e49974ba8823";
-import { initializeNewPerson } from "./new-person.mjs?v=e49974ba8823";
-import { initializeDirectory } from "./directory.mjs?v=e49974ba8823";
-import { initializeTimeline } from "./timeline.mjs?v=e49974ba8823";
-import { initializeExecutive } from "./executive.mjs?v=e49974ba8823";
-import { initializeTeacherProfile } from "./teacher-profile.mjs?v=e49974ba8823";
-import { closeNavigation } from "./interface.mjs?v=e49974ba8823";
-import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=e49974ba8823";
-import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=e49974ba8823";
-import { combobox } from "./combobox.mjs?v=e49974ba8823";
-import { enterSection } from "./motion.mjs?v=e49974ba8823";
-import { character } from "./characters.mjs?v=e49974ba8823";
+} from "./viewer.mjs?v=2c0067239c1d";
+import { initializeAccess, levelLabel } from "./access.mjs?v=2c0067239c1d";
+import { initializeNewPerson } from "./new-person.mjs?v=2c0067239c1d";
+import { initializeDirectory } from "./directory.mjs?v=2c0067239c1d";
+import { initializeTimeline } from "./timeline.mjs?v=2c0067239c1d";
+import { initializeExecutive } from "./executive.mjs?v=2c0067239c1d";
+import { initializeTeacherProfile } from "./teacher-profile.mjs?v=2c0067239c1d";
+import { closeNavigation } from "./interface.mjs?v=2c0067239c1d";
+import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=2c0067239c1d";
+import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=2c0067239c1d";
+import { combobox } from "./combobox.mjs?v=2c0067239c1d";
+import { enterSection } from "./motion.mjs?v=2c0067239c1d";
+import { character } from "./characters.mjs?v=2c0067239c1d";
 import {
   confirmedSessions,
   groupTone,
   teacherActive,
   teacherType,
-} from "./schedule-model.mjs?v=e49974ba8823";
+} from "./schedule-model.mjs?v=2c0067239c1d";
 const $ = (id) => document.getElementById(id),
   state = {
     schools: [],
@@ -657,18 +657,12 @@ function signOut() {
 // staff session, on the server and in this browser.
 async function signOutEverywhere(control) {
   await busy(control, async () => {
-    const viewer = viewerSession();
-    try {
-      if (adminLive()) await api("/admin/logout", { method: "POST", data: {} });
-    } catch {}
-    try {
-      if (viewer)
-        await api("/viewer/logout", {
-          method: "POST",
-          data: {},
-          headers: { Authorization: "Bearer " + viewer.token },
-        });
-    } catch {}
+    // Forget the sessions on this device first, so nothing can reopen with
+    // them (even if the page is left at once), then end them on the server.
+    const tokens = [
+      adminLive() && ["/admin/logout", state.session.token],
+      viewerSession() && ["/viewer/logout", viewerSession().token],
+    ].filter(Boolean);
     forgetViewer();
     if (state.session) signOut();
     teamCalendar.clear();
@@ -676,6 +670,18 @@ async function signOutEverywhere(control) {
     else $("team-calendar-wrap").hidden = true;
     updateAccount();
     message("Signed out.");
+    await Promise.allSettled(
+      tokens.map(([path, token]) =>
+        fetch(base + path, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token,
+          },
+          body: "{}",
+        }),
+      ),
+    );
   });
 }
 function handleSignIn(session) {
