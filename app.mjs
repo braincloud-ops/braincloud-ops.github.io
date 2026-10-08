@@ -1,11 +1,11 @@
-import { initializeDashboard } from "./dashboard.mjs?v=12f7be333ea9";
-import { initializeAttendance } from "./attendance.mjs?v=12f7be333ea9";
+import { initializeDashboard } from "./dashboard.mjs?v=e49974ba8823";
+import { initializeAttendance } from "./attendance.mjs?v=e49974ba8823";
 import {
   initializeRequestWorkflows,
   confirmSubmission,
-} from "./request-workflows.mjs?v=12f7be333ea9";
-import { API_URL } from "./config.js?v=12f7be333ea9";
-import { initializeAdminCalendar } from "./admin-calendar.mjs?v=12f7be333ea9";
+} from "./request-workflows.mjs?v=e49974ba8823";
+import { API_URL } from "./config.js?v=e49974ba8823";
+import { initializeAdminCalendar } from "./admin-calendar.mjs?v=e49974ba8823";
 import {
   externalUrl,
   forgetViewer,
@@ -14,25 +14,25 @@ import {
   openOutside,
   signIn,
   viewerSession,
-} from "./viewer.mjs?v=12f7be333ea9";
-import { initializeAccess, levelLabel } from "./access.mjs?v=12f7be333ea9";
-import { initializeNewPerson } from "./new-person.mjs?v=12f7be333ea9";
-import { initializeDirectory } from "./directory.mjs?v=12f7be333ea9";
-import { initializeTimeline } from "./timeline.mjs?v=12f7be333ea9";
-import { initializeExecutive } from "./executive.mjs?v=12f7be333ea9";
-import { initializeTeacherProfile } from "./teacher-profile.mjs?v=12f7be333ea9";
-import { closeNavigation } from "./interface.mjs?v=12f7be333ea9";
-import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=12f7be333ea9";
-import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=12f7be333ea9";
-import { combobox } from "./combobox.mjs?v=12f7be333ea9";
-import { enterSection } from "./motion.mjs?v=12f7be333ea9";
-import { character } from "./characters.mjs?v=12f7be333ea9";
+} from "./viewer.mjs?v=e49974ba8823";
+import { initializeAccess, levelLabel } from "./access.mjs?v=e49974ba8823";
+import { initializeNewPerson } from "./new-person.mjs?v=e49974ba8823";
+import { initializeDirectory } from "./directory.mjs?v=e49974ba8823";
+import { initializeTimeline } from "./timeline.mjs?v=e49974ba8823";
+import { initializeExecutive } from "./executive.mjs?v=e49974ba8823";
+import { initializeTeacherProfile } from "./teacher-profile.mjs?v=e49974ba8823";
+import { closeNavigation } from "./interface.mjs?v=e49974ba8823";
+import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=e49974ba8823";
+import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=e49974ba8823";
+import { combobox } from "./combobox.mjs?v=e49974ba8823";
+import { enterSection } from "./motion.mjs?v=e49974ba8823";
+import { character } from "./characters.mjs?v=e49974ba8823";
 import {
   confirmedSessions,
   groupTone,
   teacherActive,
   teacherType,
-} from "./schedule-model.mjs?v=12f7be333ea9";
+} from "./schedule-model.mjs?v=e49974ba8823";
 const $ = (id) => document.getElementById(id),
   state = {
     schools: [],
@@ -138,19 +138,10 @@ function table(target, columns, rows, action) {
     for (const [key] of columns) {
       const cell = row.insertCell();
       const value = String(item[key] ?? "");
-      if (
-        key === "status" &&
-        [
-          "Pending",
-          "Approved",
-          "Rejected",
-          "Cancelled",
-          "Acknowledged",
-        ].includes(value)
-      ) {
+      if (key === "withdrawn" && value) {
         const badge = document.createElement("span");
         badge.className = "request-status";
-        badge.dataset.status = value;
+        badge.dataset.status = "Cancelled";
         badge.textContent = value;
         cell.append(badge);
       } else cell.textContent = value;
@@ -172,6 +163,9 @@ const teacherName = (id) => {
     ? [t.firstname_en, t.lastname_en].filter(Boolean).join(" ")
     : id || "Not specified";
 };
+// A request taken back (stored as Cancelled; old records may say Rejected).
+const withdrawn = (r) =>
+  /^(cancelled|rejected)$/i.test(String(r?.status || "").trim());
 const schoolName = (id) => {
   const s = state.schools.find((s) => s.school_id === id);
   return s?.school_code || id;
@@ -488,9 +482,13 @@ $("report-form").addEventListener("submit", (e) => {
           ["teacher", "Teacher"],
           ["start_date", "Start"],
           ["end_date", "End date"],
-          ["status", "Status"],
+          ["withdrawn", "Withdrawn"],
         ],
-        rows.map((r) => ({ ...r, teacher: teacherName(r.teacher_id) })),
+        rows.map((r) => ({
+          ...r,
+          teacher: teacherName(r.teacher_id),
+          withdrawn: withdrawn(r) ? "Withdrawn" : "",
+        })),
       );
     } else if (f.report === "availability") {
       rows = await query(
@@ -859,10 +857,11 @@ $("load-requests").addEventListener("click", () =>
         ["dates", "Dates"],
         ["type", "Type"],
         ["reason", "Reason"],
-        ["status", "Status"],
+        ["withdrawn", "Withdrawn"],
       ],
       data.map((r) => ({
         ...r,
+        withdrawn: withdrawn(r) ? "Withdrawn" : "",
         verified: r.user_id ? "LINE verified" : "Browser, not verified",
         subject:
           (r.request_category || (r.teacher_id ? "Teacher" : "School")) ===
@@ -885,11 +884,11 @@ $("edit-form").addEventListener("submit", (e) => {
     if (!state.edit) throw new Error("Select a request first.");
     const values = Object.fromEntries(new FormData(e.target));
     const changes = Object.fromEntries(
-      ["status", "start_date", "end_date", "reason", "type"].map((k) => [
-        k,
-        values[k],
-      ]),
+      ["start_date", "end_date", "reason", "type"].map((k) => [k, values[k]]),
     );
+    // Withdrawn is the only state left; otherwise the old value is kept.
+    if (values.withdrawn) changes.status = "Cancelled";
+    else if (withdrawn(state.edit)) changes.status = "Pending";
     if (
       (state.edit.request_category ||
         (state.edit.teacher_id ? "Teacher" : "School")) === "Teacher"
@@ -924,8 +923,9 @@ function editRequest(item) {
   $("edit-heading").textContent = "Edit request #" + item.id;
   $("edit-details").textContent =
     `Submitted by ${item.user_name || "Not recorded"}. Revision ${item.revision}.`;
-  for (const k of ["status", "start_date", "end_date", "reason"])
+  for (const k of ["start_date", "end_date", "reason"])
     $("edit-form").elements[k].value = item[k] || "";
+  $("edit-form").elements.withdrawn.checked = withdrawn(item);
   const teacher =
     (item.request_category || (item.teacher_id ? "Teacher" : "School")) ===
     "Teacher";

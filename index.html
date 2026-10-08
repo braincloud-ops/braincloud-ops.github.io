@@ -15,7 +15,7 @@
       content="default-src 'self'; script-src 'self' https://accounts.google.com/gsi/client; style-src 'self' https://accounts.google.com/gsi/style; frame-src https://accounts.google.com/gsi/; img-src 'self' data: blob: https://profile.line-scdn.net; connect-src 'self' https://*.supabase.co https://accounts.google.com/gsi/; object-src 'none'; base-uri 'none'; form-action 'self'"
     />
     <title>Braincloud Operations</title>
-    <link rel="stylesheet" href="styles.css?v=12f7be333ea9" />
+    <link rel="stylesheet" href="styles.css?v=e49974ba8823" />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -149,7 +149,7 @@
             <span class="art-caption">GOOD DAYS START TOGETHER</span>
             <img
               class="hero-mascot"
-              src="characters/girl-cheer.webp?v=12f7be333ea9"
+              src="characters/girl-cheer.webp?v=e49974ba8823"
               alt=""
               loading="lazy"
               decoding="async"
@@ -174,7 +174,7 @@
               ></span
               ><img
                 class="card-character"
-                src="characters/robot-b-cheer.webp?v=12f7be333ea9"
+                src="characters/robot-b-cheer.webp?v=e49974ba8823"
                 alt=""
                 loading="lazy"
                 decoding="async"
@@ -197,7 +197,7 @@
               ></span
               ><img
                 class="card-character"
-                src="characters/girl-thumbs.webp?v=12f7be333ea9"
+                src="characters/girl-thumbs.webp?v=e49974ba8823"
                 alt=""
                 loading="lazy"
                 decoding="async"
@@ -218,7 +218,7 @@
               ></span
               ><img
                 class="card-character"
-                src="characters/boy-neutral.webp?v=12f7be333ea9"
+                src="characters/boy-neutral.webp?v=e49974ba8823"
                 alt=""
                 loading="lazy"
                 decoding="async"
@@ -254,8 +254,8 @@
               Teacher leave is emailed to the leave team as soon as it is sent,
               and every request appears in the Team calendar.
             </p>
-            <a href="#reports"
-              >Check request status <span aria-hidden="true">→</span></a
+            <a href="#calendar"
+              >Open the Team calendar <span aria-hidden="true">→</span></a
             >
           </aside>
         </div>
@@ -264,7 +264,7 @@
         <div class="page-heading has-mascot" data-accent="school">
           <img
             class="hero-character"
-            src="characters/robot-b-cheer.webp?v=12f7be333ea9"
+            src="characters/robot-b-cheer.webp?v=e49974ba8823"
             alt=""
             loading="lazy"
             decoding="async"
@@ -394,7 +394,7 @@
         <div class="page-heading has-mascot" data-accent="teacher">
           <img
             class="hero-character"
-            src="characters/girl-thumbs.webp?v=12f7be333ea9"
+            src="characters/girl-thumbs.webp?v=e49974ba8823"
             alt=""
             loading="lazy"
             decoding="async"
@@ -567,7 +567,7 @@
         <div class="page-heading has-mascot" data-accent="calendar">
           <img
             class="hero-character"
-            src="characters/boy-neutral.webp?v=12f7be333ea9"
+            src="characters/boy-neutral.webp?v=e49974ba8823"
             alt=""
             loading="lazy"
             decoding="async"
@@ -601,7 +601,7 @@
         <div class="page-heading has-mascot">
           <img
             class="hero-character"
-            src="characters/robot-r-neutral.webp?v=12f7be333ea9"
+            src="characters/robot-r-neutral.webp?v=e49974ba8823"
             alt=""
             loading="lazy"
             decoding="async"
@@ -662,7 +662,7 @@
         <div class="page-heading has-mascot">
           <img
             class="hero-character"
-            src="characters/robot-b-wave.webp?v=12f7be333ea9"
+            src="characters/robot-b-wave.webp?v=e49974ba8823"
             alt=""
             loading="lazy"
             decoding="async"
@@ -683,7 +683,7 @@
             >Report<select name="report">
               <option value="schedule">Teaching schedule</option>
               <option value="summary">School summary</option>
-              <option value="requests">Request status</option>
+              <option value="requests">Requests</option>
               <option value="availability">Teacher unavailability</option>
             </select></label
           ><button>View report</button>
@@ -701,7 +701,7 @@
         <div class="page-heading has-mascot">
           <img
             class="hero-character"
-            src="characters/girl-cheer.webp?v=12f7be333ea9"
+            src="characters/girl-cheer.webp?v=e49974ba8823"
             alt=""
             loading="lazy"
             decoding="async"
@@ -962,7 +962,7 @@
         <div class="page-heading has-mascot">
           <img
             class="hero-character"
-            src="characters/boy-confused.webp?v=12f7be333ea9"
+            src="characters/boy-confused.webp?v=e49974ba8823"
             alt=""
             loading="lazy"
             decoding="async"
@@ -992,7 +992,7 @@
           <div id="daily-sessions" class="table-wrap"></div>
           <h2>Recorded unavailability</h2>
           <div id="daily-leave" class="table-wrap"></div>
-          <h2>Request status</h2>
+          <h2>Requests</h2>
           <div id="daily-requests" class="table-wrap"></div>
           <h2>Cover simulator</h2>
           <p>
@@ -1269,7 +1269,7 @@
                 </button>
               </div>
               <p id="email-note" role="status"></p>
-              <h2>Pending request reminders</h2>
+              <h2>Reminders (switched off)</h2>
               <p>
                 Reminder times use Asia/Bangkok. Delivery runs on the server and
                 requires notification activation. A missed or unconfirmed
@@ -1338,14 +1338,9 @@
       <form id="edit-form">
         <h3 id="edit-heading">Edit request</h3>
         <p id="edit-details"></p>
-        <label
-          >Status<select name="status">
-            <option>Pending</option>
-            <option>Approved</option>
-            <option>Rejected</option>
-            <option>Cancelled</option>
-            <option>Acknowledged</option>
-          </select></label
+        <label class="check-line withdrawn-line"
+          ><input type="checkbox" name="withdrawn" /> Withdrawn: hide this
+          request from the calendar, reports and profiles</label
         >
         <div class="row">
           <label
@@ -1399,6 +1394,6 @@
       <span>braincloud <strong>operations</strong></span
       ><span>For the people behind every school day.</span>
     </footer>
-    <script type="module" src="app.mjs?v=12f7be333ea9"></script>
+    <script type="module" src="app.mjs?v=e49974ba8823"></script>
   </body>
 </html>

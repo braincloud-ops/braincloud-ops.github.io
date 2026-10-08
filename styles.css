@@ -5281,3 +5281,13 @@ nav a[data-accent][aria-current="page"] {
   padding: 0;
   accent-color: #5664d8;
 }
+
+/* Edit window: the one remaining state, "Withdrawn". */
+.withdrawn-line {
+  margin: 4px 0 16px;
+}
+.withdrawn-line input {
+  width: auto;
+  min-height: 0;
+  margin: 3px 0 0;
+}

@@ -1,6 +1,6 @@
-import { el, button, modal } from "./dom.mjs?v=12f7be333ea9";
-import { hasLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=12f7be333ea9";
-import { time, cancelled, category } from "./schedule-model.mjs?v=12f7be333ea9";
+import { el, button, modal } from "./dom.mjs?v=e49974ba8823";
+import { hasLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=e49974ba8823";
+import { time, cancelled, category } from "./schedule-model.mjs?v=e49974ba8823";
 
 export function restoreDateModes() {
   for (const id of ["school-form", "teacher-form"]) {
@@ -273,7 +273,7 @@ export function initializeRequestWorkflows({
           warning.append(
             el(
               "p",
-              `${r.source} · ${r.start_date} to ${r.end_date} · ${r.start_time || "All day"}${r.end_time ? "–" + r.end_time : ""} · ${r.status}`,
+              `${r.source} · ${r.start_date} to ${r.end_date} · ${r.start_time || "All day"}${r.end_time ? "–" + r.end_time : ""}`,
             ),
           );
         warning.append(
@@ -339,10 +339,13 @@ export function initializeRequestWorkflows({
             } catch {
               affected = null;
             }
-            const heading = el("h3", `#${r.id} `),
-              status = el("span", r.status || "Pending", "request-status");
-            status.dataset.status = r.status || "Pending";
-            heading.append(status);
+            const heading = el("h3", `#${r.id} `);
+            // Only a withdrawn request is marked; nothing needs approval.
+            if (/^(cancelled|rejected)$/i.test(String(r.status || ""))) {
+              const status = el("span", "Withdrawn", "request-status");
+              status.dataset.status = "Cancelled";
+              heading.append(status);
+            }
             card.append(
               heading,
               el(

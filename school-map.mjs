@@ -2,8 +2,8 @@
 // are a small static file built from Natural Earth (scripts/build-thailand-map.mjs);
 // each school's province comes from the public school directory and the
 // figures from the loaded report, so the map follows the period and filters.
-import { groupTone } from "./schedule-model.mjs?v=12f7be333ea9";
-import { rise } from "./motion.mjs?v=12f7be333ea9";
+import { groupTone } from "./schedule-model.mjs?v=e49974ba8823";
+import { rise } from "./motion.mjs?v=e49974ba8823";
 
 const SVG = "http://www.w3.org/2000/svg";
 const $ = (id) => document.getElementById(id);
@@ -20,7 +20,7 @@ export const provinceKey = (name) => ALIAS[norm(name)] || norm(name);
 let shapes = null;
 const loadShapes = () =>
   (shapes ??= fetch(
-    new URL("./maps/thailand-provinces.json?v=12f7be333ea9", import.meta.url),
+    new URL("./maps/thailand-provinces.json?v=e49974ba8823", import.meta.url),
   ).then((r) => {
     if (!r.ok) throw new Error("MAP_UNAVAILABLE");
     return r.json();

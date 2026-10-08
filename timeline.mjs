@@ -1,4 +1,4 @@
-import { el, button, download } from "./dom.mjs?v=12f7be333ea9";
+import { el, button, download } from "./dom.mjs?v=e49974ba8823";
 import {
   bangkokDay,
   time,
@@ -7,9 +7,9 @@ import {
   decorateSessions,
   confirmedSessions,
   displayName,
-} from "./schedule-model.mjs?v=12f7be333ea9";
-import { coverConflict } from "./operations.mjs?v=12f7be333ea9";
-import { sessionCard } from "./dashboard.mjs?v=12f7be333ea9";
+} from "./schedule-model.mjs?v=e49974ba8823";
+import { coverConflict } from "./operations.mjs?v=e49974ba8823";
+import { sessionCard } from "./dashboard.mjs?v=e49974ba8823";
 
 export function initializeTimeline({ query, api, message, table }) {
   const $ = (id) => document.getElementById(id),
@@ -548,10 +548,13 @@ export function initializeTimeline({ query, api, message, table }) {
         [
           ["id", "Request"],
           ["who", "School / teacher"],
-          ["status", "Status"],
+          ["withdrawn", "Withdrawn"],
         ],
         requests.map((r) => ({
           ...r,
+          withdrawn: /^(cancelled|rejected)$/i.test(String(r.status || ""))
+            ? "Withdrawn"
+            : "",
           who:
             r.request_category === "Teacher"
               ? name(r.teacher_id)
@@ -643,7 +646,7 @@ export function initializeTimeline({ query, api, message, table }) {
               (s) =>
                 `${label(s)} · ${s.status} · ${s.teacher} · Original: ${s.original}`,
             ),
-          `${snapshot.requests.filter((r) => r.status === "Pending").length} pending requests`,
+          `${snapshot.requests.filter((r) => !/^(cancelled|rejected)$/i.test(String(r.status || ""))).length} requests (leave and closures)`,
           "Recorded schedule, not attendance or payment confirmation.",
         ].join("\n"),
       );
