@@ -1,11 +1,11 @@
-import { initializeDashboard } from "./dashboard.mjs?v=2c0067239c1d";
-import { initializeAttendance } from "./attendance.mjs?v=2c0067239c1d";
+import { initializeDashboard } from "./dashboard.mjs?v=7502a32cfa1d";
+import { initializeAttendance } from "./attendance.mjs?v=7502a32cfa1d";
 import {
   initializeRequestWorkflows,
   confirmSubmission,
-} from "./request-workflows.mjs?v=2c0067239c1d";
-import { API_URL } from "./config.js?v=2c0067239c1d";
-import { initializeAdminCalendar } from "./admin-calendar.mjs?v=2c0067239c1d";
+} from "./request-workflows.mjs?v=7502a32cfa1d";
+import { API_URL } from "./config.js?v=7502a32cfa1d";
+import { initializeAdminCalendar } from "./admin-calendar.mjs?v=7502a32cfa1d";
 import {
   externalUrl,
   forgetViewer,
@@ -14,25 +14,25 @@ import {
   openOutside,
   signIn,
   viewerSession,
-} from "./viewer.mjs?v=2c0067239c1d";
-import { initializeAccess, levelLabel } from "./access.mjs?v=2c0067239c1d";
-import { initializeNewPerson } from "./new-person.mjs?v=2c0067239c1d";
-import { initializeDirectory } from "./directory.mjs?v=2c0067239c1d";
-import { initializeTimeline } from "./timeline.mjs?v=2c0067239c1d";
-import { initializeExecutive } from "./executive.mjs?v=2c0067239c1d";
-import { initializeTeacherProfile } from "./teacher-profile.mjs?v=2c0067239c1d";
-import { closeNavigation } from "./interface.mjs?v=2c0067239c1d";
-import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=2c0067239c1d";
-import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=2c0067239c1d";
-import { combobox } from "./combobox.mjs?v=2c0067239c1d";
-import { enterSection } from "./motion.mjs?v=2c0067239c1d";
-import { character } from "./characters.mjs?v=2c0067239c1d";
+} from "./viewer.mjs?v=7502a32cfa1d";
+import { initializeAccess, levelLabel } from "./access.mjs?v=7502a32cfa1d";
+import { initializeNewPerson } from "./new-person.mjs?v=7502a32cfa1d";
+import { initializeDirectory } from "./directory.mjs?v=7502a32cfa1d";
+import { initializeTimeline } from "./timeline.mjs?v=7502a32cfa1d";
+import { initializeExecutive } from "./executive.mjs?v=7502a32cfa1d";
+import { initializeTeacherProfile } from "./teacher-profile.mjs?v=7502a32cfa1d";
+import { closeNavigation } from "./interface.mjs?v=7502a32cfa1d";
+import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=7502a32cfa1d";
+import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=7502a32cfa1d";
+import { combobox } from "./combobox.mjs?v=7502a32cfa1d";
+import { enterSection } from "./motion.mjs?v=7502a32cfa1d";
+import { character } from "./characters.mjs?v=7502a32cfa1d";
 import {
   confirmedSessions,
   groupTone,
   teacherActive,
   teacherType,
-} from "./schedule-model.mjs?v=2c0067239c1d";
+} from "./schedule-model.mjs?v=7502a32cfa1d";
 const $ = (id) => document.getElementById(id),
   state = {
     schools: [],
@@ -594,8 +594,12 @@ function can(key) {
   return adminLive() && !!state.session.permissions?.includes(key);
 }
 function applyPermissions() {
-  for (const node of document.querySelectorAll("#admin-workspace [data-need]"))
+  for (const node of document.querySelectorAll(
+    "#admin-workspace [data-need], nav [data-need]",
+  ))
     node.hidden = !node.dataset.need.split(" ").some(can);
+  // The Timeline page: owners and Manager level and up.
+  $("operations").classList.toggle("is-locked", !can("teachers.profile"));
   $("emergency-banner").hidden = state.session?.method !== "password";
   $("access-tab-label").textContent = can("access.manage")
     ? "Access & activity"
@@ -650,6 +654,7 @@ function signOut() {
   $("alarm-form").reset();
   $("alarm-output").replaceChildren();
   if ($("edit-dialog").open) $("edit-dialog").close();
+  applyPermissions();
   updateAccount();
   showAdminSignIn();
 }
@@ -1027,6 +1032,7 @@ for (const id of ["edit-check-sessions", "edit-check-teaching"])
     }),
   );
 initializeTimeline({
+  canView: () => can("teachers.profile"),
   api,
   query,
   busy,

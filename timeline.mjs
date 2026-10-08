@@ -1,4 +1,4 @@
-import { el, button, download } from "./dom.mjs?v=2c0067239c1d";
+import { el, button, download, modal } from "./dom.mjs?v=7502a32cfa1d";
 import {
   bangkokDay,
   time,
@@ -7,11 +7,18 @@ import {
   decorateSessions,
   confirmedSessions,
   displayName,
-} from "./schedule-model.mjs?v=2c0067239c1d";
-import { coverConflict } from "./operations.mjs?v=2c0067239c1d";
-import { sessionCard } from "./dashboard.mjs?v=2c0067239c1d";
+  groupTone,
+} from "./schedule-model.mjs?v=7502a32cfa1d";
+import { coverConflict } from "./operations.mjs?v=7502a32cfa1d";
+import { sessionCard } from "./dashboard.mjs?v=7502a32cfa1d";
 
-export function initializeTimeline({ query, api, message, table }) {
+export function initializeTimeline({
+  query,
+  api,
+  message,
+  table,
+  canView = () => true,
+}) {
   const $ = (id) => document.getElementById(id),
     form = $("daily-form"),
     date = form.elements.date,
@@ -56,7 +63,7 @@ export function initializeTimeline({ query, api, message, table }) {
     controls,
     el(
       "p",
-      "Select a class to explore cover options. Teal: scheduled · Lime: cover · Red: cancelled · Dashed: proposed change.",
+      "Click a class to see cover options. Colour: school group (as in the calendar) · Lime edge: cover · Red: cancelled · Dashed outline: proposed change · Dashed box: free period.",
       "input-hint",
     ),
   );
@@ -145,12 +152,21 @@ export function initializeTimeline({ query, api, message, table }) {
       planRows(),
     );
   }
+  // Layout: names column (frozen left), time scale (frozen top), and the
+  // classes. Each is its own SVG so the edges stay put while scrolling.
+  const NAMES = 190,
+    HEAD = 44,
+    LANE = 46;
+  let parts = null;
   function renderTimeline() {
     const root = $("daily-timeline");
+    const kept = { left: root.scrollLeft, top: root.scrollTop };
+    const first = !root.querySelector(".tl-grid");
     root.replaceChildren();
+    parts = null;
     if (!snapshot) return;
     if (!snapshot.rows.length) {
-      root.append(el("p", "No recorded classes for this date."));
+      root.append(el("p", "No recorded classes for this date.", "tl-empty"));
       return;
     }
     const term = search.value.trim().toLowerCase();
@@ -183,7 +199,7 @@ export function initializeTimeline({ query, api, message, table }) {
         if (text) n.textContent = text;
         return n;
       };
-    const width = 1100 * Number(zoom.value),
+    const width = 910 * Number(zoom.value),
       min = (t) =>
         Number(time(t).slice(0, 2)) * 60 + Number(time(t).slice(3, 5));
     const valid = rows.filter(
@@ -193,7 +209,7 @@ export function initializeTimeline({ query, api, message, table }) {
     );
     const start = Math.min(420, ...valid.map((s) => min(s.start_time))),
       end = Math.max(1080, ...valid.map((s) => min(s.end_time))),
-      x = (v) => 190 + ((v - start) / (end - start)) * (width - 210);
+      x = (v) => 12 + ((v - start) / (end - start)) * (width - 24);
     const blocks = valid.flatMap((s) => {
       const p = proposals.get(s.session_id);
       return [
@@ -215,65 +231,191 @@ export function initializeTimeline({ query, api, message, table }) {
         },
       ];
     });
-    let height = 40;
-    const rowY = new Map();
+    // Rows: one band per teacher, as many lanes as overlapping classes.
+    let height = 0;
+    const bands = [];
     for (const id of ids) {
       const lanes = [];
-      rowY.set(id, height);
+      const top = height;
       for (const item of blocks
         .filter((b) => b.teacherId === id)
         .sort((a, b) => a.s.start_time.localeCompare(b.s.start_time))) {
         let lane = lanes.findIndex((end) => end <= min(item.s.start_time));
         if (lane < 0) lane = lanes.length;
         lanes[lane] = min(item.s.end_time);
-        item.y = height + lane * 46;
+        item.y = top + 9 + lane * LANE;
       }
-      height += Math.max(1, lanes.length) * 46 + 18;
+      height += Math.max(1, lanes.length) * LANE + 18;
+      bands.push({ id, top, bottom: height });
     }
-    height += 12;
-    const svg = node("svg", {
-      xmlns: ns,
+    height += 6;
+    // The usual periods of the day: the most used start-end times that do
+    // not overlap each other.
+    const slotCount = new Map();
+    for (const s of snapshot.rows)
+      if (
+        /^\d\d:\d\d/.test(s.start_time || "") &&
+        /^\d\d:\d\d/.test(s.end_time || "")
+      ) {
+        const key = time(s.start_time) + "-" + time(s.end_time);
+        slotCount.set(key, (slotCount.get(key) || 0) + 1);
+      }
+    const periods = [];
+    for (const [key, n] of [...slotCount].sort((a, b) => b[1] - a[1])) {
+      if (n < 2) break;
+      const [a, b] = key.split("-").map(min);
+      if (b > a && periods.every((p) => b <= p.a || a >= p.b))
+        periods.push({ a, b });
+    }
+    // School group colours, the same as the calendar's.
+    const css = getComputedStyle(document.documentElement);
+    const toneOf = (s) => {
+      const key = groupTone(s.group);
+      return {
+        bg: css.getPropertyValue(`--tone-${key}-bg`).trim() || "#c1eaf0",
+        line: css.getPropertyValue(`--tone-${key}-line`).trim() || "#8db6bd",
+      };
+    };
+    const svg = (cls, w, h, label) =>
+      node("svg", {
+        xmlns: ns,
+        width: w,
+        height: h,
+        viewBox: `0 0 ${w} ${h}`,
+        class: cls,
+        ...(label
+          ? { role: "group", "aria-label": label }
+          : { "aria-hidden": "true" }),
+      });
+    const head = svg("tl-head", width, HEAD);
+    const names = svg("tl-names", NAMES, height);
+    const body = svg(
+      "timeline-svg tl-body",
       width,
       height,
-      viewBox: `0 0 ${width} ${height}`,
-      role: "group",
-      "aria-label": "Interactive teaching timeline",
-      class: "timeline-svg",
+      "Interactive teaching timeline",
+    );
+    head.append(node("rect", { width, height: HEAD, fill: "#ffffff" }));
+    names.append(node("rect", { width: NAMES, height, fill: "#ffffff" }));
+    body.append(node("rect", { width, height, fill: "#ffffff" }));
+    // Cancelled classes: red diagonal stripes (Thesaban is pink as well).
+    const stripes = node("pattern", {
+      id: "tl-cancelled",
+      patternUnits: "userSpaceOnUse",
+      width: 8,
+      height: 8,
+      patternTransform: "rotate(45)",
     });
-    svg.append(node("rect", { width, height, fill: "#ffffff" }));
-    for (let m = Math.ceil(start / 60) * 60; m <= end; m += 60) {
-      svg.append(
-        node("line", {
-          x1: x(m),
-          x2: x(m),
-          y1: 32,
-          y2: height,
-          stroke: "#dfe7e7",
-        }),
-        node(
-          "text",
-          { x: x(m) + 2, y: 22, fill: "#4b5d61", "font-size": 12 },
-          `${String(Math.floor(m / 60)).padStart(2, "0")}:00`,
-        ),
-      );
-    }
-    ids.forEach((id) => {
+    stripes.append(
+      node("rect", { width: 8, height: 8, fill: "#fff5f6" }),
+      node("line", {
+        x1: 0,
+        y1: 0,
+        x2: 0,
+        y2: 8,
+        stroke: "#f4b6be",
+        "stroke-width": 3,
+      }),
+    );
+    const patterns = node("defs", {});
+    patterns.append(stripes);
+    body.append(patterns);
+    // Row bands: a light stripe on every other teacher, a line between rows.
+    bands.forEach(({ id, top, bottom }, i) => {
+      for (const [target, w] of [
+        [names, NAMES],
+        [body, width],
+      ]) {
+        if (i % 2)
+          target.append(
+            node("rect", {
+              y: top,
+              width: w,
+              height: bottom - top,
+              fill: "#f6f9f9",
+            }),
+          );
+        target.append(
+          node("line", {
+            x1: 0,
+            x2: w,
+            y1: bottom,
+            y2: bottom,
+            stroke: "#e8eeee",
+          }),
+        );
+      }
       const text = node(
         "text",
-        { x: 8, y: rowY.get(id) + 26, fill: "#16282c", "font-size": 12 },
+        { x: 12, y: top + 35, fill: "#16282c", "font-size": 12 },
         name(id).slice(0, 25),
       );
       text.append(node("title", {}, name(id)));
-      svg.append(text);
+      names.append(text);
     });
+    // Grid: every hour (labelled), half hour, and quarter hour when zoomed in.
+    const step = Number(zoom.value) >= 2 ? 15 : 30;
+    for (let m = Math.ceil(start / step) * step; m <= end; m += step) {
+      const hour = m % 60 === 0,
+        half = m % 30 === 0;
+      body.append(
+        node("line", {
+          x1: x(m),
+          x2: x(m),
+          y1: 0,
+          y2: height,
+          stroke: hour ? "#d3dfe0" : half ? "#e6eded" : "#f0f4f4",
+          ...(hour ? {} : { "stroke-dasharray": "3 4" }),
+        }),
+      );
+      head.append(
+        node("line", {
+          x1: x(m),
+          x2: x(m),
+          y1: hour ? 26 : half ? 33 : 37,
+          y2: HEAD,
+          stroke: hour ? "#9fb3b6" : "#c9d6d8",
+        }),
+      );
+      if (hour)
+        head.append(
+          node(
+            "text",
+            { x: x(m) + 3, y: 20, fill: "#4b5d61", "font-size": 12 },
+            `${String(Math.floor(m / 60)).padStart(2, "0")}:00`,
+          ),
+        );
+    }
+    // Free periods: a dashed box where the teacher has no class.
+    for (const { id, top } of bands) {
+      if (id === "unassigned") continue;
+      const own = blocks.filter((b) => b.teacherId === id && !b.ghost);
+      for (const { a, b } of periods)
+        if (!own.some((o) => min(o.s.start_time) < b && min(o.s.end_time) > a))
+          body.append(
+            node("rect", {
+              x: x(a) + 1,
+              y: top + 9,
+              width: Math.max(4, x(b) - x(a) - 2),
+              height: 40,
+              rx: 5,
+              fill: "none",
+              stroke: "#b9c9cc",
+              "stroke-dasharray": "4 4",
+              class: "tl-free",
+            }),
+          );
+    }
     function block({ s, teacherId, p, ghost, y }) {
+      const tone = toneOf(s);
+      const isCancelled = !ghost && (p?.cancelled || cancelled(s));
+      const isCover =
+        !ghost && !isCancelled && (p?.teacherId || category(s) === "covered");
       const color = ghost
         ? "#edf0f0"
-        : p?.cancelled || cancelled(s)
-          ? "#ffe5e8"
-          : p?.teacherId || category(s) === "covered"
-            ? "#d9e994"
-            : "#c1eaf0";
+        : isCancelled
+          ? "url(#tl-cancelled)"
+          : tone.bg;
       const g = node("g", {
         tabindex: ghost ? -1 : 0,
         role: "button",
@@ -289,14 +431,28 @@ export function initializeTimeline({ query, api, message, table }) {
         stroke:
           selected === s.session_id
             ? "#006e82"
-            : cancelled(s) || p?.cancelled
+            : isCancelled
               ? "#a32932"
-              : "#8db6bd",
-        "stroke-width": selected === s.session_id ? 3 : 1,
+              : ghost
+                ? "#b9c9cc"
+                : tone.line,
+        "stroke-width": selected === s.session_id ? 3 : isCancelled ? 1.5 : 1,
         "stroke-dasharray": p || ghost ? "5 3" : "none",
       });
       g.append(
         rect,
+        ...(isCover
+          ? [
+              node("rect", {
+                x: x(min(s.start_time)) + 1,
+                y: y + 1,
+                width: 6,
+                height: 38,
+                rx: 3,
+                fill: "#9bc11c",
+              }),
+            ]
+          : []),
         node(
           "title",
           {},
@@ -305,27 +461,32 @@ export function initializeTimeline({ query, api, message, table }) {
         node(
           "text",
           {
-            x: x(min(s.start_time)) + 5,
+            x: x(min(s.start_time)) + (isCover ? 10 : 5),
             y: y + 24,
-            fill: "#16282c",
+            fill: isCancelled ? "#a32932" : "#16282c",
             "font-size": 11,
           },
-          String(s.class_name).slice(
-            0,
-            Math.max(
+          (isCancelled ? "✕ " : "") +
+            String(s.class_name).slice(
               0,
-              Math.floor((x(min(s.end_time)) - x(min(s.start_time)) - 10) / 6),
+              Math.max(
+                0,
+                Math.floor(
+                  (x(min(s.end_time)) - x(min(s.start_time)) - 10) / 6,
+                ),
+              ),
             ),
-          ),
         ),
       );
       if (!ghost) {
+        // Click a class: its cover options open right here, in a side panel.
         const pick = () => {
           selected = s.session_id;
           $("cover-session").value = selected;
           showSelected();
           renderTimeline();
           loadOptions();
+          openCoverSheet();
         };
         g.addEventListener("click", pick);
         g.addEventListener("keydown", (e) => {
@@ -335,9 +496,11 @@ export function initializeTimeline({ query, api, message, table }) {
           }
         });
       }
-      svg.append(g);
+      body.append(g);
     }
     for (const item of blocks) block(item);
+    // Now: a glowing line across the classes and a tag in the time scale.
+    let now = null;
     if (snapshot.date === bangkokDay()) {
       const clock = new Intl.DateTimeFormat("en-GB", {
           timeZone: "Asia/Bangkok",
@@ -347,24 +510,103 @@ export function initializeTimeline({ query, api, message, table }) {
         }).format(new Date()),
         m = min(clock);
       if (m >= start && m <= end) {
-        svg.append(
+        now = x(m);
+        const defs = node("defs", {});
+        const filter = node("filter", {
+          id: "tl-now-glow",
+          x: "-200%",
+          y: "-5%",
+          width: "500%",
+          height: "110%",
+        });
+        filter.append(node("feGaussianBlur", { stdDeviation: 3 }));
+        defs.append(filter);
+        body.append(
+          defs,
           node("line", {
-            x1: x(m),
-            x2: x(m),
-            y1: 30,
+            x1: now,
+            x2: now,
+            y1: 0,
             y2: height,
-            stroke: "#a32932",
+            stroke: "#ff4d6d",
+            "stroke-width": 6,
+            opacity: 0.55,
+            filter: "url(#tl-now-glow)",
+            class: "tl-now-glow",
+          }),
+          node("line", {
+            x1: now,
+            x2: now,
+            y1: 0,
+            y2: height,
+            stroke: "#e11d48",
             "stroke-width": 2,
+          }),
+        );
+        const tag = `Now ${clock}`;
+        head.append(
+          node("rect", {
+            x: now - 34,
+            y: 24,
+            width: 68,
+            height: 18,
+            rx: 9,
+            fill: "#e11d48",
           }),
           node(
             "text",
-            { x: x(m) + 3, y: 12, fill: "#a32932", "font-size": 11 },
-            "Now",
+            {
+              x: now,
+              y: 37,
+              fill: "#ffffff",
+              "font-size": 11,
+              "font-weight": 700,
+              "text-anchor": "middle",
+            },
+            tag,
           ),
         );
       }
     }
-    root.append(svg);
+    const grid = el("div", "", "tl-grid");
+    grid.style.gridTemplateColumns = `${NAMES}px ${width}px`;
+    grid.append(el("div", "Teacher", "tl-corner"), head, names, body);
+    root.append(grid);
+    parts = { head, names, body, width, height };
+    if (first && now != null)
+      // Opening today: start at the current time.
+      root.scrollLeft = Math.max(0, NAMES + now - root.clientWidth / 2);
+    else {
+      root.scrollLeft = kept.left;
+      root.scrollTop = kept.top;
+    }
+  }
+  // Cover options for the clicked class, in a side panel (no scrolling).
+  let sheet = null;
+  function openCoverSheet() {
+    const s = snapshot?.rows.find((r) => r.session_id === selected);
+    if (!s) return;
+    if (sheet?.open) {
+      sheet.querySelector("h2").textContent = `Cover: ${label(s)}`;
+      return;
+    }
+    const { dialog, body } = modal(`Cover: ${label(s)}`);
+    dialog.classList.add("day-sheet", "cover-sheet");
+    const tools = el("div", "", "request-tools");
+    tools.append(
+      button("Simulate cancelling this class", () => {
+        $("cancel-simulated").click();
+        dialog.close();
+      }),
+    );
+    body.append(panel, suggestions, tools);
+    dialog.addEventListener("close", () => {
+      changes.before(panel);
+      $("cover-form").before(suggestions);
+      sheet = null;
+    });
+    dialog.showModal();
+    sheet = dialog;
   }
   function showSelected() {
     panel.replaceChildren();
@@ -453,6 +695,7 @@ export function initializeTimeline({ query, api, message, table }) {
     proposals.set(selected, { teacherId: id });
     render();
     loadOptions();
+    sheet?.close();
     message("Cover proposed locally. The recorded schedule is unchanged.");
   }
   async function load({ automatic = false } = {}) {
@@ -656,33 +899,39 @@ export function initializeTimeline({ query, api, message, table }) {
     }
   });
   async function saveImage() {
-    const original = $("daily-timeline").querySelector("svg");
-    if (!original) {
+    if (!parts) {
       message("Load a day first.", true);
       return;
     }
     let url;
     try {
-      const svg = original.cloneNode(true),
-        ns = svg.namespaceURI,
-        w = Number(svg.getAttribute("width")),
-        h = Number(svg.getAttribute("height")) + 32;
-      const group = document.createElementNS(ns, "g");
-      group.setAttribute("transform", "translate(0 32)");
-      group.append(...svg.childNodes);
-      svg.append(group);
+      const ns = "http://www.w3.org/2000/svg",
+        w = NAMES + parts.width,
+        h = 32 + HEAD + parts.height,
+        svg = document.createElementNS(ns, "svg");
+      svg.setAttribute("xmlns", ns);
+      svg.setAttribute("width", w);
+      svg.setAttribute("height", h);
+      svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+      const place = (part, dx, dy) => {
+        const g = document.createElementNS(ns, "g");
+        g.setAttribute("transform", `translate(${dx} ${dy})`);
+        g.append(...part.cloneNode(true).childNodes);
+        svg.append(g);
+      };
       const background = document.createElementNS(ns, "rect");
       background.setAttribute("width", w);
-      background.setAttribute("height", 32);
+      background.setAttribute("height", h);
       background.setAttribute("fill", "#ffffff");
       const title = document.createElementNS(ns, "text");
       title.setAttribute("x", 8);
       title.setAttribute("y", 22);
       title.setAttribute("font-size", 16);
       title.textContent = `${snapshot.date} · Asia/Bangkok${proposals.size ? " · PROPOSED CHANGES (not saved)" : " · Recorded schedule"}`;
-      svg.prepend(background, title);
-      svg.setAttribute("height", h);
-      svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+      svg.append(background, title);
+      place(parts.head, NAMES, 32);
+      place(parts.names, 0, 32 + HEAD);
+      place(parts.body, NAMES, 32 + HEAD);
       url = URL.createObjectURL(
         new Blob([new XMLSerializer().serializeToString(svg)], {
           type: "image/svg+xml",
@@ -773,9 +1022,10 @@ export function initializeTimeline({ query, api, message, table }) {
   });
   search.addEventListener("input", renderTimeline);
   const enter = () => {
-    if (location.hash === "#operations" && !snapshot) load();
+    if (location.hash === "#operations" && !snapshot && canView()) load();
   };
   addEventListener("hashchange", enter);
+  addEventListener("admin-signed-in", enter);
   enter();
   setInterval(() => {
     if (!document.hidden && !$("operations").hidden) {

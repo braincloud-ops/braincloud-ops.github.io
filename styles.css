@@ -5291,3 +5291,88 @@ nav a[data-accent][aria-current="page"] {
   min-height: 0;
   margin: 3px 0 0;
 }
+
+/* Timeline: names (left) and times (top) stay in view while scrolling. */
+#daily-timeline {
+  max-height: min(74vh, 920px);
+  background: #fff;
+}
+.tl-grid {
+  display: grid;
+  grid-template-rows: 44px auto;
+  width: max-content;
+}
+.tl-corner {
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  background: #fff;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.tl-head {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: block;
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 6px 10px -10px #0b3d4466;
+}
+.tl-names {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  display: block;
+  border-right: 1px solid var(--line);
+  box-shadow: 6px 0 10px -10px #0b3d4466;
+}
+#daily-timeline .tl-body {
+  display: block;
+  min-width: 0;
+}
+.tl-now-glow {
+  animation: now-pulse 2.4s ease-in-out infinite;
+}
+@keyframes now-pulse {
+  50% {
+    opacity: 0.25;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tl-now-glow {
+    animation: none;
+  }
+}
+.tl-empty {
+  padding: 16px;
+}
+.cover-sheet .timeline-panel {
+  margin-top: 0;
+}
+.in-line nav a[href="#operations"] {
+  display: none;
+}
+
+/* Timeline: only for people given access; others see why. */
+.timeline-locked {
+  display: none;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: var(--teal-tint);
+  color: var(--ink-2);
+}
+#operations.is-locked .timeline-locked {
+  display: block;
+}
+#operations.is-locked > :not(.page-heading):not(.timeline-locked) {
+  display: none !important;
+}

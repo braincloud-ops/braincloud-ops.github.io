@@ -1,6 +1,6 @@
-import { el, button } from "./dom.mjs?v=2c0067239c1d";
-import { emptyState } from "./characters.mjs?v=2c0067239c1d";
-import { rise } from "./motion.mjs?v=2c0067239c1d";
+import { el, button } from "./dom.mjs?v=7502a32cfa1d";
+import { emptyState } from "./characters.mjs?v=7502a32cfa1d";
+import { rise } from "./motion.mjs?v=7502a32cfa1d";
 import {
   bangkokDay,
   time,
@@ -14,7 +14,7 @@ import {
   teacherType,
   statusLabel,
   groupTone,
-} from "./schedule-model.mjs?v=2c0067239c1d";
+} from "./schedule-model.mjs?v=7502a32cfa1d";
 
 export function sessionCard(s) {
   const card = el("article", "", "session-card");

@@ -15,7 +15,7 @@
       content="default-src 'self'; script-src 'self' https://accounts.google.com/gsi/client; style-src 'self' https://accounts.google.com/gsi/style; frame-src https://accounts.google.com/gsi/; img-src 'self' data: blob: https://profile.line-scdn.net; connect-src 'self' https://*.supabase.co https://accounts.google.com/gsi/; object-src 'none'; base-uri 'none'; form-action 'self'"
     />
     <title>Braincloud Operations</title>
-    <link rel="stylesheet" href="styles.css?v=2c0067239c1d" />
+    <link rel="stylesheet" href="styles.css?v=7502a32cfa1d" />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -73,6 +73,10 @@
         <a href="#dashboard"
           ><span class="nav-icon" data-icon="calendar" aria-hidden="true"></span
           >Daily dashboard</a
+        >
+        <a href="#operations" data-need="teachers.profile" hidden=""
+          ><span class="nav-icon" data-icon="chart" aria-hidden="true"></span
+          >Timeline &amp; cover</a
         >
         <a href="#reports"
           ><span class="nav-icon" data-icon="calendar" aria-hidden="true"></span
@@ -149,7 +153,7 @@
             <span class="art-caption">GOOD DAYS START TOGETHER</span>
             <img
               class="hero-mascot"
-              src="characters/girl-cheer.webp?v=2c0067239c1d"
+              src="characters/girl-cheer.webp?v=7502a32cfa1d"
               alt=""
               loading="lazy"
               decoding="async"
@@ -174,7 +178,7 @@
               ></span
               ><img
                 class="card-character"
-                src="characters/robot-b-cheer.webp?v=2c0067239c1d"
+                src="characters/robot-b-cheer.webp?v=7502a32cfa1d"
                 alt=""
                 loading="lazy"
                 decoding="async"
@@ -197,7 +201,7 @@
               ></span
               ><img
                 class="card-character"
-                src="characters/girl-thumbs.webp?v=2c0067239c1d"
+                src="characters/girl-thumbs.webp?v=7502a32cfa1d"
                 alt=""
                 loading="lazy"
                 decoding="async"
@@ -218,7 +222,7 @@
               ></span
               ><img
                 class="card-character"
-                src="characters/boy-neutral.webp?v=2c0067239c1d"
+                src="characters/boy-neutral.webp?v=7502a32cfa1d"
                 alt=""
                 loading="lazy"
                 decoding="async"
@@ -264,7 +268,7 @@
         <div class="page-heading has-mascot" data-accent="school">
           <img
             class="hero-character"
-            src="characters/robot-b-cheer.webp?v=2c0067239c1d"
+            src="characters/robot-b-cheer.webp?v=7502a32cfa1d"
             alt=""
             loading="lazy"
             decoding="async"
@@ -394,7 +398,7 @@
         <div class="page-heading has-mascot" data-accent="teacher">
           <img
             class="hero-character"
-            src="characters/girl-thumbs.webp?v=2c0067239c1d"
+            src="characters/girl-thumbs.webp?v=7502a32cfa1d"
             alt=""
             loading="lazy"
             decoding="async"
@@ -567,7 +571,7 @@
         <div class="page-heading has-mascot" data-accent="calendar">
           <img
             class="hero-character"
-            src="characters/boy-neutral.webp?v=2c0067239c1d"
+            src="characters/boy-neutral.webp?v=7502a32cfa1d"
             alt=""
             loading="lazy"
             decoding="async"
@@ -601,7 +605,7 @@
         <div class="page-heading has-mascot">
           <img
             class="hero-character"
-            src="characters/robot-r-neutral.webp?v=2c0067239c1d"
+            src="characters/robot-r-neutral.webp?v=7502a32cfa1d"
             alt=""
             loading="lazy"
             decoding="async"
@@ -662,7 +666,7 @@
         <div class="page-heading has-mascot">
           <img
             class="hero-character"
-            src="characters/robot-b-wave.webp?v=2c0067239c1d"
+            src="characters/robot-b-wave.webp?v=7502a32cfa1d"
             alt=""
             loading="lazy"
             decoding="async"
@@ -701,7 +705,7 @@
         <div class="page-heading has-mascot">
           <img
             class="hero-character"
-            src="characters/girl-cheer.webp?v=2c0067239c1d"
+            src="characters/girl-cheer.webp?v=7502a32cfa1d"
             alt=""
             loading="lazy"
             decoding="async"
@@ -958,24 +962,33 @@
           <p>Select dates and optional filters, then load your summary.</p>
         </div>
       </section>
-      <section id="operations" hidden="" class="workspace-page">
+      <section id="operations" hidden="" class="workspace-page is-locked">
         <div class="page-heading has-mascot">
           <img
             class="hero-character"
-            src="characters/boy-confused.webp?v=2c0067239c1d"
+            src="characters/boy-confused.webp?v=7502a32cfa1d"
             alt=""
             loading="lazy"
             decoding="async"
             draggable="false"
           />
           <p class="eyebrow">DAILY WORKSPACE</p>
-          <span class="access-chip" data-access="open">Open to everyone</span>
+          <span class="access-chip" data-access="admin"
+            >People given access</span
+          >
           <h1>Timeline &amp; cover planning</h1>
           <p class="lead">
             A shared view of the day, with space to explore cover options.
           </p>
         </div>
 
+        <div class="timeline-locked">
+          <p>
+            The timeline is for people given access (Manager level and above).
+            Sign in on the <a href="#admin">Admin page</a> with your company
+            Google account.
+          </p>
+        </div>
         <form id="daily-form" class="inline-form">
           <label>Date<input type="date" name="date" required="" /></label>
           <button>Load day</button>
@@ -1394,6 +1407,6 @@
       <span>braincloud <strong>operations</strong></span
       ><span>For the people behind every school day.</span>
     </footer>
-    <script type="module" src="app.mjs?v=2c0067239c1d"></script>
+    <script type="module" src="app.mjs?v=7502a32cfa1d"></script>
   </body>
 </html>
