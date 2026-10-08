@@ -2,16 +2,16 @@
 // are closed, with the server's check of whether each affected class is
 // already cancelled or covered. One request per month; the day panel works
 // from the same data.
-import { el, button, modal } from "./dom.mjs?v=ffccdc2aa1bf";
-import { character, emptyState } from "./characters.mjs?v=ffccdc2aa1bf";
-import { rise, punch } from "./motion.mjs?v=ffccdc2aa1bf";
+import { el, button, modal } from "./dom.mjs?v=4bb7b27a0ac3";
+import { character, emptyState } from "./characters.mjs?v=4bb7b27a0ac3";
+import { rise, punch } from "./motion.mjs?v=4bb7b27a0ac3";
 import {
   bangkokDay,
   cancelled,
   category,
   confirmedSessions,
   time,
-} from "./schedule-model.mjs?v=ffccdc2aa1bf";
+} from "./schedule-model.mjs?v=4bb7b27a0ac3";
 
 const TONES = [
   ["thesaban", "Thesaban"],
@@ -81,8 +81,21 @@ const transition = (update) => {
   view.finished.catch(() => {});
 };
 
-export function initializeAdminCalendar({ api, query, message }) {
-  const root = document.getElementById("calendar-root");
+// One calendar for two audiences: administrators (editing, reasons) and staff
+// (read-only, company Google sign-in, no reasons; see publicCalendar).
+export function initializeAdminCalendar({
+  api,
+  query,
+  message,
+  rootId = "calendar-root",
+  endpoint = "/admin/calendar",
+  readOnly = false,
+  // Whether the page holding the calendar is on screen (for auto-refresh).
+  isVisible = () =>
+    !document.getElementById("admin-workspace").hidden &&
+    !document.getElementById("admin").hidden,
+}) {
+  const root = document.getElementById(rootId);
   const st = {
     month: bangkokDay().slice(0, 7),
     data: null,
@@ -195,7 +208,7 @@ export function initializeAdminCalendar({ api, query, message }) {
     status.textContent = "Loading the calendar…";
     body.classList.add("is-loading");
     try {
-      const { data } = await api("/admin/calendar", {
+      const { data } = await api(endpoint, {
         method: "POST",
         data: { start, end },
       });
@@ -536,7 +549,7 @@ export function initializeAdminCalendar({ api, query, message }) {
         : ` · day ${Math.round((Date.parse(date) - Date.parse(r.start_date)) / 86400000) + 1} of ${Math.round((Date.parse(r.end_date) - Date.parse(r.start_date)) / 86400000) + 1}`;
     const what =
       r.category === "Teacher"
-        ? `${r.type} leave · ${r.times ? `${r.times.start}–${r.times.end}` : "Full day"}${span}`
+        ? `${r.type === "Leave" ? "Leave" : r.type + " leave"} · ${r.times ? `${r.times.start}–${r.times.end}` : "Full day"}${span}`
         : `${r.partial ? `${day.total} selected classes` : "Whole day"}${span}`;
     card.append(el("p", what, "request-what"));
     if (r.category === "Teacher") {
@@ -585,7 +598,7 @@ export function initializeAdminCalendar({ api, query, message }) {
       );
     } else if (day.total)
       card.append(el("p", `All ${day.total} classes cancelled.`, "muted-line"));
-    if (!compact || r.reason) {
+    if (!readOnly && (!compact || r.reason)) {
       const meta = el("p", "", "request-meta");
       meta.append(
         `#${r.id} · ${r.user_name || "Not recorded"} · ${r.verified ? "LINE verified" : "Browser, not verified"}`,
@@ -595,6 +608,18 @@ export function initializeAdminCalendar({ api, query, message }) {
       card.append(meta);
     }
     const tools = el("div", "", "request-tools");
+    if (readOnly) {
+      // Changing a request needs the administrator password.
+      const signIn = el(
+        "a",
+        "Sign in to edit",
+        "button-link secondary-link small",
+      );
+      signIn.href = "#admin";
+      tools.append(signIn);
+      card.append(tools);
+      return card;
+    }
     const confirmed = r.state === "confirmed";
     tools.append(
       button(
@@ -775,13 +800,7 @@ export function initializeAdminCalendar({ api, query, message }) {
 
   // Refresh quietly every two minutes while visible.
   setInterval(() => {
-    if (
-      st.data &&
-      !document.hidden &&
-      !document.getElementById("admin-workspace").hidden &&
-      !document.getElementById("admin").hidden
-    )
-      load();
+    if (st.data && !document.hidden && isVisible()) load();
   }, 120000);
 
   return {
@@ -798,6 +817,15 @@ export function initializeAdminCalendar({ api, query, message }) {
     },
     onEdit(handler) {
       onEdit = handler;
+    },
+    // Open one day (deep link from the leave email): load its month first.
+    async openDate(date) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date || "")) return;
+      if (st.month !== date.slice(0, 7) || !st.data) {
+        st.month = date.slice(0, 7);
+        await load();
+      }
+      if (st.data) openDay(date);
     },
   };
 }

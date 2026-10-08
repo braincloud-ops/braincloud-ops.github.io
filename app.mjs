@@ -1,27 +1,28 @@
-import { initializeDashboard } from "./dashboard.mjs?v=ffccdc2aa1bf";
-import { initializeAttendance } from "./attendance.mjs?v=ffccdc2aa1bf";
+import { initializeDashboard } from "./dashboard.mjs?v=4bb7b27a0ac3";
+import { initializeAttendance } from "./attendance.mjs?v=4bb7b27a0ac3";
 import {
   initializeRequestWorkflows,
   confirmSubmission,
-} from "./request-workflows.mjs?v=ffccdc2aa1bf";
-import { API_URL } from "./config.js?v=ffccdc2aa1bf";
-import { initializeAdminCalendar } from "./admin-calendar.mjs?v=ffccdc2aa1bf";
-import { initializeDirectory } from "./directory.mjs?v=ffccdc2aa1bf";
-import { initializeTimeline } from "./timeline.mjs?v=ffccdc2aa1bf";
-import { initializeExecutive } from "./executive.mjs?v=ffccdc2aa1bf";
-import { initializeTeacherProfile } from "./teacher-profile.mjs?v=ffccdc2aa1bf";
-import { closeNavigation } from "./interface.mjs?v=ffccdc2aa1bf";
-import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=ffccdc2aa1bf";
-import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=ffccdc2aa1bf";
-import { combobox } from "./combobox.mjs?v=ffccdc2aa1bf";
-import { enterSection } from "./motion.mjs?v=ffccdc2aa1bf";
-import { character } from "./characters.mjs?v=ffccdc2aa1bf";
+} from "./request-workflows.mjs?v=4bb7b27a0ac3";
+import { API_URL } from "./config.js?v=4bb7b27a0ac3";
+import { initializeAdminCalendar } from "./admin-calendar.mjs?v=4bb7b27a0ac3";
+import { forgetViewer, signIn, viewerSession } from "./viewer.mjs?v=4bb7b27a0ac3";
+import { initializeDirectory } from "./directory.mjs?v=4bb7b27a0ac3";
+import { initializeTimeline } from "./timeline.mjs?v=4bb7b27a0ac3";
+import { initializeExecutive } from "./executive.mjs?v=4bb7b27a0ac3";
+import { initializeTeacherProfile } from "./teacher-profile.mjs?v=4bb7b27a0ac3";
+import { closeNavigation } from "./interface.mjs?v=4bb7b27a0ac3";
+import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=4bb7b27a0ac3";
+import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=4bb7b27a0ac3";
+import { combobox } from "./combobox.mjs?v=4bb7b27a0ac3";
+import { enterSection } from "./motion.mjs?v=4bb7b27a0ac3";
+import { character } from "./characters.mjs?v=4bb7b27a0ac3";
 import {
   confirmedSessions,
   groupTone,
   teacherActive,
   teacherType,
-} from "./schedule-model.mjs?v=ffccdc2aa1bf";
+} from "./schedule-model.mjs?v=4bb7b27a0ac3";
 const $ = (id) => document.getElementById(id),
   state = {
     schools: [],
@@ -70,7 +71,8 @@ async function api(
   });
   if (!r.ok) {
     const e = await r.json();
-    if (r.status === 401) signOut();
+    // Only an administrator call ends the administrator session.
+    if (r.status === 401 && path.startsWith("/admin/")) signOut();
     throw new Error(e.error || "The action could not be completed.");
   }
   return raw ? r : r.json();
@@ -213,7 +215,8 @@ function options(id, rows, value, label) {
   }
 }
 function route(moveFocus = false) {
-  const requested = location.hash.slice(1) || "home";
+  // "#calendar/2026-10-07": the page, then an argument for that page.
+  const requested = location.hash.slice(1).split("/")[0] || "home";
   const sections = [...document.querySelectorAll("main>section")];
   const id = sections.some((section) => section.id === requested)
     ? requested
@@ -481,7 +484,26 @@ $("report-form").addEventListener("submit", (e) => {
     message("Report loaded.");
   });
 });
+// The administrator session is remembered on this device until it expires or
+// Sign out, so closing the window does not ask for the password again.
+const ADMIN_KEY = "braincloud-admin";
+function rememberAdmin(session) {
+  try {
+    localStorage.setItem(ADMIN_KEY, JSON.stringify(session));
+  } catch {}
+}
+function rememberedAdmin() {
+  try {
+    const s = JSON.parse(localStorage.getItem(ADMIN_KEY) || "null");
+    if (s?.token && Date.parse(s.expires_at) > Date.now()) return s;
+    localStorage.removeItem(ADMIN_KEY);
+  } catch {}
+  return null;
+}
 function signOut() {
+  try {
+    localStorage.removeItem(ADMIN_KEY);
+  } catch {}
   dispatchEvent(new Event("admin-signed-out"));
   state.session = null;
   state.edit = null;
@@ -502,6 +524,96 @@ function signOut() {
 }
 initializeAttendance({ api });
 const calendar = initializeAdminCalendar({ api, query, message });
+
+// ── Team calendar for staff: company Google sign-in, read-only ──
+// A staff viewer session (or an administrator session) reads POST /calendar,
+// which never carries reasons, submitters or leave types.
+const viewerApi = (path, options = {}) => {
+  const viewer = viewerSession();
+  const admin =
+    state.session && Date.parse(state.session.expires_at) > Date.now()
+      ? state.session.token
+      : null;
+  const token = viewer?.token || admin;
+  return api(path, {
+    ...options,
+    headers: {
+      ...(options.headers || {}),
+      ...(token ? { Authorization: "Bearer " + token } : {}),
+    },
+  });
+};
+const teamCalendar = initializeAdminCalendar({
+  api: async (path, options) => {
+    try {
+      return await viewerApi(path, options);
+    } catch (error) {
+      if (/sign in|session/i.test(error.message)) {
+        forgetViewer();
+        showTeamSignIn();
+      }
+      throw error;
+    }
+  },
+  query,
+  message,
+  rootId: "team-calendar-root",
+  endpoint: "/calendar",
+  readOnly: true,
+  isVisible: () => !$("calendar").hidden && !$("team-calendar-wrap").hidden,
+});
+let pendingDate = null;
+function showTeamSignIn() {
+  $("team-calendar-wrap").hidden = true;
+  $("team-signin").hidden = false;
+  $("team-signin-note").textContent = "";
+  signIn($("team-signin-button"), { api, demo })
+    .then(() => openTeamCalendar())
+    .catch((error) => ($("team-signin-note").textContent = error.message));
+}
+async function openTeamCalendar(date) {
+  if (date) pendingDate = date;
+  const viewer = viewerSession();
+  const admin =
+    state.session && Date.parse(state.session.expires_at) > Date.now();
+  if (!viewer && !admin) return showTeamSignIn();
+  $("team-signin").hidden = true;
+  $("team-calendar-wrap").hidden = false;
+  $("team-who").textContent = viewer
+    ? "Signed in as " + viewer.email
+    : "Signed in as administrator";
+  $("team-signout").hidden = !viewer;
+  if (pendingDate) {
+    const day = pendingDate;
+    pendingDate = null;
+    await teamCalendar.openDate(day);
+  } else teamCalendar.start();
+}
+const onTeamRoute = () => {
+  const [page, arg] = location.hash.slice(1).split("/");
+  if (page === "calendar") openTeamCalendar(arg);
+};
+addEventListener("hashchange", onTeamRoute);
+onTeamRoute();
+// An administrator reading the team calendar loses access on sign-out.
+addEventListener("admin-signed-out", () => {
+  if (viewerSession()) return;
+  teamCalendar.clear();
+  if (!$("calendar").hidden) showTeamSignIn();
+  else $("team-calendar-wrap").hidden = true;
+});
+$("team-signout").addEventListener("click", () =>
+  busy($("team-signout"), async () => {
+    try {
+      await viewerApi("/viewer/logout", { method: "POST", data: {} });
+    } finally {
+      forgetViewer();
+      teamCalendar.clear();
+      showTeamSignIn();
+      message("Signed out of the team calendar.");
+    }
+  }),
+);
 const directory = initializeDirectory({ api, message });
 const profiles = initializeTeacherProfile({ api, busy, message });
 // Administrator sections: one visible at a time; data loads on first visit.
@@ -519,23 +631,28 @@ for (const b of document.querySelectorAll("[data-admin-tab]"))
 $("login-form").addEventListener("submit", (e) => {
   e.preventDefault();
   busy(e.submitter, async () => {
-    state.session = await api("/admin/login", {
+    const session = await api("/admin/login", {
       method: "POST",
       data: { password: e.target.elements.password.value },
     });
     e.target.reset();
-    $("login-form").hidden = true;
-    $("admin-workspace").hidden = false;
-    $("session-expiry").textContent =
-      "Session expires " +
-      new Date(state.session.expires_at).toLocaleString("en-GB", {
-        timeZone: "Asia/Bangkok",
-      });
+    rememberAdmin(session);
+    openWorkspace(session);
     message("Signed in.");
-    dispatchEvent(new Event("admin-signed-in"));
-    showAdminTab("calendar");
   });
 });
+function openWorkspace(session) {
+  state.session = session;
+  $("login-form").hidden = true;
+  $("admin-workspace").hidden = false;
+  $("session-expiry").textContent =
+    "Session expires " +
+    new Date(state.session.expires_at).toLocaleString("en-GB", {
+      timeZone: "Asia/Bangkok",
+    });
+  dispatchEvent(new Event("admin-signed-in"));
+  showAdminTab("calendar");
+}
 $("logout").addEventListener("click", () =>
   busy($("logout"), async () => {
     try {
@@ -766,7 +883,7 @@ $("email-test").addEventListener("click", () =>
   busy($("email-test"), async () => {
     await api("/admin/notifications/test-email", { method: "POST", data: {} });
     $("email-note").textContent =
-      "Test email queued. The company mailer sends it within about a minute; use Check email status to confirm.";
+      "Test email queued for the company account only. The mailer sends it within about a minute; use Check email status to confirm.";
     message("Test email queued.");
   }),
 );
@@ -857,3 +974,11 @@ $("export-form").addEventListener("submit", (e) => {
     message("Draft downloaded. Review it in Google Sheets before payment.");
   });
 });
+// Last, so every module above is listening when a remembered session returns.
+{
+  const kept = rememberedAdmin();
+  if (kept) {
+    openWorkspace(kept);
+    if (!viewerSession()) onTeamRoute();
+  }
+}

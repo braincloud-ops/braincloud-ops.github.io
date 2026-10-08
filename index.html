@@ -9,10 +9,10 @@
     <meta name="referrer" content="no-referrer" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob: https://profile.line-scdn.net; connect-src 'self' https://*.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'"
+      content="default-src 'self'; script-src 'self' https://accounts.google.com/gsi/client; style-src 'self' https://accounts.google.com/gsi/style; frame-src https://accounts.google.com/gsi/; img-src 'self' data: blob: https://profile.line-scdn.net; connect-src 'self' https://*.supabase.co https://accounts.google.com/gsi/; object-src 'none'; base-uri 'none'; form-action 'self'"
     />
     <title>Braincloud Operations</title>
-    <link rel="stylesheet" href="styles.css?v=ffccdc2aa1bf" />
+    <link rel="stylesheet" href="styles.css?v=4bb7b27a0ac3" />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -58,6 +58,10 @@
         <a href="#teacher"
           ><span class="nav-icon" data-icon="teacher" aria-hidden="true"></span
           >Teacher leave</a
+        >
+        <a href="#calendar"
+          ><span class="nav-icon" data-icon="calendar" aria-hidden="true"></span
+          >Team calendar</a
         >
         <p class="nav-label">Insights &amp; planning</p>
         <a href="#dashboard"
@@ -450,6 +454,10 @@
               </p>
               <button type="submit">Submit request</button>
             </div>
+            <p class="privacy-line">
+              Colleagues see only your name, dates and times; the leave type and
+              reason are seen by administrators only.
+            </p>
           </form>
           <aside class="form-guide">
             <span
@@ -481,6 +489,35 @@
             </div>
             <a class="text-link" href="#reports">View request status →</a>
           </aside>
+        </div>
+      </section>
+      <section id="calendar" hidden="" class="workspace-page">
+        <div class="page-heading">
+          <p class="eyebrow">TEAM CALENDAR</p>
+          <h1>Who is away, which schools are closed</h1>
+          <p class="lead">
+            Read-only for everyone with a company Google account. Editing needs
+            the administrator password.
+          </p>
+        </div>
+        <p class="privacy-note" role="note">
+          Leave information is personal. It is shared here only to arrange
+          classes and cover — please keep it internal and ask the person
+          directly for any details.
+        </p>
+        <div id="team-signin" class="team-signin" hidden="">
+          <p>Sign in with your company Google account to see the calendar.</p>
+          <div id="team-signin-button"></div>
+          <p id="team-signin-note" class="muted-line" role="status"></p>
+        </div>
+        <div id="team-calendar-wrap" hidden="">
+          <p class="team-who">
+            <span id="team-who"></span>
+            <button id="team-signout" type="button" class="secondary small">
+              Sign out
+            </button>
+          </p>
+          <div id="team-calendar-root" class="calendar-workspace"></div>
         </div>
       </section>
       <section id="dashboard" hidden class="workspace-page">
@@ -1172,8 +1209,9 @@
             <h2>Email notifications</h2>
             <p>
               New teacher leave requests are emailed from the company Google
-              Workspace account. Its Apps Script mailer checks for new mail
-              every minute; recipients are set in that project.
+              Workspace account to the leave recipients set in its Apps Script
+              project; the mailer checks for new mail every minute. A test email
+              goes only to the company account, never to the recipients.
             </p>
             <div class="toolbar">
               <button id="email-status" class="secondary">
@@ -1234,6 +1272,6 @@
       <span>braincloud <strong>operations</strong></span
       ><span>For the people behind every school day.</span>
     </footer>
-    <script type="module" src="app.mjs?v=ffccdc2aa1bf"></script>
+    <script type="module" src="app.mjs?v=4bb7b27a0ac3"></script>
   </body>
 </html>
