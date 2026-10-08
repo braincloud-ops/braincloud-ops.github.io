@@ -2,8 +2,8 @@
 // and read everything everyone changed; anyone else sees their own changes.
 // Permissions are checked by the server on every request (migration
 // 202610080019); this screen only edits and explains them.
-import { el, button } from "./dom.mjs?v=c2905086c37a";
-import { emptyState } from "./characters.mjs?v=c2905086c37a";
+import { el, button } from "./dom.mjs?v=4374ee290a9d";
+import { emptyState } from "./characters.mjs?v=4374ee290a9d";
 
 const LEVELS = [
   ["hr", "HR: leave details"],

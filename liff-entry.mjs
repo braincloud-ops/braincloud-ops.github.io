@@ -1,18 +1,34 @@
-import { API_URL } from "./config.js?v=c2905086c37a";
-import { connectLine } from "./line-context.mjs?v=c2905086c37a";
+import { API_URL } from "./config.js?v=4374ee290a9d";
+import { connectLine } from "./line-context.mjs?v=4374ee290a9d";
 const entries = {
   school: { id: "2008775079-PKwtDJOx", route: "school" },
   teacher: { id: "2008775079-dguzgLe4", route: "teacher" },
   dashboard: { id: "2008775079-7d0dO0Y0", route: "dashboard" },
 };
 const entry = entries[document.body.dataset.entry];
+// A section asked for when this page (re)loads — #calendar, ?go=calendar, or
+// the path LINE passes as liff.state — is kept; otherwise the entry's own
+// section opens. Read before LIFF tidies the address.
+const section = /^[a-z]+(\/\d{4}-\d{2}-\d{2})?$/;
+const requested = (() => {
+  const query = new URLSearchParams(location.search);
+  const state = query.get("liff.state") || "";
+  for (const candidate of [
+    location.hash.slice(1),
+    query.get("go") || "",
+    state.includes("#") ? state.slice(state.indexOf("#") + 1) : "",
+    new URLSearchParams(state.split("?")[1] || "").get("go") || "",
+  ])
+    if (section.test(candidate)) return candidate;
+  return null;
+})();
 const status = document.getElementById("liff-status");
 const base =
   API_URL ||
   (["localhost", "127.0.0.1"].includes(location.hostname) ? "/api" : "");
 
 async function mountApplication() {
-  const response = await fetch("./index.html?v=c2905086c37a");
+  const response = await fetch("./index.html?v=4374ee290a9d");
   if (!response.ok) throw new Error("Application unavailable");
   const documentTemplate = new DOMParser().parseFromString(
     await response.text(),
@@ -26,13 +42,20 @@ async function mountApplication() {
   document.body.replaceChildren(...documentTemplate.body.childNodes);
   document.body.className = "liff-app";
   // Initialization has completed: now remove credential parameters and select the form.
-  history.replaceState(null, "", `${location.pathname}#${entry.route}`);
-  await import("./app.mjs?v=c2905086c37a");
+  history.replaceState(
+    null,
+    "",
+    `${location.pathname}#${requested || entry.route}`,
+  );
+  await import("./app.mjs?v=4374ee290a9d");
 }
 
 async function openEntry() {
   if (!entry || !globalThis.liff) {
-    if (entry?.route === "dashboard") { await mountApplication(); return; }
+    if (entry?.route === "dashboard") {
+      await mountApplication();
+      return;
+    }
     status.textContent =
       "LINE could not load. Use the button below to continue without LINE.";
     return;
@@ -72,7 +95,10 @@ async function openEntry() {
     }
     await mountApplication();
   } catch {
-    if (entry?.route === "dashboard") { await mountApplication(); return; }
+    if (entry?.route === "dashboard") {
+      await mountApplication();
+      return;
+    }
     // Never log SDK errors or URL/token/profile information.
     status.textContent =
       "Your LINE connection could not be confirmed. Reopen this page from LINE, or use the button below to continue without LINE.";

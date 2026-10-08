@@ -2,10 +2,10 @@
 // No score or grade; leave reasons are never shown (the server does not send
 // them). Data: POST /admin/teachers/profile, see
 // supabase/functions/_shared/teacher-profile.mjs.
-import { combobox } from "./combobox.mjs?v=c2905086c37a";
-import { presetRange, rangeLabel } from "./executive.mjs?v=c2905086c37a";
-import { decode, rise } from "./motion.mjs?v=c2905086c37a";
-import { groupTone } from "./schedule-model.mjs?v=c2905086c37a";
+import { combobox } from "./combobox.mjs?v=4374ee290a9d";
+import { presetRange, rangeLabel } from "./executive.mjs?v=4374ee290a9d";
+import { decode, rise } from "./motion.mjs?v=4374ee290a9d";
+import { groupTone } from "./schedule-model.mjs?v=4374ee290a9d";
 
 const $ = (id) => document.getElementById(id);
 const fmt = (n) => Number(n).toLocaleString("en-GB");

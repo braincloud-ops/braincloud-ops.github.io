@@ -1,29 +1,29 @@
-import { initializeDashboard } from "./dashboard.mjs?v=c2905086c37a";
-import { initializeAttendance } from "./attendance.mjs?v=c2905086c37a";
+import { initializeDashboard } from "./dashboard.mjs?v=4374ee290a9d";
+import { initializeAttendance } from "./attendance.mjs?v=4374ee290a9d";
 import {
   initializeRequestWorkflows,
   confirmSubmission,
-} from "./request-workflows.mjs?v=c2905086c37a";
-import { API_URL } from "./config.js?v=c2905086c37a";
-import { initializeAdminCalendar } from "./admin-calendar.mjs?v=c2905086c37a";
-import { forgetViewer, keepViewer, signIn, viewerSession } from "./viewer.mjs?v=c2905086c37a";
-import { initializeAccess, levelLabel } from "./access.mjs?v=c2905086c37a";
-import { initializeDirectory } from "./directory.mjs?v=c2905086c37a";
-import { initializeTimeline } from "./timeline.mjs?v=c2905086c37a";
-import { initializeExecutive } from "./executive.mjs?v=c2905086c37a";
-import { initializeTeacherProfile } from "./teacher-profile.mjs?v=c2905086c37a";
-import { closeNavigation } from "./interface.mjs?v=c2905086c37a";
-import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=c2905086c37a";
-import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=c2905086c37a";
-import { combobox } from "./combobox.mjs?v=c2905086c37a";
-import { enterSection } from "./motion.mjs?v=c2905086c37a";
-import { character } from "./characters.mjs?v=c2905086c37a";
+} from "./request-workflows.mjs?v=4374ee290a9d";
+import { API_URL } from "./config.js?v=4374ee290a9d";
+import { initializeAdminCalendar } from "./admin-calendar.mjs?v=4374ee290a9d";
+import { forgetViewer, keepViewer, signIn, viewerSession } from "./viewer.mjs?v=4374ee290a9d";
+import { initializeAccess, levelLabel } from "./access.mjs?v=4374ee290a9d";
+import { initializeDirectory } from "./directory.mjs?v=4374ee290a9d";
+import { initializeTimeline } from "./timeline.mjs?v=4374ee290a9d";
+import { initializeExecutive } from "./executive.mjs?v=4374ee290a9d";
+import { initializeTeacherProfile } from "./teacher-profile.mjs?v=4374ee290a9d";
+import { closeNavigation } from "./interface.mjs?v=4374ee290a9d";
+import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=4374ee290a9d";
+import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=4374ee290a9d";
+import { combobox } from "./combobox.mjs?v=4374ee290a9d";
+import { enterSection } from "./motion.mjs?v=4374ee290a9d";
+import { character } from "./characters.mjs?v=4374ee290a9d";
 import {
   confirmedSessions,
   groupTone,
   teacherActive,
   teacherType,
-} from "./schedule-model.mjs?v=c2905086c37a";
+} from "./schedule-model.mjs?v=4374ee290a9d";
 const $ = (id) => document.getElementById(id),
   state = {
     schools: [],
@@ -213,6 +213,18 @@ function options(id, rows, value, label) {
     option.value = row[value];
     option.textContent = label(row);
     $(id).append(option);
+  }
+}
+// Arriving from LINE's "Open in your browser": ?go=calendar/2026-10-08
+// becomes #calendar/2026-10-08 (and LINE's own flag is dropped).
+{
+  const url = new URL(location.href);
+  const go = url.searchParams.get("go");
+  if (go || url.searchParams.has("openExternalBrowser")) {
+    url.searchParams.delete("go");
+    url.searchParams.delete("openExternalBrowser");
+    if (go && /^[a-z]+(\/\d{4}-\d{2}-\d{2})?$/.test(go)) url.hash = go;
+    history.replaceState(null, "", url.href);
   }
 }
 function route(moveFocus = false) {

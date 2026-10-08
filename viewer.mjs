@@ -3,7 +3,7 @@
 // an owner has granted access, otherwise the read-only team calendar. The
 // staff session is remembered on this device (30 days, or until Sign out).
 // Local preview offers a demo sign-in with any company address.
-import { GOOGLE_CLIENT_ID } from "./config.js?v=c2905086c37a";
+import { GOOGLE_CLIENT_ID } from "./config.js?v=4374ee290a9d";
 
 const KEY = "braincloud-viewer";
 const GIS = "https://accounts.google.com/gsi/client";
@@ -28,22 +28,41 @@ export function forgetViewer() {
 
 // Google does not allow its sign-in inside app browsers such as LINE's.
 export const inLineApp = () => / Line\//i.test(navigator.userAgent);
-// The main site (not a LINE entry page) at the same section, e.g. #calendar.
-export function externalUrl() {
+// The main site (not a LINE entry page) at the same section. The section
+// travels as ?go=calendar (the site turns it back into #calendar) because
+// the browser-switching links below cannot carry a #fragment.
+export function siteUrl() {
   const url = new URL("./", location.href);
-  url.hash = location.hash;
+  const section = location.hash.slice(1);
+  if (section) url.searchParams.set("go", section);
+  return url.href;
+}
+// Leaving LINE's built-in browser. LINE ignores its own openExternalBrowser
+// flag for links tapped inside a page, so each phone gets the switch it
+// honours: Safari on iPhone, the default browser on Android.
+export function externalUrl(ua = navigator.userAgent) {
+  const url = new URL(siteUrl());
+  if (/iPhone|iPad|iPod/i.test(ua)) return "x-safari-" + url.href;
+  if (/Android/i.test(ua))
+    return (
+      "intent://" +
+      url.host +
+      url.pathname +
+      url.search +
+      "#Intent;scheme=https;S.browser_fallback_url=" +
+      encodeURIComponent(url.href) +
+      ";end"
+    );
   url.searchParams.set("openExternalBrowser", "1");
   return url.href;
 }
-// Inside a LIFF window only LINE's own call reaches the phone's browser; in
-// LINE's plain in-app browser the link (and its openExternalBrowser flag)
-// may be ignored, so Copy link and the "⋯" menu are offered as well.
+// Inside a LIFF window, LINE's own call is the reliable way out.
 function openOutside(event) {
   const liff = globalThis.liff;
   if (!liff?.isInClient?.()) return;
   event.preventDefault();
-  const url = new URL(externalUrl());
-  url.searchParams.delete("openExternalBrowser");
+  const url = new URL(siteUrl());
+  url.searchParams.set("openExternalBrowser", "1");
   liff.openWindow({ url: url.href, external: true });
 }
 
@@ -91,13 +110,11 @@ export function signIn(slot, { api, demo, onSession, onError }) {
     copy.className = "secondary";
     copy.textContent = "Copy link";
     copy.addEventListener("click", async () => {
-      const url = new URL(externalUrl());
-      url.searchParams.delete("openExternalBrowser");
       try {
-        await navigator.clipboard.writeText(url.href);
+        await navigator.clipboard.writeText(siteUrl());
         copy.textContent = "Link copied";
       } catch {
-        copy.textContent = url.href;
+        copy.textContent = siteUrl();
       }
     });
     const hint = document.createElement("p");
