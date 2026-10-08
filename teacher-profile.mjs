@@ -2,10 +2,10 @@
 // No score or grade; leave reasons are never shown (the server does not send
 // them). Data: POST /admin/teachers/profile, see
 // supabase/functions/_shared/teacher-profile.mjs.
-import { combobox } from "./combobox.mjs?v=4c98110a12d7";
-import { presetRange, rangeLabel } from "./executive.mjs?v=4c98110a12d7";
-import { decode, rise } from "./motion.mjs?v=4c98110a12d7";
-import { groupTone } from "./schedule-model.mjs?v=4c98110a12d7";
+import { combobox } from "./combobox.mjs?v=12f7be333ea9";
+import { presetRange, rangeLabel } from "./executive.mjs?v=12f7be333ea9";
+import { decode, rise } from "./motion.mjs?v=12f7be333ea9";
+import { groupTone } from "./schedule-model.mjs?v=12f7be333ea9";
 
 const $ = (id) => document.getElementById(id);
 const fmt = (n) => Number(n).toLocaleString("en-GB");
@@ -280,11 +280,29 @@ export function initializeTeacherProfile({ api, busy, message }) {
           );
       leave.append(noticeList);
     }
+    // Each leave with its reason, for people allowed to see leave details.
+    if (p.leave.list?.length) {
+      leave.append(el("h3", "", "Leave in this period"));
+      const list = el("ul", "profile-facts profile-leave");
+      for (const l of p.leave.list) {
+        const item = el(
+          "li",
+          "",
+          `${l.start_date === l.end_date ? l.start_date : `${l.start_date} – ${l.end_date}`} · ${l.type}`,
+        );
+        if (l.reason)
+          item.append(el("span", "request-reason", ` · “${l.reason}”`));
+        list.append(item);
+      }
+      leave.append(list);
+    }
     leave.append(
       el(
         "p",
         "brief-locked",
-        "Sick leave is a right; these figures describe, they do not judge. Reasons are not shown.",
+        p.leave.list
+          ? "Sick leave is a right; these figures describe, they do not judge. Reasons are shown because your access includes leave details: keep them confidential."
+          : "Sick leave is a right; these figures describe, they do not judge. Reasons are not shown.",
       ),
     );
     grid.append(schools, leave);
