@@ -5253,6 +5253,14 @@ nav a[data-accent][aria-current="page"] {
   background: #fff4cc;
   color: #4a3a00;
 }
+/* "Is this you?": one close spelling per line. */
+.new-person-suggestion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
 .new-person-review {
   margin: 0 0 14px;
   padding: 12px 14px;

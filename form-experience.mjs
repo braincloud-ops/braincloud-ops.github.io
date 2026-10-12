@@ -1,5 +1,5 @@
-import { character } from "./characters.mjs?v=a44156d7da03";
-import { burst } from "./motion.mjs?v=a44156d7da03";
+import { character } from "./characters.mjs?v=862e26ea41eb";
+import { burst } from "./motion.mjs?v=862e26ea41eb";
 
 export function improveFormDates() {
   for (const form of document.forms) {

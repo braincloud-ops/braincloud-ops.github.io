@@ -1,11 +1,11 @@
-import { initializeDashboard } from "./dashboard.mjs?v=a44156d7da03";
-import { initializeAttendance } from "./attendance.mjs?v=a44156d7da03";
+import { initializeDashboard } from "./dashboard.mjs?v=862e26ea41eb";
+import { initializeAttendance } from "./attendance.mjs?v=862e26ea41eb";
 import {
   initializeRequestWorkflows,
   confirmSubmission,
-} from "./request-workflows.mjs?v=a44156d7da03";
-import { API_URL } from "./config.js?v=a44156d7da03";
-import { initializeAdminCalendar } from "./admin-calendar.mjs?v=a44156d7da03";
+} from "./request-workflows.mjs?v=862e26ea41eb";
+import { API_URL } from "./config.js?v=862e26ea41eb";
+import { initializeAdminCalendar } from "./admin-calendar.mjs?v=862e26ea41eb";
 import {
   externalUrl,
   forgetViewer,
@@ -14,25 +14,25 @@ import {
   openOutside,
   signIn,
   viewerSession,
-} from "./viewer.mjs?v=a44156d7da03";
-import { initializeAccess, levelLabel } from "./access.mjs?v=a44156d7da03";
-import { initializeNewPerson } from "./new-person.mjs?v=a44156d7da03";
-import { initializeDirectory } from "./directory.mjs?v=a44156d7da03";
-import { initializeTimeline } from "./timeline.mjs?v=a44156d7da03";
-import { initializeExecutive } from "./executive.mjs?v=a44156d7da03";
-import { initializeTeacherProfile } from "./teacher-profile.mjs?v=a44156d7da03";
-import { closeNavigation } from "./interface.mjs?v=a44156d7da03";
-import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=a44156d7da03";
-import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=a44156d7da03";
-import { combobox } from "./combobox.mjs?v=a44156d7da03";
-import { enterSection } from "./motion.mjs?v=a44156d7da03";
-import { character } from "./characters.mjs?v=a44156d7da03";
+} from "./viewer.mjs?v=862e26ea41eb";
+import { initializeAccess, levelLabel } from "./access.mjs?v=862e26ea41eb";
+import { initializeNewPerson } from "./new-person.mjs?v=862e26ea41eb";
+import { initializeDirectory } from "./directory.mjs?v=862e26ea41eb";
+import { initializeTimeline } from "./timeline.mjs?v=862e26ea41eb";
+import { initializeExecutive } from "./executive.mjs?v=862e26ea41eb";
+import { initializeTeacherProfile } from "./teacher-profile.mjs?v=862e26ea41eb";
+import { closeNavigation } from "./interface.mjs?v=862e26ea41eb";
+import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=862e26ea41eb";
+import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=862e26ea41eb";
+import { combobox } from "./combobox.mjs?v=862e26ea41eb";
+import { enterSection } from "./motion.mjs?v=862e26ea41eb";
+import { character } from "./characters.mjs?v=862e26ea41eb";
 import {
   confirmedSessions,
   groupTone,
   teacherActive,
   teacherType,
-} from "./schedule-model.mjs?v=a44156d7da03";
+} from "./schedule-model.mjs?v=862e26ea41eb";
 const $ = (id) => document.getElementById(id),
   state = {
     schools: [],
@@ -40,6 +40,8 @@ const $ = (id) => document.getElementById(id),
     session: null,
     edit: null,
     alarm: null,
+    // An inactive person who said "Yes, this is me" on the leave form.
+    reactivating: null,
   };
 const demo = ["localhost", "127.0.0.1"].includes(location.hostname),
   base = API_URL || (demo ? "/api" : "");
@@ -186,9 +188,10 @@ function schoolItem(s) {
   };
 }
 // Active teachers are listed; inactive ones appear only when searched for,
-// or not at all ({ inactive: false }: the leave form, owner 12 Oct 2026).
+// or not at all ({ inactive: false }: the leave form, owner 12 Oct 2026),
+// except the one who has just said "Yes, this is me" ({ include }).
 // Labels are first and last name only; a nickname still finds the person.
-function teacherItems(teachers, { inactive = true } = {}) {
+function teacherItems(teachers, { inactive = true, include = null } = {}) {
   const item = (t) => {
     const thai = [t.firstname_th, t.lastname_th].filter(Boolean).join(" ");
     const name = teacherName(t.user_id);
@@ -207,9 +210,11 @@ function teacherItems(teachers, { inactive = true } = {}) {
     };
   };
   return [
-    ...teachers.filter(teacherActive).map(item),
     ...teachers
-      .filter((t) => inactive && !teacherActive(t))
+      .filter((t) => teacherActive(t) || t.user_id === include)
+      .map(item),
+    ...teachers
+      .filter((t) => inactive && !teacherActive(t) && t.user_id !== include)
       .map((t) => ({
         ...item(t),
         section: "Inactive",
@@ -371,6 +376,16 @@ const newPerson = initializeNewPerson({
     $("teacher-select").value = id;
     combos.teacher?.refresh();
   },
+  // Inactive, and it is them: on the list for this request; the leave sets
+  // them back to active.
+  reactivate(person) {
+    state.reactivating = person.user_id;
+    combos.teacher?.setItems(
+      teacherItems(state.people, { inactive: false, include: person.user_id }),
+    );
+    $("teacher-select").value = person.user_id;
+    combos.teacher?.refresh();
+  },
 });
 initializeRequestWorkflows({
   query,
@@ -418,12 +433,21 @@ for (const [id, category] of [
       if (category === "Teacher" && newPerson.isOpen()) {
         data.new_person = newPerson.read();
         delete data.teacher_id;
-      }
+      } else if (
+        category === "Teacher" &&
+        state.reactivating &&
+        data.teacher_id === state.reactivating
+      )
+        data.reactivate = true;
       const serialized = JSON.stringify(data);
       if (!pending || pending.serialized !== serialized)
         pending = { serialized, key: crypto.randomUUID() };
       const who = (id) =>
-        data.new_person ? newPerson.describe(data.new_person) : teacherName(id);
+        data.new_person
+          ? newPerson.describe(data.new_person)
+          : data.reactivate
+            ? `${teacherName(id)} · status: inactive → active (saved with the date and time)`
+            : teacherName(id);
       if (!(await confirmSubmission(form, data, who))) {
         message("You can edit your request before sending.");
         return;
@@ -446,6 +470,15 @@ for (const [id, category] of [
           teacherItems(state.people, { inactive: false }),
         );
         newPerson.done(result.teacher_id);
+      }
+      if (result.reactivated) {
+        // Active again: on the list from now on.
+        const person = state.people.find((p) => p.user_id === data.teacher_id);
+        if (person) person.status = "Active";
+        state.reactivating = null;
+        combos.teacher?.setItems(
+          teacherItems(state.people, { inactive: false }),
+        );
       }
       // Keep the key while the payload is unchanged, including after a successful
       // response; only an explicit "Submit another request" starts a new one.
