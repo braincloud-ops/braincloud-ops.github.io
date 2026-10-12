@@ -2,16 +2,16 @@
 // are closed, with the server's check of whether each affected class is
 // already cancelled or covered. One request per month; the day panel works
 // from the same data.
-import { el, button, modal } from "./dom.mjs?v=a3893f8159db";
-import { character, emptyState } from "./characters.mjs?v=a3893f8159db";
-import { rise, punch } from "./motion.mjs?v=a3893f8159db";
+import { el, button, modal } from "./dom.mjs?v=babeefb49840";
+import { character, emptyState } from "./characters.mjs?v=babeefb49840";
+import { rise, punch } from "./motion.mjs?v=babeefb49840";
 import {
   bangkokDay,
   cancelled,
   category,
   confirmedSessions,
   time,
-} from "./schedule-model.mjs?v=a3893f8159db";
+} from "./schedule-model.mjs?v=babeefb49840";
 
 const TONES = [
   ["thesaban", "Thesaban"],
@@ -685,10 +685,12 @@ export function initializeAdminCalendar({
       statePill(r.state === "confirmed" ? "confirmed" : day.state),
     );
     card.append(heading);
+    // The whole range, not "day 3 of 17": weekends and holidays fall inside,
+    // so the reader counts (owner, 12 Oct 2026).
     const span =
       r.start_date === r.end_date
         ? ""
-        : ` · day ${Math.round((Date.parse(date) - Date.parse(r.start_date)) / 86400000) + 1} of ${Math.round((Date.parse(r.end_date) - Date.parse(r.start_date)) / 86400000) + 1}`;
+        : ` · ${longDate(r.start_date)} – ${longDate(r.end_date)}`;
     const what =
       r.category === "Teacher"
         ? `${r.type === "Leave" ? "Leave" : r.type + " leave"} · ${r.times ? `${r.times.start}–${r.times.end}` : "Full day"}${span}`

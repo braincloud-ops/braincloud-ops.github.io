@@ -1,5 +1,5 @@
-import { API_URL } from "./config.js?v=a3893f8159db";
-import { connectLine } from "./line-context.mjs?v=a3893f8159db";
+import { API_URL } from "./config.js?v=babeefb49840";
+import { connectLine } from "./line-context.mjs?v=babeefb49840";
 const entries = {
   school: { id: "2008775079-PKwtDJOx", route: "school" },
   teacher: { id: "2008775079-dguzgLe4", route: "teacher" },
@@ -31,7 +31,7 @@ const base =
   (["localhost", "127.0.0.1"].includes(location.hostname) ? "/api" : "");
 
 async function mountApplication() {
-  const response = await fetch("./index.html?v=a3893f8159db");
+  const response = await fetch("./index.html?v=babeefb49840");
   if (!response.ok) throw new Error("Application unavailable");
   const documentTemplate = new DOMParser().parseFromString(
     await response.text(),
@@ -50,7 +50,7 @@ async function mountApplication() {
     "",
     `${location.pathname}#${requested || entry.route}`,
   );
-  await import("./app.mjs?v=a3893f8159db");
+  await import("./app.mjs?v=babeefb49840");
 }
 
 async function openEntry() {
