@@ -2,16 +2,16 @@
 // are closed, with the server's check of whether each affected class is
 // already cancelled or covered. One request per month; the day panel works
 // from the same data.
-import { el, button, modal } from "./dom.mjs?v=10f38cf10e5f";
-import { character, emptyState } from "./characters.mjs?v=10f38cf10e5f";
-import { rise, punch } from "./motion.mjs?v=10f38cf10e5f";
+import { el, button, modal } from "./dom.mjs?v=a44156d7da03";
+import { character, emptyState } from "./characters.mjs?v=a44156d7da03";
+import { rise, punch } from "./motion.mjs?v=a44156d7da03";
 import {
   bangkokDay,
   cancelled,
   category,
   confirmedSessions,
   time,
-} from "./schedule-model.mjs?v=10f38cf10e5f";
+} from "./schedule-model.mjs?v=a44156d7da03";
 
 const TONES = [
   ["thesaban", "Thesaban"],
@@ -672,10 +672,7 @@ export function initializeAdminCalendar({
     card.dataset.state = r.state === "confirmed" ? "confirmed" : day.state;
     const heading = el("div", "", "request-card-head");
     if (r.category === "Teacher") {
-      const name = el(
-        "strong",
-        r.teacher_name + (r.teacher_nickname ? ` (${r.teacher_nickname})` : ""),
-      );
+      const name = el("strong", r.teacher_name);
       heading.append(name);
       if (r.teacher_type)
         heading.append(" ", el("span", r.teacher_type, "type-tag"));

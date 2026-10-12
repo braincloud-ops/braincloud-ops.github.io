@@ -2,7 +2,8 @@
 // 8 October 2026). Thai staff and others missing from TMS give their real
 // name, role and employment type; the server adds them to the staff list with
 // the leave request, and an administrator confirms the details once.
-import { el, button } from "./dom.mjs?v=10f38cf10e5f";
+import { el, button } from "./dom.mjs?v=a44156d7da03";
+import { teacherActive } from "./schedule-model.mjs?v=a44156d7da03";
 
 const ROLES = [
   ["nes_teacher", "NES teacher"],
@@ -127,7 +128,13 @@ export function initializeNewPerson({ form, getPeople, choose }) {
         : null;
     match.replaceChildren();
     match.hidden = !found;
-    if (found)
+    // Inactive people are kept in the records but are not on the form's list
+    // (owner, 12 Oct 2026), so the office has to put them back.
+    if (found && !teacherActive(found))
+      match.append(
+        `${fullName(found)} is in our records but not on the current list. Please ask the office to update it.`,
+      );
+    else if (found)
       match.append(
         `${fullName(found)} is already in the list. `,
         button(
@@ -160,9 +167,7 @@ export function initializeNewPerson({ form, getPeople, choose }) {
     },
     describe(p) {
       const role = ROLES.find(([v]) => v === p.role)?.[1] || "";
-      return `${[p.firstname_en, p.lastname_en].join(" ").trim()}${
-        p.nickname_en ? ` (${p.nickname_en})` : ""
-      } · new to the list · ${role}`;
+      return `${[p.firstname_en, p.lastname_en].join(" ").trim()} · new to the list · ${role}`;
     },
     // After sending: the person now exists; select them and close the panel.
     done(userId) {

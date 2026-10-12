@@ -1,13 +1,13 @@
 // Administrator directory: keep people and schools up to date in one place.
 // Saves send the values the editor saw, so a record changed meanwhile by
 // someone else is refused instead of silently overwritten.
-import { el, button, modal } from "./dom.mjs?v=10f38cf10e5f";
-import { emptyState } from "./characters.mjs?v=10f38cf10e5f";
-import { rise } from "./motion.mjs?v=10f38cf10e5f";
-import { groupTone, teacherActive } from "./schedule-model.mjs?v=10f38cf10e5f";
-import { combobox } from "./combobox.mjs?v=10f38cf10e5f";
-import { loadProvinceNames, provinceKey } from "./school-map.mjs?v=10f38cf10e5f";
-import { mapsLink } from "./school-sheet.mjs?v=10f38cf10e5f";
+import { el, button, modal } from "./dom.mjs?v=a44156d7da03";
+import { emptyState } from "./characters.mjs?v=a44156d7da03";
+import { rise } from "./motion.mjs?v=a44156d7da03";
+import { groupTone, teacherActive } from "./schedule-model.mjs?v=a44156d7da03";
+import { combobox } from "./combobox.mjs?v=a44156d7da03";
+import { loadProvinceNames, provinceKey } from "./school-map.mjs?v=a44156d7da03";
+import { mapsLink } from "./school-sheet.mjs?v=a44156d7da03";
 
 const TYPE_LABEL = {
   210: "FT",
@@ -361,7 +361,6 @@ export function initializeDirectory({ api, message, onChanged = () => {} }) {
     const main = el("span", "", "directory-main");
     const name = el("strong", fullName(p));
     main.append(name);
-    if (p.nickname_en) main.append(el("span", ` (${p.nickname_en})`, "nick"));
     const type = TYPE_LABEL[p.user_type];
     if (type) main.append(" ", el("span", type, "type-tag"));
     const sub = el(

@@ -1,11 +1,11 @@
-import { initializeDashboard } from "./dashboard.mjs?v=10f38cf10e5f";
-import { initializeAttendance } from "./attendance.mjs?v=10f38cf10e5f";
+import { initializeDashboard } from "./dashboard.mjs?v=a44156d7da03";
+import { initializeAttendance } from "./attendance.mjs?v=a44156d7da03";
 import {
   initializeRequestWorkflows,
   confirmSubmission,
-} from "./request-workflows.mjs?v=10f38cf10e5f";
-import { API_URL } from "./config.js?v=10f38cf10e5f";
-import { initializeAdminCalendar } from "./admin-calendar.mjs?v=10f38cf10e5f";
+} from "./request-workflows.mjs?v=a44156d7da03";
+import { API_URL } from "./config.js?v=a44156d7da03";
+import { initializeAdminCalendar } from "./admin-calendar.mjs?v=a44156d7da03";
 import {
   externalUrl,
   forgetViewer,
@@ -14,25 +14,25 @@ import {
   openOutside,
   signIn,
   viewerSession,
-} from "./viewer.mjs?v=10f38cf10e5f";
-import { initializeAccess, levelLabel } from "./access.mjs?v=10f38cf10e5f";
-import { initializeNewPerson } from "./new-person.mjs?v=10f38cf10e5f";
-import { initializeDirectory } from "./directory.mjs?v=10f38cf10e5f";
-import { initializeTimeline } from "./timeline.mjs?v=10f38cf10e5f";
-import { initializeExecutive } from "./executive.mjs?v=10f38cf10e5f";
-import { initializeTeacherProfile } from "./teacher-profile.mjs?v=10f38cf10e5f";
-import { closeNavigation } from "./interface.mjs?v=10f38cf10e5f";
-import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=10f38cf10e5f";
-import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=10f38cf10e5f";
-import { combobox } from "./combobox.mjs?v=10f38cf10e5f";
-import { enterSection } from "./motion.mjs?v=10f38cf10e5f";
-import { character } from "./characters.mjs?v=10f38cf10e5f";
+} from "./viewer.mjs?v=a44156d7da03";
+import { initializeAccess, levelLabel } from "./access.mjs?v=a44156d7da03";
+import { initializeNewPerson } from "./new-person.mjs?v=a44156d7da03";
+import { initializeDirectory } from "./directory.mjs?v=a44156d7da03";
+import { initializeTimeline } from "./timeline.mjs?v=a44156d7da03";
+import { initializeExecutive } from "./executive.mjs?v=a44156d7da03";
+import { initializeTeacherProfile } from "./teacher-profile.mjs?v=a44156d7da03";
+import { closeNavigation } from "./interface.mjs?v=a44156d7da03";
+import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=a44156d7da03";
+import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=a44156d7da03";
+import { combobox } from "./combobox.mjs?v=a44156d7da03";
+import { enterSection } from "./motion.mjs?v=a44156d7da03";
+import { character } from "./characters.mjs?v=a44156d7da03";
 import {
   confirmedSessions,
   groupTone,
   teacherActive,
   teacherType,
-} from "./schedule-model.mjs?v=10f38cf10e5f";
+} from "./schedule-model.mjs?v=a44156d7da03";
 const $ = (id) => document.getElementById(id),
   state = {
     schools: [],
@@ -185,15 +185,16 @@ function schoolItem(s) {
     search: [s.school_name_en, s.school_name_th].join(" "),
   };
 }
-// Active teachers are listed; inactive ones appear only when searched for.
-function teacherItems(teachers) {
+// Active teachers are listed; inactive ones appear only when searched for,
+// or not at all ({ inactive: false }: the leave form, owner 12 Oct 2026).
+// Labels are first and last name only; a nickname still finds the person.
+function teacherItems(teachers, { inactive = true } = {}) {
   const item = (t) => {
-    const nickname = t.nickname_en || t.nickname_th;
     const thai = [t.firstname_th, t.lastname_th].filter(Boolean).join(" ");
     const name = teacherName(t.user_id);
     return {
       value: t.user_id,
-      label: name + (nickname ? ` (${nickname})` : ""),
+      label: name,
       // Some records repeat the English name in the Thai fields.
       detail:
         thai && thai.toLowerCase() !== name.toLowerCase() ? thai : undefined,
@@ -208,7 +209,7 @@ function teacherItems(teachers) {
   return [
     ...teachers.filter(teacherActive).map(item),
     ...teachers
-      .filter((t) => !teacherActive(t))
+      .filter((t) => inactive && !teacherActive(t))
       .map((t) => ({
         ...item(t),
         section: "Inactive",
@@ -331,7 +332,7 @@ async function initialize() {
       emptyText: "No school matches. Check the spelling or code.",
     });
     combos.teacher = combobox($("teacher-select"), {
-      items: teacherItems(state.people),
+      items: teacherItems(state.people, { inactive: false }),
       placeholder: "Type your name",
       invalidText: "Choose a person from the list, or add yourself below.",
       emptyText: "No match. Can't find your name? Add yourself below.",
@@ -441,7 +442,9 @@ for (const [id, category] of [
           affiliation: "BC",
           status: "Active",
         });
-        combos.teacher?.setItems(teacherItems(state.people));
+        combos.teacher?.setItems(
+          teacherItems(state.people, { inactive: false }),
+        );
         newPerson.done(result.teacher_id);
       }
       // Keep the key while the payload is unchanged, including after a successful

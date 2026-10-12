@@ -2,10 +2,10 @@
 // No score or grade; leave reasons are never shown (the server does not send
 // them). Data: POST /admin/teachers/profile, see
 // supabase/functions/_shared/teacher-profile.mjs.
-import { combobox } from "./combobox.mjs?v=10f38cf10e5f";
-import { presetRange, rangeLabel } from "./executive.mjs?v=10f38cf10e5f";
-import { decode, rise } from "./motion.mjs?v=10f38cf10e5f";
-import { groupTone } from "./schedule-model.mjs?v=10f38cf10e5f";
+import { combobox } from "./combobox.mjs?v=a44156d7da03";
+import { presetRange, rangeLabel } from "./executive.mjs?v=a44156d7da03";
+import { decode, rise } from "./motion.mjs?v=a44156d7da03";
+import { groupTone } from "./schedule-model.mjs?v=a44156d7da03";
 
 const $ = (id) => document.getElementById(id);
 const fmt = (n) => Number(n).toLocaleString("en-GB");
@@ -100,8 +100,6 @@ export function initializeTeacherProfile({ api, busy, message }) {
     const c = p.classes;
     const head = el("div", "profile-head");
     const name = el("h3", "", p.teacher.name);
-    if (p.teacher.nickname)
-      name.append(el("span", "nick", ` (${p.teacher.nickname})`));
     head.append(
       name,
       el("span", "type-tag", p.teacher.type),
