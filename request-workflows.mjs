@@ -1,6 +1,6 @@
-import { el, button, modal } from "./dom.mjs?v=babeefb49840";
-import { hasLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=babeefb49840";
-import { time, cancelled, category } from "./schedule-model.mjs?v=babeefb49840";
+import { el, button, modal } from "./dom.mjs?v=2395185c0984";
+import { hasLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=2395185c0984";
+import { time, cancelled, category } from "./schedule-model.mjs?v=2395185c0984";
 
 export function restoreDateModes() {
   for (const id of ["school-form", "teacher-form"]) {
@@ -85,6 +85,17 @@ export function confirmSubmission(form, data, teacherName) {
             : `${data.affected_sessions.length} selected sessions`,
       ],
       ["Reason", data.reason || "Not provided"],
+      // Earlier requests this one replaces (ticked in the overlap notice).
+      ...(data.replaces?.length
+        ? [
+            [
+              "Replaces",
+              [...form.querySelectorAll("[name=replaces]:checked")]
+                .map((b) => `#${b.value} (${b.dataset.range})`)
+                .join(", ") + ", which will be withdrawn",
+            ],
+          ]
+        : []),
     ];
     const details = el("dl", "", "review-details");
     for (const [key, value] of values)
@@ -269,15 +280,35 @@ export function initializeRequestWorkflows({
       if (data.length) {
         warning.hidden = false;
         warning.append(el("strong", "Existing records overlap this leave"));
-        for (const r of data)
-          warning.append(
-            el(
-              "p",
-              `${r.source} · ${r.start_date} to ${r.end_date} · ${r.start_time || "All day"}${r.end_time ? "–" + r.end_time : ""}`,
-            ),
+        for (const r of data) {
+          const line = el(
+            "p",
+            `${r.source}${r.id ? " #" + r.id : ""} · ${r.start_date} to ${r.end_date} · ${r.start_time || "All day"}${r.end_time ? "–" + r.end_time : ""}`,
           );
+          // An earlier request from this form can be replaced by this one
+          // (owner, 12 Oct 2026); timetable records cannot.
+          if (r.id) {
+            const pick = el("label", "", "check-line replace-line");
+            const box = el("input");
+            box.type = "checkbox";
+            box.name = "replaces";
+            box.value = String(r.id);
+            box.dataset.range =
+              r.start_date === r.end_date
+                ? r.start_date
+                : `${r.start_date} to ${r.end_date}`;
+            pick.append(box, ` This replaces #${r.id}`);
+            line.append(pick);
+          }
+          warning.append(line);
+        }
         warning.append(
-          el("small", "Check these records before submitting another request."),
+          el(
+            "small",
+            data.some((r) => r.id)
+              ? "Check these records before submitting another request. Tick one if this request corrects it: the earlier request is withdrawn when you send this one."
+              : "Check these records before submitting another request.",
+          ),
         );
       }
     } catch {

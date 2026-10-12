@@ -1,5 +1,5 @@
-import { character } from "./characters.mjs?v=babeefb49840";
-import { burst } from "./motion.mjs?v=babeefb49840";
+import { character } from "./characters.mjs?v=2395185c0984";
+import { burst } from "./motion.mjs?v=2395185c0984";
 
 export function improveFormDates() {
   for (const form of document.forms) {
@@ -45,6 +45,11 @@ export function showSubmissionReceipt(form, result, onAnother) {
     ? "You have also been added to the staff list. There is no need to send it again."
     : "It is saved. There is no need to send it again.";
   receipt.append(heading, detail, note);
+  if (result.replaced?.length) {
+    const replaced = document.createElement("p");
+    replaced.textContent = `Your earlier request ${result.replaced.map((id) => "#" + id).join(", ")} is withdrawn.`;
+    receipt.append(replaced);
+  }
   if (onAnother) {
     const another = document.createElement("button");
     another.type = "button";

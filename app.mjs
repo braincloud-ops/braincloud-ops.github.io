@@ -1,11 +1,11 @@
-import { initializeDashboard } from "./dashboard.mjs?v=babeefb49840";
-import { initializeAttendance } from "./attendance.mjs?v=babeefb49840";
+import { initializeDashboard } from "./dashboard.mjs?v=2395185c0984";
+import { initializeAttendance } from "./attendance.mjs?v=2395185c0984";
 import {
   initializeRequestWorkflows,
   confirmSubmission,
-} from "./request-workflows.mjs?v=babeefb49840";
-import { API_URL } from "./config.js?v=babeefb49840";
-import { initializeAdminCalendar } from "./admin-calendar.mjs?v=babeefb49840";
+} from "./request-workflows.mjs?v=2395185c0984";
+import { API_URL } from "./config.js?v=2395185c0984";
+import { initializeAdminCalendar } from "./admin-calendar.mjs?v=2395185c0984";
 import {
   externalUrl,
   forgetViewer,
@@ -14,29 +14,29 @@ import {
   openOutside,
   signIn,
   viewerSession,
-} from "./viewer.mjs?v=babeefb49840";
-import { initializeAccess, levelLabel } from "./access.mjs?v=babeefb49840";
-import { initializeNewPerson } from "./new-person.mjs?v=babeefb49840";
-import { initializeDirectory } from "./directory.mjs?v=babeefb49840";
-import { initializeTimeline } from "./timeline.mjs?v=babeefb49840";
-import { initializeExecutive } from "./executive.mjs?v=babeefb49840";
-import { initializeTeacherProfile } from "./teacher-profile.mjs?v=babeefb49840";
-import { closeNavigation } from "./interface.mjs?v=babeefb49840";
+} from "./viewer.mjs?v=2395185c0984";
+import { initializeAccess, levelLabel } from "./access.mjs?v=2395185c0984";
+import { initializeNewPerson } from "./new-person.mjs?v=2395185c0984";
+import { initializeDirectory } from "./directory.mjs?v=2395185c0984";
+import { initializeTimeline } from "./timeline.mjs?v=2395185c0984";
+import { initializeExecutive } from "./executive.mjs?v=2395185c0984";
+import { initializeTeacherProfile } from "./teacher-profile.mjs?v=2395185c0984";
+import { closeNavigation } from "./interface.mjs?v=2395185c0984";
 import {
   showLineIdentity,
   offerLineSignIn,
   lineRequestHeaders,
-} from "./line-context.mjs?v=babeefb49840";
-import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=babeefb49840";
-import { combobox } from "./combobox.mjs?v=babeefb49840";
-import { enterSection } from "./motion.mjs?v=babeefb49840";
-import { character } from "./characters.mjs?v=babeefb49840";
+} from "./line-context.mjs?v=2395185c0984";
+import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=2395185c0984";
+import { combobox } from "./combobox.mjs?v=2395185c0984";
+import { enterSection } from "./motion.mjs?v=2395185c0984";
+import { character } from "./characters.mjs?v=2395185c0984";
 import {
   confirmedSessions,
   groupTone,
   teacherActive,
   teacherType,
-} from "./schedule-model.mjs?v=babeefb49840";
+} from "./schedule-model.mjs?v=2395185c0984";
 const $ = (id) => document.getElementById(id),
   state = {
     schools: [],
@@ -433,6 +433,12 @@ for (const [id, category] of [
       delete data.startTime;
       delete data.endTime;
       delete data.sessions;
+      // Earlier requests this one replaces: every ticked box, not just the last.
+      delete data.replaces;
+      const replaces = [
+        ...form.querySelectorAll("[name=replaces]:checked"),
+      ].map((b) => Number(b.value));
+      if (category === "Teacher" && replaces.length) data.replaces = replaces;
       // Not in the list: the person adds themselves with this request.
       for (const key of Object.keys(data))
         if (key.startsWith("np_")) delete data[key];

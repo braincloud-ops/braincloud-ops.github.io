@@ -1,4 +1,4 @@
-import { el, button, download, modal } from "./dom.mjs?v=babeefb49840";
+import { el, button, download, modal } from "./dom.mjs?v=2395185c0984";
 import {
   bangkokDay,
   time,
@@ -8,9 +8,9 @@ import {
   confirmedSessions,
   displayName,
   groupTone,
-} from "./schedule-model.mjs?v=babeefb49840";
-import { coverConflict } from "./operations.mjs?v=babeefb49840";
-import { sessionCard } from "./dashboard.mjs?v=babeefb49840";
+} from "./schedule-model.mjs?v=2395185c0984";
+import { coverConflict } from "./operations.mjs?v=2395185c0984";
+import { sessionCard } from "./dashboard.mjs?v=2395185c0984";
 
 export function initializeTimeline({
   query,

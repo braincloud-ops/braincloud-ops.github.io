@@ -196,6 +196,12 @@
   border-left: 4px solid #d8a13b;
   border-radius: 8px;
 }
+/* "This replaces #N" under an earlier request in the overlap notice. */
+.conflict-notice .replace-line {
+  margin-top: 6px;
+  font-weight: 700;
+  cursor: pointer;
+}
 .history-card {
   margin: 14px 0;
   border: 1px solid var(--line);

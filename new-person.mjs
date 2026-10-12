@@ -2,8 +2,8 @@
 // 8 October 2026). Thai staff and others missing from TMS give their real
 // name, role and employment type; the server adds them to the staff list with
 // the leave request, and an administrator confirms the details once.
-import { el, button } from "./dom.mjs?v=babeefb49840";
-import { teacherActive } from "./schedule-model.mjs?v=babeefb49840";
+import { el, button } from "./dom.mjs?v=2395185c0984";
+import { teacherActive } from "./schedule-model.mjs?v=2395185c0984";
 
 // Two roles only (owner, 12 Oct 2026). The server still accepts the older
 // "thai_teacher"; "thai_staff" is the stored key for Staff.
