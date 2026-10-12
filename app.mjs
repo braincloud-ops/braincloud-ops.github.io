@@ -1,11 +1,11 @@
-import { initializeDashboard } from "./dashboard.mjs?v=862e26ea41eb";
-import { initializeAttendance } from "./attendance.mjs?v=862e26ea41eb";
+import { initializeDashboard } from "./dashboard.mjs?v=a3893f8159db";
+import { initializeAttendance } from "./attendance.mjs?v=a3893f8159db";
 import {
   initializeRequestWorkflows,
   confirmSubmission,
-} from "./request-workflows.mjs?v=862e26ea41eb";
-import { API_URL } from "./config.js?v=862e26ea41eb";
-import { initializeAdminCalendar } from "./admin-calendar.mjs?v=862e26ea41eb";
+} from "./request-workflows.mjs?v=a3893f8159db";
+import { API_URL } from "./config.js?v=a3893f8159db";
+import { initializeAdminCalendar } from "./admin-calendar.mjs?v=a3893f8159db";
 import {
   externalUrl,
   forgetViewer,
@@ -14,25 +14,29 @@ import {
   openOutside,
   signIn,
   viewerSession,
-} from "./viewer.mjs?v=862e26ea41eb";
-import { initializeAccess, levelLabel } from "./access.mjs?v=862e26ea41eb";
-import { initializeNewPerson } from "./new-person.mjs?v=862e26ea41eb";
-import { initializeDirectory } from "./directory.mjs?v=862e26ea41eb";
-import { initializeTimeline } from "./timeline.mjs?v=862e26ea41eb";
-import { initializeExecutive } from "./executive.mjs?v=862e26ea41eb";
-import { initializeTeacherProfile } from "./teacher-profile.mjs?v=862e26ea41eb";
-import { closeNavigation } from "./interface.mjs?v=862e26ea41eb";
-import { showLineIdentity, lineRequestHeaders } from "./line-context.mjs?v=862e26ea41eb";
-import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=862e26ea41eb";
-import { combobox } from "./combobox.mjs?v=862e26ea41eb";
-import { enterSection } from "./motion.mjs?v=862e26ea41eb";
-import { character } from "./characters.mjs?v=862e26ea41eb";
+} from "./viewer.mjs?v=a3893f8159db";
+import { initializeAccess, levelLabel } from "./access.mjs?v=a3893f8159db";
+import { initializeNewPerson } from "./new-person.mjs?v=a3893f8159db";
+import { initializeDirectory } from "./directory.mjs?v=a3893f8159db";
+import { initializeTimeline } from "./timeline.mjs?v=a3893f8159db";
+import { initializeExecutive } from "./executive.mjs?v=a3893f8159db";
+import { initializeTeacherProfile } from "./teacher-profile.mjs?v=a3893f8159db";
+import { closeNavigation } from "./interface.mjs?v=a3893f8159db";
+import {
+  showLineIdentity,
+  offerLineSignIn,
+  lineRequestHeaders,
+} from "./line-context.mjs?v=a3893f8159db";
+import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=a3893f8159db";
+import { combobox } from "./combobox.mjs?v=a3893f8159db";
+import { enterSection } from "./motion.mjs?v=a3893f8159db";
+import { character } from "./characters.mjs?v=a3893f8159db";
 import {
   confirmedSessions,
   groupTone,
   teacherActive,
   teacherType,
-} from "./schedule-model.mjs?v=862e26ea41eb";
+} from "./schedule-model.mjs?v=a3893f8159db";
 const $ = (id) => document.getElementById(id),
   state = {
     schools: [],
@@ -46,6 +50,8 @@ const $ = (id) => document.getElementById(id),
 const demo = ["localhost", "127.0.0.1"].includes(location.hostname),
   base = API_URL || (demo ? "/api" : "");
 showLineIdentity();
+// In LINE itself the LINE pages connect on their own.
+if (!inLineApp()) offerLineSignIn();
 if (demo) {
   $("environment").hidden = false;
   $("environment").textContent =

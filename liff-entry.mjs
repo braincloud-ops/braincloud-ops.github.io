@@ -1,5 +1,5 @@
-import { API_URL } from "./config.js?v=862e26ea41eb";
-import { connectLine } from "./line-context.mjs?v=862e26ea41eb";
+import { API_URL } from "./config.js?v=a3893f8159db";
+import { connectLine } from "./line-context.mjs?v=a3893f8159db";
 const entries = {
   school: { id: "2008775079-PKwtDJOx", route: "school" },
   teacher: { id: "2008775079-dguzgLe4", route: "teacher" },
@@ -22,13 +22,16 @@ const requested = (() => {
     if (section.test(candidate)) return candidate;
   return null;
 })();
+// "Log in with LINE" on a computer (owner, 12 Oct 2026): ?line=login asks
+// LINE to sign in and comes back here. Never forced otherwise.
+const wantsLogin = new URLSearchParams(location.search).get("line") === "login";
 const status = document.getElementById("liff-status");
 const base =
   API_URL ||
   (["localhost", "127.0.0.1"].includes(location.hostname) ? "/api" : "");
 
 async function mountApplication() {
-  const response = await fetch("./index.html?v=862e26ea41eb");
+  const response = await fetch("./index.html?v=a3893f8159db");
   if (!response.ok) throw new Error("Application unavailable");
   const documentTemplate = new DOMParser().parseFromString(
     await response.text(),
@@ -47,7 +50,7 @@ async function mountApplication() {
     "",
     `${location.pathname}#${requested || entry.route}`,
   );
-  await import("./app.mjs?v=862e26ea41eb");
+  await import("./app.mjs?v=a3893f8159db");
 }
 
 async function openEntry() {
@@ -69,6 +72,20 @@ async function openEntry() {
       liffId: entry.id,
       withLoginOnExternalBrowser: false,
     });
+    const inClient = globalThis.liff.isInClient();
+    if (
+      wantsLogin &&
+      !inClient &&
+      !globalThis.liff.isLoggedIn() &&
+      entry.route !== "dashboard"
+    ) {
+      status.textContent = "Opening LINE sign-in…";
+      // Back to this page, on the form the button was under.
+      const back = new URL(location.pathname, location.origin);
+      if (requested) back.searchParams.set("go", requested);
+      globalThis.liff.login({ redirectUri: back.href });
+      return;
+    }
     if (globalThis.liff.isLoggedIn() && entry.route !== "dashboard") {
       status.textContent = "Connecting your LINE account…";
       const token = globalThis.liff.getAccessToken();
@@ -89,8 +106,18 @@ async function openEntry() {
         !profile.display_name.trim()
       )
         throw new Error("Invalid profile");
-      connectLine(token, profile.display_name, profile.picture_url);
-    } else if (globalThis.liff.isInClient() && entry.route !== "dashboard") {
+      // Outside the LINE app the same browser may be shared: offer sign-out.
+      const signOut = () => {
+        globalThis.liff.logout();
+        location.reload();
+      };
+      connectLine(
+        token,
+        profile.display_name,
+        profile.picture_url,
+        inClient ? null : signOut,
+      );
+    } else if (inClient && entry.route !== "dashboard") {
       throw new Error("LINE account unavailable");
     }
     await mountApplication();

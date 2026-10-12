@@ -2380,6 +2380,37 @@ button[type="submit"]:disabled,
 .search-result-note:empty {
   display: none;
 }
+/* Optional "Log in with LINE" under "Submitted by" (LINE's green). */
+.line-signin {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin: -6px 0 18px;
+}
+.line-signin-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: #06c755;
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+}
+.line-signin-button:hover {
+  background: #05a648;
+}
+.line-signin small {
+  flex: 1 1 220px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.line-identity .link-button {
+  margin-top: 4px;
+  font-size: 12px;
+}
 .line-identity {
   display: flex;
   align-items: center;
