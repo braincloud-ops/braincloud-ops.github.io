@@ -2,16 +2,16 @@
 // are closed, with the server's check of whether each affected class is
 // already cancelled or covered. One request per month; the day panel works
 // from the same data.
-import { el, button, modal } from "./dom.mjs?v=2395185c0984";
-import { character, emptyState } from "./characters.mjs?v=2395185c0984";
-import { rise, punch } from "./motion.mjs?v=2395185c0984";
+import { el, button, modal } from "./dom.mjs?v=4d84e1e94708";
+import { character, emptyState } from "./characters.mjs?v=4d84e1e94708";
+import { rise, punch } from "./motion.mjs?v=4d84e1e94708";
 import {
   bangkokDay,
   cancelled,
   category,
   confirmedSessions,
   time,
-} from "./schedule-model.mjs?v=2395185c0984";
+} from "./schedule-model.mjs?v=4d84e1e94708";
 
 const TONES = [
   ["thesaban", "Thesaban"],
@@ -947,7 +947,7 @@ export function initializeAdminCalendar({
   // Refresh quietly every two minutes while visible.
   setInterval(() => {
     if (st.data && !document.hidden && isVisible()) load();
-  }, 120000);
+  }, 300000); // every 5 minutes, the schedule sync's own pace
 
   return {
     start() {

@@ -1,4 +1,4 @@
-import { el, button, download, modal } from "./dom.mjs?v=2395185c0984";
+import { el, button, download, modal } from "./dom.mjs?v=4d84e1e94708";
 import {
   bangkokDay,
   time,
@@ -8,9 +8,10 @@ import {
   confirmedSessions,
   displayName,
   groupTone,
-} from "./schedule-model.mjs?v=2395185c0984";
-import { coverConflict } from "./operations.mjs?v=2395185c0984";
-import { sessionCard } from "./dashboard.mjs?v=2395185c0984";
+} from "./schedule-model.mjs?v=4d84e1e94708";
+import { coverConflict } from "./operations.mjs?v=4d84e1e94708";
+import { due } from "./refresh.mjs?v=4d84e1e94708";
+import { sessionCard } from "./dashboard.mjs?v=4d84e1e94708";
 
 export function initializeTimeline({
   query,
@@ -27,6 +28,7 @@ export function initializeTimeline({
     selected = null,
     version = 0,
     suggestionVersion = 0,
+    lastLoad = 0,
     options = [];
   const output = $("daily-output"),
     panel = el("div", "", "timeline-panel"),
@@ -44,7 +46,7 @@ export function initializeTimeline({
   auto.id = "timeline-auto";
   auto.checked = true;
   const autoLabel = el("label", "", "check-label");
-  autoLabel.append(auto, document.createTextNode("Auto refresh · 1 min"));
+  autoLabel.append(auto, document.createTextNode("Auto refresh · 5 min"));
   const search = el("input");
   search.type = "search";
   search.placeholder = "Find teacher, school or class";
@@ -711,6 +713,7 @@ export function initializeTimeline({
     }
     const generation = ++version,
       requested = date.value;
+    lastLoad = Date.now();
     $("daily-note").textContent = "Loading recorded data…";
     if (snapshot?.date !== requested) {
       output.hidden = true;
@@ -832,6 +835,8 @@ export function initializeTimeline({
   }
   form.addEventListener("submit", (e) => {
     e.preventDefault();
+    // A manual load also fetches people, schools and assignments again.
+    query.forget?.();
     load();
   });
   date.addEventListener("change", () => load());
@@ -1027,9 +1032,11 @@ export function initializeTimeline({
   addEventListener("hashchange", enter);
   addEventListener("admin-signed-in", enter);
   enter();
+  // Redraw every minute; fetch every 5 (the schedule sync's own pace).
   setInterval(() => {
     if (!document.hidden && !$("operations").hidden) {
-      if (auto.checked && !proposals.size) load({ automatic: true });
+      if (auto.checked && !proposals.size && due(lastLoad))
+        load({ automatic: true });
       else if (snapshot) renderTimeline();
     }
   }, 60000);

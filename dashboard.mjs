@@ -1,6 +1,7 @@
-import { el, button } from "./dom.mjs?v=2395185c0984";
-import { emptyState } from "./characters.mjs?v=2395185c0984";
-import { rise } from "./motion.mjs?v=2395185c0984";
+import { el, button } from "./dom.mjs?v=4d84e1e94708";
+import { emptyState } from "./characters.mjs?v=4d84e1e94708";
+import { rise } from "./motion.mjs?v=4d84e1e94708";
+import { due } from "./refresh.mjs?v=4d84e1e94708";
 import {
   bangkokDay,
   time,
@@ -14,7 +15,7 @@ import {
   teacherType,
   statusLabel,
   groupTone,
-} from "./schedule-model.mjs?v=2395185c0984";
+} from "./schedule-model.mjs?v=4d84e1e94708";
 
 export function sessionCard(s) {
   const card = el("article", "", "session-card");
@@ -60,7 +61,8 @@ export function initializeDashboard({ query }) {
     pending = 0,
     status = "all",
     initialized = false,
-    lastKey = null;
+    lastKey = null,
+    lastLoad = 0;
   const counts = (rows) => ({
     all: rows.length,
     live: rows.filter((s) => inProgress(s)).length,
@@ -251,6 +253,7 @@ export function initializeDashboard({ query }) {
     if (!date.value) return;
     const version = ++pending,
       selected = date.value;
+    lastLoad = Date.now();
     note.textContent = "Loading the day…";
     if (snapshot?.date !== selected) {
       snapshot = null;
@@ -306,6 +309,8 @@ export function initializeDashboard({ query }) {
   }
   root.querySelector("form").addEventListener("submit", (e) => {
     e.preventDefault();
+    // "Refresh day" also fetches people, schools and assignments again.
+    query.forget?.();
     load();
   });
   date.addEventListener("change", () => {
@@ -339,9 +344,11 @@ export function initializeDashboard({ query }) {
   };
   addEventListener("hashchange", enter);
   enter();
+  // Redraw every minute ("In progress" follows the clock); fetch every 5.
   setInterval(() => {
     if (!root.hidden && !document.hidden) {
-      if (document.getElementById("dashboard-auto").checked) load();
+      if (document.getElementById("dashboard-auto").checked && due(lastLoad))
+        load();
       else render();
     }
   }, 60000);

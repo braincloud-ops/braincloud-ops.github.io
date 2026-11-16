@@ -1,11 +1,11 @@
-import { initializeDashboard } from "./dashboard.mjs?v=2395185c0984";
-import { initializeAttendance } from "./attendance.mjs?v=2395185c0984";
+import { initializeDashboard } from "./dashboard.mjs?v=4d84e1e94708";
+import { initializeAttendance } from "./attendance.mjs?v=4d84e1e94708";
 import {
   initializeRequestWorkflows,
   confirmSubmission,
-} from "./request-workflows.mjs?v=2395185c0984";
-import { API_URL } from "./config.js?v=2395185c0984";
-import { initializeAdminCalendar } from "./admin-calendar.mjs?v=2395185c0984";
+} from "./request-workflows.mjs?v=4d84e1e94708";
+import { API_URL } from "./config.js?v=4d84e1e94708";
+import { initializeAdminCalendar } from "./admin-calendar.mjs?v=4d84e1e94708";
 import {
   externalUrl,
   forgetViewer,
@@ -14,29 +14,30 @@ import {
   openOutside,
   signIn,
   viewerSession,
-} from "./viewer.mjs?v=2395185c0984";
-import { initializeAccess, levelLabel } from "./access.mjs?v=2395185c0984";
-import { initializeNewPerson } from "./new-person.mjs?v=2395185c0984";
-import { initializeDirectory } from "./directory.mjs?v=2395185c0984";
-import { initializeTimeline } from "./timeline.mjs?v=2395185c0984";
-import { initializeExecutive } from "./executive.mjs?v=2395185c0984";
-import { initializeTeacherProfile } from "./teacher-profile.mjs?v=2395185c0984";
-import { closeNavigation } from "./interface.mjs?v=2395185c0984";
+} from "./viewer.mjs?v=4d84e1e94708";
+import { initializeAccess, levelLabel } from "./access.mjs?v=4d84e1e94708";
+import { initializeNewPerson } from "./new-person.mjs?v=4d84e1e94708";
+import { initializeDirectory } from "./directory.mjs?v=4d84e1e94708";
+import { initializeTimeline } from "./timeline.mjs?v=4d84e1e94708";
+import { initializeExecutive } from "./executive.mjs?v=4d84e1e94708";
+import { initializeTeacherProfile } from "./teacher-profile.mjs?v=4d84e1e94708";
+import { closeNavigation } from "./interface.mjs?v=4d84e1e94708";
+import { cachedQuery } from "./refresh.mjs?v=4d84e1e94708";
 import {
   showLineIdentity,
   offerLineSignIn,
   lineRequestHeaders,
-} from "./line-context.mjs?v=2395185c0984";
-import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=2395185c0984";
-import { combobox } from "./combobox.mjs?v=2395185c0984";
-import { enterSection } from "./motion.mjs?v=2395185c0984";
-import { character } from "./characters.mjs?v=2395185c0984";
+} from "./line-context.mjs?v=4d84e1e94708";
+import { improveFormDates, showSubmissionReceipt } from "./form-experience.mjs?v=4d84e1e94708";
+import { combobox } from "./combobox.mjs?v=4d84e1e94708";
+import { enterSection } from "./motion.mjs?v=4d84e1e94708";
+import { character } from "./characters.mjs?v=4d84e1e94708";
 import {
   confirmedSessions,
   groupTone,
   teacherActive,
   teacherType,
-} from "./schedule-model.mjs?v=2395185c0984";
+} from "./schedule-model.mjs?v=4d84e1e94708";
 const $ = (id) => document.getElementById(id),
   state = {
     schools: [],
@@ -108,7 +109,7 @@ async function busy(button, action) {
     button.removeAttribute("aria-busy");
   }
 }
-async function query(table, filters = [], admin = false, order = []) {
+async function fetchRows(table, filters = [], admin = false, order = []) {
   const all = [];
   for (let offset = 0; offset < 60000; offset += 1000) {
     const { data } = await api(admin ? "/admin/query" : "/query", {
@@ -120,6 +121,8 @@ async function query(table, filters = [], admin = false, order = []) {
   }
   throw new Error("Too many records. Select a shorter date range.");
 }
+// People, schools and assignments are kept for an hour (refresh.mjs).
+const query = cachedQuery(fetchRows);
 function table(target, columns, rows, action) {
   const root = $(target);
   root.replaceChildren();
