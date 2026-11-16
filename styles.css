@@ -5515,3 +5515,203 @@ nav a[data-accent][aria-current="page"] {
   top: 0;
   z-index: 3;
 }
+
+/* Coordinators (People & schools): every active school and who coordinates it. */
+.coord-view {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+.coord-intro {
+  margin: 0;
+  max-width: 70ch;
+}
+.coord-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.coord-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 4px 6px 4px 13px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.coord-chip b {
+  min-width: 26px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--teal-tint);
+  color: var(--teal-dark);
+  text-align: center;
+}
+.coord-chip[data-empty="true"] {
+  border-style: dashed;
+  border-color: #d9a441;
+  background: #fff8e8;
+  color: #6b4b0a;
+}
+.coord-chip[data-empty="true"] b {
+  background: #ffefc6;
+  color: #573c06;
+}
+.coord-chip:hover:not(:disabled),
+.coord-chip[aria-pressed="true"] {
+  background: var(--lime-tint);
+  border-color: var(--lime);
+  color: var(--ink);
+}
+.coord-controls {
+  align-items: center;
+}
+.coord-by {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+}
+.coord-list {
+  display: grid;
+  gap: 14px;
+}
+.coord-group {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  overflow: hidden;
+}
+.coord-group-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--teal-tint);
+  border-bottom: 1px solid var(--line);
+}
+.coord-group-head h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.coord-n {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+.coord-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(170px, 230px);
+  align-items: center;
+  gap: 4px 12px;
+  padding: 8px 14px;
+  border-top: 1px solid var(--line);
+}
+.coord-group-head + .coord-row {
+  border-top: 0;
+}
+.coord-row[data-state="changed"] {
+  background: var(--lime-tint);
+}
+.coord-row[data-state="error"] {
+  background: var(--error-tint);
+}
+.coord-group input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--teal);
+}
+.coord-school {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.coord-school .directory-sub {
+  display: block;
+}
+.coord-who {
+  display: grid;
+  gap: 2px;
+}
+.coord-input {
+  min-height: 38px;
+  margin: 0;
+  padding: 6px 12px;
+  border-radius: 10px;
+}
+.coord-row[data-state="changed"] .coord-input {
+  border-color: var(--lime-ink);
+  font-weight: 700;
+}
+.coord-row[data-state="error"] .coord-input {
+  border-color: var(--error);
+}
+.coord-hint {
+  min-height: 0;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.coord-row[data-state="error"] .coord-hint,
+.coord-error {
+  color: var(--error);
+}
+.coord-bulk,
+.coord-save {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 10px 14px;
+  border-radius: 14px;
+}
+.coord-bulk {
+  border: 1px solid #a7cdd3;
+  background: var(--teal-tint);
+}
+.coord-bulk .coord-input {
+  width: min(230px, 100%);
+}
+.coord-save {
+  position: sticky;
+  bottom: 12px;
+  z-index: 4;
+  border: 1px solid var(--lime);
+  background: var(--surface);
+  box-shadow: 0 10px 30px -14px #173b3f60;
+}
+.coord-save .coord-error {
+  font-size: 0.8rem;
+}
+.coord-from {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 0 auto;
+  font-size: 0.8rem;
+}
+.coord-from input {
+  width: auto;
+  min-height: 38px;
+  margin: 0;
+  padding-block: 4px;
+}
+@media (max-width: 650px) {
+  .coord-row {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .coord-who {
+    grid-column: 2;
+  }
+  .coord-from {
+    margin-left: 0;
+  }
+}

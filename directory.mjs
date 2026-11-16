@@ -1,13 +1,14 @@
 // Administrator directory: keep people and schools up to date in one place.
 // Saves send the values the editor saw, so a record changed meanwhile by
 // someone else is refused instead of silently overwritten.
-import { el, button, modal } from "./dom.mjs?v=4d84e1e94708";
-import { emptyState } from "./characters.mjs?v=4d84e1e94708";
-import { rise } from "./motion.mjs?v=4d84e1e94708";
-import { groupTone, teacherActive } from "./schedule-model.mjs?v=4d84e1e94708";
-import { combobox } from "./combobox.mjs?v=4d84e1e94708";
-import { loadProvinceNames, provinceKey } from "./school-map.mjs?v=4d84e1e94708";
-import { mapsLink } from "./school-sheet.mjs?v=4d84e1e94708";
+import { el, button, modal } from "./dom.mjs?v=6b3ed7888e3c";
+import { emptyState } from "./characters.mjs?v=6b3ed7888e3c";
+import { rise } from "./motion.mjs?v=6b3ed7888e3c";
+import { bangkokDay, groupTone, teacherActive } from "./schedule-model.mjs?v=6b3ed7888e3c";
+import { combobox } from "./combobox.mjs?v=6b3ed7888e3c";
+import { loadProvinceNames, provinceKey } from "./school-map.mjs?v=6b3ed7888e3c";
+import { mapsLink } from "./school-sheet.mjs?v=6b3ed7888e3c";
+import { coordinatorsOn, coordinatorsView } from "./coordinators.mjs?v=6b3ed7888e3c";
 
 const TYPE_LABEL = {
   210: "FT",
@@ -62,6 +63,7 @@ export function initializeDirectory({ api, message, onChanged = () => {} }) {
   const modeButtons = [
     ["people", "People"],
     ["schools", "Schools"],
+    ["coordinators", "Coordinators"],
   ].map(([mode, label]) => {
     const b = button(label, () => {
       st.mode = mode;
@@ -120,7 +122,13 @@ export function initializeDirectory({ api, message, onChanged = () => {} }) {
   );
   const fresh = el("section", "", "new-codes");
   fresh.hidden = true;
-  root.append(toolbar, filters, health, fresh, count, list);
+  // Who coordinates which school (16 Nov 2026), edited in place.
+  const coordinators = coordinatorsView({
+    api,
+    message,
+    reload: () => load(),
+  });
+  root.append(toolbar, filters, health, fresh, count, list, coordinators.root);
 
   // School codes the timetable uses that the directory does not know: the
   // schedule sync cannot store their classes until the school is added.
@@ -246,6 +254,14 @@ export function initializeDirectory({ api, message, onChanged = () => {} }) {
         "Active schools without a map location",
         (s) => s.status === "active" && s.latitude == null,
       ],
+      [
+        "no-coordinator",
+        "Active schools without a coordinator",
+        (s) =>
+          s.status === "active" &&
+          !coordinatorsOn(st.data.assignments, s.school_id, bangkokDay())
+            .length,
+      ],
     ].map(([key, label, test]) => ({
       key,
       label,
@@ -307,6 +323,15 @@ export function initializeDirectory({ api, message, onChanged = () => {} }) {
   function render() {
     for (const b of modeButtons)
       b.setAttribute("aria-pressed", String(b.dataset.mode === st.mode));
+    const coordinating = st.mode === "coordinators";
+    for (const part of [add, filters, health, count, list])
+      part.hidden = coordinating;
+    coordinators.root.hidden = !coordinating;
+    if (coordinating) {
+      fresh.hidden = true;
+      if (st.data) coordinators.render(st.data);
+      return;
+    }
     viewSelect.closest("label").hidden = st.mode !== "people";
     add.textContent = st.mode === "people" ? "Add a person" : "Add a school";
     search.placeholder =
@@ -870,6 +895,7 @@ export function initializeDirectory({ api, message, onChanged = () => {} }) {
     },
     clear() {
       st.data = null;
+      coordinators.clear();
       list.replaceChildren();
       health.replaceChildren();
       count.textContent = "";
